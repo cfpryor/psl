@@ -73,7 +73,7 @@ public class PSLModel extends Model {
     /**
      * Add a weighted rule that has the body in string form, but the additional traits (weight/squared) not in the string.
      */
-    public Rule addWeightedRule(String ruleString, float weight, boolean squared) {
+    public Rule addWeightedRule(String ruleString, double weight, boolean squared) {
         return addRule(ruleString, true, weight, squared);
     }
 
@@ -93,7 +93,7 @@ public class PSLModel extends Model {
         Rule rule = null;
 
         if (weighted) {
-            rule = rulePartial.toRule(new Float(weight), new Boolean(squared));
+            rule = rulePartial.toRule(new Double(weight), new Boolean(squared));
         } else {
             rule = rulePartial.toRule(null, null);
         }

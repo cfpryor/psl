@@ -1,6 +1,10 @@
-package org.linqs.psl.application.learning.weight.search.bayesian;
+package org.linqs.psl.application.learning.weight.bayesian;
 
 import org.linqs.psl.util.FloatMatrix;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SquaredExpKernel extends GaussianProcessKernel {
     public SquaredExpKernel() {

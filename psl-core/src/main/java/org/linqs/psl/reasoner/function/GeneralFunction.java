@@ -34,9 +34,9 @@ public class GeneralFunction implements FunctionTerm {
      * Whether to merge fixed values (like observed atoms) into the single constant.
      */
     private final boolean mergeConstants;
-  
-    private int size;
-  
+
+    private short size;
+
     // All constants will get merged into this.
     private float constant;
 

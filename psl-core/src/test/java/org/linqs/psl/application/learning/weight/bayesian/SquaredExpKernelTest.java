@@ -1,4 +1,4 @@
-package org.linqs.psl.application.learning.weight.search.bayesian;
+package org.linqs.psl.application.learning.weight.bayesian;
 
 import org.linqs.psl.config.Options;
 

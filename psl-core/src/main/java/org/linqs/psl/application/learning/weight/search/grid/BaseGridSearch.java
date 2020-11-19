@@ -21,7 +21,6 @@ import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.Model;
 import org.linqs.psl.model.rule.Rule;
-import org.linqs.psl.util.MathUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +37,12 @@ import java.util.Map;
  */
 public abstract class BaseGridSearch extends WeightLearningApplication {
     private static final Logger log = LoggerFactory.getLogger(BaseGridSearch.class);
+
+    /**
+     * The current location we are investigating.
+     * The exact representation is up to the implementing child class.
+     */
+    protected String currentLocation;
 
     /**
      * The number of actual possible locations.
@@ -57,12 +62,6 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
      */
     protected Map<String, Double> objectives;
 
-    /**
-     * The current location we are investigating.
-     * The exact representation is up to the implementing child class.
-     */
-    protected String currentLocation;
-
     public BaseGridSearch(Model model, Database rvDB, Database observedDB) {
         this(model.getRules(), rvDB, observedDB);
     }
@@ -70,22 +69,21 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
     public BaseGridSearch(List<Rule> rules, Database rvDB, Database observedDB) {
         super(rules, rvDB, observedDB);
 
+        currentLocation = null;
+
         maxNumLocations = 0;
         numLocations = maxNumLocations;
 
         objectives = new HashMap<String, Double>();
-
-        currentLocation = null;
     }
 
     @Override
     protected void doLearn() {
         double bestObjective = -1.0;
-        float[] bestWeights = new float[mutableRules.size()];
-        float[] weights = new float[mutableRules.size()];
-        float[] unitWeightVector = new float[mutableRules.size()];
+        double[] bestWeights = new double[mutableRules.size()];
 
-        boolean nonZero = false;
+        double[] weights = new double[mutableRules.size()];
+
         for (int iteration = 0; iteration < numLocations; iteration++) {
             if (!chooseNextLocation()) {
                 log.debug("Stopping search.");
@@ -95,22 +93,7 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
             log.debug("Iteration {} / {} ({}) -- Inspecting location {}", iteration, numLocations, maxNumLocations, currentLocation);
 
             // Set the weights for the current round.
-            nonZero = false;
             getWeights(weights);
-            System.arraycopy(weights, 0, unitWeightVector, 0, weights.length);
-
-            // Check that there is at least one non-zero weight.
-            for (int i = 0; i < weights.length; i++) {
-                if (weights[i] > 0.0) {
-                    nonZero = true;
-                    break;
-                }
-            }
-
-            if (nonZero) {
-                MathUtils.toUnit(unitWeightVector);
-            }
-
             for (int i = 0; i < mutableRules.size(); i++) {
                 mutableRules.get(i).setWeight(weights[i]);
             }
@@ -132,7 +115,7 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
                 }
             }
 
-            log.debug("Weights: {} -- objective: {}", currentLocation, objective);
+            log.debug("Location {} -- objective: {}", currentLocation, objective);
         }
 
         // Set the final weights.
@@ -152,9 +135,8 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
      * This is a prime method for child classes to override.
      * Implementers should make sure to correct (negate) the value that comes back from the Evaluator
      * if lower is better for that evaluator.
-     * @param weights
      */
-    protected double inspectLocation(float[] weights) {
+    protected double inspectLocation(double[] weights) {
         computeMPEState();
 
         evaluator.compute(trainingMap);
@@ -164,9 +146,8 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
 
     /**
      * Get the weight configuration at the current location.
-     * @param weights
      */
-    protected abstract void getWeights(float[] weights);
+    protected abstract void getWeights(double[] weights);
 
     /**
      * Choose the next location we will search.

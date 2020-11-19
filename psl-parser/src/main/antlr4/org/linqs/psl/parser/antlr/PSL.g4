@@ -154,8 +154,6 @@ unweightedArithmeticRule
 
 arithmeticRuleExpression
     :   linearArithmeticExpression arithmeticRuleRelation linearArithmeticExpression
-    |   MUTUAL_INFORMATION LBRACKET (summationAtom | atom) COMMA (summationAtom | atom) RBRACKET
-    |   MUTUAL_INFORMATION LPAREN (summationAtom | atom) COMMA (summationAtom | atom) RPAREN
     ;
 
 linearArithmeticExpression
@@ -367,10 +365,6 @@ MAX
 
 MIN
     :   '@Min'
-    ;
-
-MUTUAL_INFORMATION
-    :   '@MI'
     ;
 
 //

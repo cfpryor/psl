@@ -353,7 +353,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
             }
         }
 
-        // Note that unweighted rules will ground an equality, while weighted rules will instead
+        // Note that unweighed rules will ground an equality, while weighted rules will instead
         // ground a largerThan and lessThan.
         GroundRule groundRule = null;
         if (isWeighted() && FunctionComparator.EQ.equals(expression.getComparator())) {
@@ -424,7 +424,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
         for (int atomIndex = 0; atomIndex < resources.groundAtoms.length; atomIndex++) {
             resources.groundAtoms[atomIndex] = null;
 
-            // We will need to check the database for existence if we have an open summation atom.
+            // We will need to check the database for existance if we have an open summation atom.
             boolean checkDatabase =
                     resources.flatSummationAtoms[atomIndex] &&
                     !atomManager.isClosed((StandardPredicate)resources.queryAtoms.get(atomIndex).getPredicate());
@@ -452,8 +452,8 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
                     }
 
                     if (!evalFilter(
-                            filters.get(variable), variables,
-                            groundAtom.getArguments(),
+                            filters.get(variable), variable,
+                            groundAtom.getArguments()[variableIndex],
                             atomManager, queryRow, variableMap)) {
                         skip = true;
                         break;
@@ -491,7 +491,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
         }
         resources.finalCoefficient = resources.flatExpression.getFinalCoefficient().getValue(resources.summationCounts);
 
-        // Note that unweighted rules will ground an equality, while weighted rules will instead
+        // Note that unweighed rules will ground an equality, while weighted rules will instead
         // ground a largerThan and lessThan.
         GroundRule groundRule = null;
         if (isWeighted() && FunctionComparator.EQ.equals(resources.flatExpression.getComparator())) {
@@ -521,7 +521,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
      */
     private boolean evalFilter(
             Formula filter,
-            SummationVariable[] summationVariables, Constant[] variableValues,
+            SummationVariable summationVariable, Constant variableValue,
             AtomManager atomManager, Constant[] queryRow, Map<Variable, Integer> variableMap) {
         if (filter instanceof Atom) {
             // If the summation variable is in this atom, then replace its value and then ground.
@@ -530,18 +530,12 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
             Term[] newArguments = null;
 
             for (int i = 0; i < arguments.length; i++) {
-                for (int j = 0; j < summationVariables.length; j++) {
-                    SummationVariable summationVariable = summationVariables[j];
-                    Constant variableValue = variableValues[j];
-                    if (summationVariable != null) {
-                        if (arguments[i].equals(summationVariable.getVariable())) {
-                            if (newArguments == null) {
-                                newArguments = Arrays.copyOf(arguments, arguments.length);
-                            }
-                            newArguments[i] = variableValue;
-                            break;
-                        }
+                if (arguments[i].equals(summationVariable.getVariable())) {
+                    if (newArguments == null) {
+                        newArguments = Arrays.copyOf(arguments, arguments.length);
                     }
+
+                    newArguments[i] = variableValue;
                 }
             }
 
@@ -558,14 +552,14 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
         } else if (filter instanceof Negation) {
             return !evalFilter(
                 ((Negation)filter).getFormula(),
-                summationVariables, variableValues,
+                summationVariable, variableValue,
                 atomManager, queryRow, variableMap);
         } else if (filter instanceof Conjunction) {
             Conjunction conjunction = (Conjunction)filter;
             for (int i = 0; i < conjunction.length(); i++) {
                 boolean value = evalFilter(
                     conjunction.get(i),
-                    summationVariables, variableValues,
+                    summationVariable, variableValue,
                     atomManager, queryRow, variableMap);
 
                 if (!value) {
@@ -664,19 +658,12 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
             expressionVariableNames.add(var.getName());
         }
 
-        Set<String> summationVariableNames = new HashSet<String>();
-        for (SummationVariable var : expression.getSummationVariables()) {
-            summationVariableNames.add(var.getVariable().getName());
-        }
-
         for (Map.Entry<SummationVariable, Formula> filter : filters.entrySet()) {
             VariableTypeMap filterVars = new VariableTypeMap();
             filter.getValue().collectVariables(filterVars);
 
             for (Variable var : filterVars.keySet()) {
-                if (!(filter.getKey().getVariable().getName().equals(var.getName()) ||
-                        expressionVariableNames.contains(var.getName()) ||
-                        summationVariableNames.contains(var.getName()))) {
+                if (!(filter.getKey().getVariable().getName().equals(var.getName()) || expressionVariableNames.contains(var.getName()))) {
                     throw new IllegalArgumentException(String.format(
                             "Unknown variable (%s) used in filter. " +
                             "All filter variables must either be the filter argument or appear " +
@@ -816,19 +803,13 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
     /**
      * Query the database for the possible replacements for summation variables.
      */
-    private Map<SummationVariable, Map<Predicate, ResultList>> fetchSummationConstants(
-            Map<SummationVariable, List<SummationAtom>> summationMapping, RDBMSDatabase database) {
-        Map<SummationVariable, Map<Predicate, ResultList>> summationConstants = new HashMap<SummationVariable, Map<Predicate, ResultList>>();
+    private Map<SummationVariable, ResultList> fetchSummationConstants(
+            Map<SummationVariable, SummationAtom> summationMapping, RDBMSDatabase database) {
+        Map<SummationVariable, ResultList> summationConstants = new HashMap<SummationVariable, ResultList>();
 
-        for (Map.Entry<SummationVariable, List<SummationAtom>> entry : summationMapping.entrySet()) {
-            Map<Predicate, ResultList> resultListMap = new HashMap<Predicate, ResultList>();
-            for (SummationAtom atom : entry.getValue()) {
-                // TODO (Charles): There is an issue with this if one atom has a constant argument and another does not.
-                if (!resultListMap.containsKey(atom.getPredicate())) {
-                    resultListMap.put(atom.getPredicate(), fetchSummationValues(database, entry.getKey(), atom));
-                }
-            }
-            summationConstants.put(entry.getKey(), resultListMap);
+        for (Map.Entry<SummationVariable, SummationAtom> entry : summationMapping.entrySet()) {
+            ResultList results = fetchSummationValues(database, entry.getKey(), entry.getValue());
+            summationConstants.put(entry.getKey(), results);
         }
 
         return summationConstants;
@@ -843,8 +824,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
             List<Coefficient> flatCoefficients,
             List<SummationVariable[]> flatSummationVariables) {
         // All the summation variables mapped to their possible constants.
-        Map<SummationVariable, Map<Predicate, ResultList>> summationConstants =
-                fetchSummationConstants(expression.getSummationMapping(), database);
+        Map<SummationVariable, ResultList> summationConstants = fetchSummationConstants(expression.getSummationMapping(), database);
 
         flatAtoms.clear();
         flatCoefficients.clear();
@@ -898,7 +878,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
                     }
 
                     // Replace this atom using the constants for this summation variable.
-                    ResultList replacements = summationConstants.get((SummationVariable)argument).get(atom.getPredicate());
+                    ResultList replacements = summationConstants.get((SummationVariable)argument);
                     for (int resultIndex = 0; resultIndex < replacements.size(); resultIndex++) {
                         flatCoefficients.add(coefficient);
                         flatSummationVariables.add(variables);

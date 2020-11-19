@@ -60,7 +60,7 @@ public abstract class InferenceApplication implements ModelApplication {
 
     protected boolean normalizeWeights;
     protected boolean relaxHardConstraints;
-    protected float relaxationMultiplier;
+    protected double relaxationMultiplier;
     protected boolean relaxationSquared;
 
     protected GroundRuleStore groundRuleStore;
@@ -82,7 +82,7 @@ public abstract class InferenceApplication implements ModelApplication {
         this.initialValue = InitialValue.valueOf(Options.INFERENCE_INITIAL_VARIABLE_VALUE.getString());
         this.normalizeWeights = Options.INFERENCE_NORMALIZE_WEIGHTS.getBoolean();
         this.relaxHardConstraints = relaxHardConstraints;
-        this.relaxationMultiplier = Options.INFERENCE_RELAX_MULTIPLIER.getFloat();
+        this.relaxationMultiplier = Options.INFERENCE_RELAX_MULTIPLIER.getDouble();
         this.relaxationSquared = Options.INFERENCE_RELAX_SQUARED.getBoolean();
 
         initialize();
@@ -272,11 +272,11 @@ public abstract class InferenceApplication implements ModelApplication {
      * Normalize all weights to be in [0, 1].
      */
     protected void normalizeWeights() {
-        float max = 0.0f;
+        double max = 0.0;
         boolean hasWeightedRule = false;
 
         for (WeightedRule rule : IteratorUtils.filterClass(rules, WeightedRule.class)) {
-            float weight = rule.getWeight();
+            double weight = rule.getWeight();
             if (!hasWeightedRule || weight > max) {
                 max = weight;
                 hasWeightedRule = true;
@@ -288,9 +288,9 @@ public abstract class InferenceApplication implements ModelApplication {
         }
 
         for (WeightedRule rule : IteratorUtils.filterClass(rules, WeightedRule.class)) {
-            float oldWeight = rule.getWeight();
+            double oldWeight = rule.getWeight();
 
-            float newWeight = 1.0f;
+            double newWeight = 1.0;
             if (!MathUtils.isZero(max)) {
                 newWeight = oldWeight / max;
             }
@@ -304,12 +304,12 @@ public abstract class InferenceApplication implements ModelApplication {
      * Relax hard constraints into weighted rules.
      */
     protected void relaxHardConstraints() {
-        float largestWeight = 0.0f;
+        double largestWeight = 0.0;
         boolean hasUnweightedRule = false;
 
         for (Rule rule : rules) {
             if (rule instanceof WeightedRule) {
-                float weight = ((WeightedRule)rule).getWeight();
+                double weight = ((WeightedRule)rule).getWeight();
                 if (weight > largestWeight) {
                     largestWeight = weight;
                 }
@@ -322,7 +322,7 @@ public abstract class InferenceApplication implements ModelApplication {
             return;
         }
 
-        float weight = Math.max(1.0f, largestWeight * relaxationMultiplier);
+        double weight = Math.max(1.0, largestWeight * relaxationMultiplier);
 
         for (int i = 0; i < rules.size(); i++) {
             if (rules.get(i) instanceof UnweightedRule) {

@@ -23,6 +23,7 @@ import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.admm.term.ADMMObjectiveTerm;
 import org.linqs.psl.reasoner.admm.term.ADMMTermStore;
+import org.linqs.psl.reasoner.admm.term.LinearConstraintTerm;
 import org.linqs.psl.reasoner.admm.term.LocalVariable;
 import org.linqs.psl.reasoner.term.TermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
@@ -126,7 +127,7 @@ public class ADMMReasoner extends Reasoner {
         ObjectiveResult oldObjective = null;
 
         if (log.isTraceEnabled()) {
-            objective = computeObjective(termStore);
+            objective = computeObjective(termStore, false);
             log.trace(
                     "Iteration {} -- Objective: {}, Feasible: {}.",
                     0, objective.objective, (objective.violatedConstraints == 0));
@@ -162,7 +163,7 @@ public class ADMMReasoner extends Reasoner {
                             iteration, primalRes, dualRes, epsilonPrimal, epsilonDual);
                 } else {
                     oldObjective = objective;
-                    objective = computeObjective(termStore);
+                    objective = computeObjective(termStore, false);
 
                     log.trace(
                             "Iteration {} -- Objective: {}, Feasible: {}, Primal: {}, Dual: {}, Epsilon Primal: {}, Epsilon Dual: {}.",
@@ -177,7 +178,7 @@ public class ADMMReasoner extends Reasoner {
 
             if (breakOptimization(iteration, objective, oldObjective)) {
                 // Before we break, compute the objective so we can look for violated constraints.
-                objective = computeObjective(termStore);
+                objective = computeObjective(termStore, false);
 
                 // Check one more time if we should actually break.
                 if (breakOptimization(iteration, objective, oldObjective)) {
@@ -191,7 +192,7 @@ public class ADMMReasoner extends Reasoner {
 
         if (objective.violatedConstraints > 0) {
             log.warn("No feasible solution found. {} constraints violated.", objective.violatedConstraints);
-            computeObjective(termStore);
+            computeObjective(termStore, true);
         }
 
         // Sync the consensus values back to the atoms.
@@ -233,15 +234,19 @@ public class ADMMReasoner extends Reasoner {
     public void close() {
     }
 
-    private ObjectiveResult computeObjective(ADMMTermStore termStore) {
+    private ObjectiveResult computeObjective(ADMMTermStore termStore, boolean logViolatedConstraints) {
         double objective = 0.0f;
         long violatedConstraints = 0;
         float[] consensusValues = termStore.getConsensusValues();
 
         for (ADMMObjectiveTerm term : termStore) {
-            if (term.isConstraint()) {
+            if (term instanceof LinearConstraintTerm) {
                 if (term.evaluate(consensusValues) > 0.0f) {
                     violatedConstraints++;
+
+                    if (logViolatedConstraints) {
+                        log.trace("    {}", term.getGroundRule());
+                    }
                 }
             } else {
                 objective += term.evaluate(consensusValues);

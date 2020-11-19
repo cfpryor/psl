@@ -60,18 +60,18 @@ public class WeightedGroundArithmeticRule extends AbstractGroundArithmeticRule i
     }
 
     @Override
-    public float getWeight() {
+    public double getWeight() {
         return ((WeightedRule)rule).getWeight();
     }
 
     @Override
-    public void setWeight(float weight) {
+    public void setWeight(double weight) {
         ((WeightedRule)rule).setWeight(weight);
     }
 
     @Override
     public GeneralFunction getFunctionDefinition(boolean mergeConstants) {
-        GeneralFunction sum = new GeneralFunction(false, false, coefficients.length, !(FunctionComparator.MI.equals(comparator)) && mergeConstants);
+        GeneralFunction sum = new GeneralFunction(true, isSquared(), coefficients.length, mergeConstants);
 
         float termSign = FunctionComparator.GTE.equals(comparator) ? -1.0f : 1.0f;
         for (int i = 0; i < coefficients.length; i++) {

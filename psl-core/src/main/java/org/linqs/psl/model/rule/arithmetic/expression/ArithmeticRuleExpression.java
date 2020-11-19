@@ -30,11 +30,9 @@ import org.linqs.psl.util.HashCode;
 import org.linqs.psl.util.MathUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +48,7 @@ public class ArithmeticRuleExpression {
     protected final FunctionComparator comparator;
     protected final Coefficient constant;
     protected final Set<Variable> vars;
-    protected final Map<SummationVariable, List<SummationAtom>> summationMapping;
+    protected final Map<SummationVariable, SummationAtom> summationMapping;
     private int hash;
 
     public ArithmeticRuleExpression(List<Coefficient> coefficients, List<SummationAtomOrAtom> atoms,
@@ -69,7 +67,7 @@ public class ArithmeticRuleExpression {
 
         Set<Variable> vars = new HashSet<Variable>();
         Set<String> sumVarNames = new HashSet<String>();
-        Map<SummationVariable, List<SummationAtom>> summationMapping = new HashMap<SummationVariable, List<SummationAtom>>();
+        Map<SummationVariable, SummationAtom> summationMapping = new HashMap<SummationVariable, SummationAtom>();
 
         if (atoms.size() == 0) {
             throw new IllegalArgumentException("Cannot have an arithmetic rule without atoms.");
@@ -82,12 +80,12 @@ public class ArithmeticRuleExpression {
                         vars.add((Variable) argument);
                     } else if (argument instanceof SummationVariable) {
                         if (summationMapping.containsKey((SummationVariable) argument)) {
-                            summationMapping.get((SummationVariable)argument).add((SummationAtom) atom);
+                            throw new IllegalArgumentException(
+                                    "Each summation variable in an ArithmeticRuleExpression must be unique.");
                         }
 
                         sumVarNames.add(((SummationVariable)argument).getVariable().getName());
-                        summationMapping.put((SummationVariable)argument,
-                                new LinkedList<SummationAtom>(Arrays.asList((SummationAtom) atom)));
+                        summationMapping.put((SummationVariable)argument, (SummationAtom)atom);
                     }
                 }
             } else {
@@ -169,7 +167,7 @@ public class ArithmeticRuleExpression {
         return summationMapping.keySet();
     }
 
-    public Map<SummationVariable, List<SummationAtom>> getSummationMapping() {
+    public Map<SummationVariable, SummationAtom> getSummationMapping() {
         return summationMapping;
     }
 
@@ -182,7 +180,7 @@ public class ArithmeticRuleExpression {
     }
 
     /**
-     * Get a formula that can be used in a DatabaseQuery to fetch all the possibilities.
+     * Get a formula that can be used in a DatabaseQuery to fetch all the possibilites.
      */
     public Formula getQueryFormula() {
         List<Atom> queryAtoms = new ArrayList<Atom>();

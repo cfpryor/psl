@@ -116,28 +116,28 @@ public class AbstractArithmeticRuleTest {
         assertEquals("1.0 * SINGLECLOSED(A) + 1.0 * SINGLECLOSED(B) = 1.0 .", rule.toString());
     }
 
-//    @Test
-//    public void testMultipleSumsDuplicates() {
-//        // SingleClosed(+A) + SingleClosed(+A) = 1
-//        // Cannot use a sum variable multiple times in a rule.
-//        List<Coefficient> coefficients = Arrays.asList(
-//            (Coefficient)(new ConstantNumber(1)),
-//            (Coefficient)(new ConstantNumber(1))
-//        );
-//
-//        List<SummationAtomOrAtom> atoms = Arrays.asList(
-//            (SummationAtomOrAtom)(new SummationAtom(singleClosed, new SummationVariableOrTerm[]{new SummationVariable("A")})),
-//            (SummationAtomOrAtom)(new SummationAtom(singleClosed, new SummationVariableOrTerm[]{new SummationVariable("A")}))
-//        );
-//
-//        try {
-//            AbstractArithmeticRule rule = new UnweightedArithmeticRule(new ArithmeticRuleExpression(
-//                    coefficients, atoms, FunctionComparator.EQ, new ConstantNumber(1)));
-//            fail("IllegalArgumentException not thrown when duplicate summation variables were used.");
-//        } catch (IllegalArgumentException ex) {
-//            // Exception is expected.
-//        }
-//    }
+    @Test
+    public void testMultipleSumsDuplicates() {
+        // SingleClosed(+A) + SingleClosed(+A) = 1
+        // Cannot use a sum variable multiple times in a rule.
+        List<Coefficient> coefficients = Arrays.asList(
+            (Coefficient)(new ConstantNumber(1)),
+            (Coefficient)(new ConstantNumber(1))
+        );
+
+        List<SummationAtomOrAtom> atoms = Arrays.asList(
+            (SummationAtomOrAtom)(new SummationAtom(singleClosed, new SummationVariableOrTerm[]{new SummationVariable("A")})),
+            (SummationAtomOrAtom)(new SummationAtom(singleClosed, new SummationVariableOrTerm[]{new SummationVariable("A")}))
+        );
+
+        try {
+            AbstractArithmeticRule rule = new UnweightedArithmeticRule(new ArithmeticRuleExpression(
+                    coefficients, atoms, FunctionComparator.EQ, new ConstantNumber(1)));
+            fail("IllegalArgumentException not thrown when duplicate summation variables were used.");
+        } catch (IllegalArgumentException ex) {
+            // Exception is expected.
+        }
+    }
 
     @Test
     public void testSumWithConstant() {

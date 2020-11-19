@@ -30,24 +30,24 @@ import java.util.List;
 import java.util.Map;
 
 public class WeightedArithmeticRule extends AbstractArithmeticRule implements WeightedRule {
-    protected float weight;
+    protected double weight;
     protected boolean squared;
 
-    public WeightedArithmeticRule(ArithmeticRuleExpression expression, float weight, boolean squared) {
+    public WeightedArithmeticRule(ArithmeticRuleExpression expression, double weight, boolean squared) {
         this(expression, weight, squared, expression.toString());
     }
 
-    public WeightedArithmeticRule(ArithmeticRuleExpression expression, float weight, boolean squared, String name) {
+    public WeightedArithmeticRule(ArithmeticRuleExpression expression, double weight, boolean squared, String name) {
         this(expression, new HashMap<SummationVariable, Formula>(), weight, squared, name);
     }
 
     public WeightedArithmeticRule(ArithmeticRuleExpression expression, Map<SummationVariable, Formula> filterClauses,
-            float weight, boolean squared) {
+            double weight, boolean squared) {
         this(expression, filterClauses, weight, squared, expression.toString());
     }
 
     public WeightedArithmeticRule(ArithmeticRuleExpression expression, Map<SummationVariable, Formula> filterClauses,
-            float weight, boolean squared, String name) {
+            double weight, boolean squared, String name) {
         super(expression, filterClauses, name);
 
         this.weight = weight;
@@ -72,12 +72,12 @@ public class WeightedArithmeticRule extends AbstractArithmeticRule implements We
     }
 
     @Override
-    public float getWeight() {
+    public double getWeight() {
         return weight;
     }
 
     @Override
-    public void setWeight(float weight) {
+    public void setWeight(double weight) {
         this.weight = weight;
     }
 

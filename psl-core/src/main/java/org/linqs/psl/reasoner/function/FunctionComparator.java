@@ -22,7 +22,7 @@ package org.linqs.psl.reasoner.function;
  * numeric functions and values.
  */
 public enum FunctionComparator {
-    EQ, LTE, GTE, MI;
+    EQ, LTE, GTE;
 
     @Override
     public String toString() {
@@ -30,7 +30,6 @@ public enum FunctionComparator {
         case EQ: return "=";
         case LTE: return "<=";
         case GTE: return ">=";
-        case MI: return "MI";
         default: throw new IllegalStateException();
         }
     }

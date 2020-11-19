@@ -18,8 +18,8 @@
 package org.linqs.psl.config;
 
 import org.linqs.psl.application.inference.mpe.ADMMInference;
+import org.linqs.psl.application.learning.weight.bayesian.GaussianProcessKernel;
 import org.linqs.psl.application.learning.weight.maxlikelihood.MaxLikelihoodMPE;
-import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
 import org.linqs.psl.database.rdbms.QueryRewriter;
 import org.linqs.psl.grounding.MemoryGroundRuleStore;
 import org.linqs.psl.evaluation.statistics.ContinuousEvaluator;
@@ -36,7 +36,6 @@ import org.json.JSONArray;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -155,10 +154,34 @@ public class Options {
         "The representative metric (see Continuousevaluator.RepresentativeMetric)."
     );
 
+    public static final Option WLA_CRGS_BASE_WEIGHT = new Option(
+        "continuousrandomgridsearch.baseweight",
+        0.40,
+        "The mean of the Gaussian from which a weight will be sampled.",
+        Option.FLAG_POSITIVE
+    );
+
     public static final Option WLA_CRGS_MAX_LOCATIONS = new Option(
         "continuousrandomgridsearch.maxlocations",
         250,
         "The max number of locations to search.",
+        Option.FLAG_POSITIVE
+    );
+
+    public static final Option WLA_CRGS_SCALE_ORDERS = new Option(
+        "continuousrandomgridsearch.scaleorders",
+        0,
+        "If greater than 0, then various different scaled versions of the weights will be tested."
+        + " For example, if set to 3 then 10x, 100x, and 1000x will also be tested."
+        + " These additional tests DO NOT count against WLA_CRGS_MAX_LOCATIONS,"
+        + " i.e. WLA_CRGS_MAX_LOCATIONS * (WLA_CRGS_SCALE_ORDERS + 1) configurations will be tested.",
+        Option.FLAG_NON_NEGATIVE
+    );
+
+    public static final Option WLA_CRGS_VARIANCE = new Option(
+        "continuousrandomgridsearch.variance",
+        0.20,
+        "The variance used when sampling the weights from a Gaussian.",
         Option.FLAG_POSITIVE
     );
 
@@ -264,6 +287,20 @@ public class Options {
         Option.FLAG_POSITIVE
     );
 
+    public static final Option WLA_GPP_INITIAL_WEIGHT_STD = new Option(
+        "gpp.initialweightstd",
+        1.0f,
+        null,
+        Option.FLAG_POSITIVE
+    );
+
+    public static final Option WLA_GPP_INITIAL_WEIGHT_VALUE = new Option(
+        "gpp.initialweightvalue",
+        0.0f,
+        null,
+        Option.FLAG_NON_NEGATIVE
+    );
+
     public static final Option WLA_GPP_MAX_CONFIGS = new Option(
         "gpp.maxconfigs",
         1000000,
@@ -282,13 +319,6 @@ public class Options {
         "gpp.randomConfigsOnly",
         true,
         null
-    );
-
-    public static final Option WLA_GPP_USE_PROVIDED_WEIGHT = new Option(
-        "gpp.useProvidedWeight",
-        true,
-        "Whether the weight configuration in the user provided model file should be used as the initial"
-        + " sample point in GPP."
     );
 
     public static final Option WLA_GPP_KERNEL_REL_DEP = new Option(
@@ -681,19 +711,6 @@ public class Options {
         "runtimestats.period",
         250l,
         "The period (in ms) of stats collection."
-    );
-
-    public static final Option WLA_SEARCH_DIRICHLET = new Option(
-        "search.dirichlet",
-        true,
-        "Whether or not to perform search based weight learning using Dirichlet distributed weights."
-        + " Note that setting this option to false will increase the likelihood of repeated weight configuration samples."
-    );
-
-    public static final Option WLA_SEARCH_DIRICHLET_ALPHA = new Option(
-        "search.dirichletalpha",
-        0.05,
-        "The alpha parameter for the dirichlet distribution of the weight sampler."
     );
 
     public static final Option SGD_LEARNING_RATE = new Option(

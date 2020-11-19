@@ -20,7 +20,7 @@ package org.linqs.psl.model.rule;
 public interface WeightedRule extends Rule {
     public boolean isSquared();
 
-    public float getWeight();
+    public double getWeight();
 
-    public void setWeight(float weight);
+    public void setWeight(double weight);
 }
