@@ -706,6 +706,8 @@ public class ModelLoader extends PSLBaseVisitor<Object> {
             return FunctionComparator.LTE;
         } else if (ctx.GREATER_THAN_EQUAL() != null) {
             return FunctionComparator.GTE;
+        } else if (ctx.DETER() != null) {
+                return FunctionComparator.DETER;
         } else {
             throw new IllegalStateException();
         }

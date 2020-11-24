@@ -24,6 +24,7 @@ import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.UnweightedGroundRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.model.rule.WeightedRule;
+import org.linqs.psl.model.rule.arithmetic.WeightedGroundArithmeticRule;
 import org.linqs.psl.reasoner.function.ConstraintTerm;
 import org.linqs.psl.reasoner.function.FunctionComparator;
 import org.linqs.psl.reasoner.function.FunctionTerm;
@@ -116,6 +117,13 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
                 return null;
             }
 
+            // If deter, then return a different type of loss function.
+            if (groundRule instanceof WeightedGroundArithmeticRule) {
+                if (((WeightedGroundArithmeticRule)groundRule).isDeter()) {
+                    return createLossTerm(termStore, function.isNonNegative(), function.isSquared(), groundRule, hyperplane, true);
+                }
+            }
+
             // Non-negative functions have a hinge.
             return createLossTerm(termStore, function.isNonNegative(), function.isSquared(), groundRule, hyperplane);
         } else if (groundRule instanceof UnweightedGroundRule) {
@@ -195,6 +203,8 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
      * Non-squared terms are linear.
      */
     public abstract T createLossTerm(TermStore<T, V> termStore, boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<V> hyperplane);
+
+    public abstract T createLossTerm(TermStore<T, V> termStore, boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<V> hyperplane, boolean deter);
 
     /**
      * Create a hard constraint term,

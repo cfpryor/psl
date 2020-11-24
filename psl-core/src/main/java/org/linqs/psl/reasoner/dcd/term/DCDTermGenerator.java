@@ -68,6 +68,12 @@ public class DCDTermGenerator extends HyperplaneTermGenerator<DCDObjectiveTerm, 
     }
 
     @Override
+    public DCDObjectiveTerm createLossTerm(TermStore <DCDObjectiveTerm, RandomVariableAtom> baseTermStore,
+                                           boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<RandomVariableAtom> hyperplane, boolean deter) {
+        return createLossTerm(baseTermStore, isHinge, isSquared, groundRule, hyperplane);
+    }
+
+    @Override
     public DCDObjectiveTerm createLinearConstraintTerm(TermStore<DCDObjectiveTerm, RandomVariableAtom> termStore,
             GroundRule groundRule, Hyperplane<RandomVariableAtom> hyperplane, FunctionComparator comparator) {
         log.warn("DCD does not support hard constraints, i.e. " + groundRule);

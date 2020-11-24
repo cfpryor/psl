@@ -31,6 +31,7 @@ import java.util.Map;
 public class SGDObjectiveTerm implements ReasonerTerm  {
     private boolean squared;
     private boolean hinge;
+    private boolean deter;
 
     private float weight;
     private float constant;
@@ -46,6 +47,29 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
             float weight, float learningRate) {
         this.squared = squared;
         this.hinge = hinge;
+        this.deter = false;
+
+        this.weight = weight;
+        this.learningRate = learningRate;
+
+        size = (short)hyperplane.size();
+        coefficients = hyperplane.getCoefficients();
+        constant = hyperplane.getConstant();
+
+        variableIndexes = new int[size];
+        RandomVariableAtom[] variables = hyperplane.getVariables();
+        for (int i = 0; i < size; i++) {
+            variableIndexes[i] = termStore.getVariableIndex(variables[i]);
+        }
+    }
+
+    public SGDObjectiveTerm(VariableTermStore<SGDObjectiveTerm, RandomVariableAtom> termStore,
+                            boolean squared, boolean hinge,
+                            Hyperplane<RandomVariableAtom> hyperplane,
+                            float weight, float learningRate, boolean deter) {
+        this.squared = squared;
+        this.hinge = hinge;
+        this.deter = deter;
 
         this.weight = weight;
         this.learningRate = learningRate;
@@ -108,6 +132,15 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
             return 0.0f;
         }
 
+        // Special case for deter
+        if (this.deter) {
+            if (dot < constant) {
+                return 1.0f * weight * coefficients[varId];
+            } else {
+                return -1.0f * weight * coefficients[varId];
+            }
+        }
+
         if (squared) {
             return weight * 2.0f * dot * coefficients[varId];
         }
@@ -120,6 +153,11 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
 
         for (int i = 0; i < size; i++) {
             value += coefficients[i] * variableValues[variableIndexes[i]];
+        }
+
+        // Special case for deter
+        if (this.deter) {
+            return value;
         }
 
         return value - constant;

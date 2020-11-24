@@ -68,6 +68,7 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
 
     protected boolean squared;
     protected boolean hinge;
+    protected boolean deter;
 
     protected float constant;
 
@@ -105,6 +106,32 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
             FunctionComparator comparator) {
         this.squared = squared;
         this.hinge = hinge;
+        this.deter = false;
+        this.comparator = comparator;
+
+        this.size = hyperplane.size();
+        this.variables = hyperplane.getVariables();
+        this.coefficients = hyperplane.getCoefficients();
+        this.constant = hyperplane.getConstant();
+
+        if (groundRule instanceof WeightedGroundRule) {
+            this.weight = (float)((WeightedGroundRule)groundRule).getWeight();
+        } else {
+            this.weight = Float.POSITIVE_INFINITY;
+        }
+
+        TermType termType = getTermType();
+        if (termType == TermType.HingeLossTerm || termType == TermType.LinearConstraintTerm) {
+            initUnitNormal();
+        }
+    }
+
+    private ADMMObjectiveTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule,
+                              boolean squared, boolean hinge,
+                              FunctionComparator comparator, boolean deter) {
+        this.squared = squared;
+        this.hinge = hinge;
+        this.deter = deter;
         this.comparator = comparator;
 
         this.size = hyperplane.size();
@@ -142,6 +169,26 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
 
     public static ADMMObjectiveTerm createSquaredHingeLossTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule) {
         return new ADMMObjectiveTerm(hyperplane, groundRule, true, true, null);
+    }
+
+    public static ADMMObjectiveTerm createLinearConstraintTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule, FunctionComparator comparator, boolean deter) {
+        return new ADMMObjectiveTerm(hyperplane, groundRule, false, false, comparator, deter);
+    }
+
+    public static ADMMObjectiveTerm createLinearLossTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule, boolean deter) {
+        return new ADMMObjectiveTerm(hyperplane, groundRule, false, false, null, deter);
+    }
+
+    public static ADMMObjectiveTerm createHingeLossTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule, boolean deter) {
+        return new ADMMObjectiveTerm(hyperplane,groundRule, false, true, null, deter);
+    }
+
+    public static ADMMObjectiveTerm createSquaredLinearLossTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule, boolean deter) {
+        return new ADMMObjectiveTerm(hyperplane, groundRule, true, false, null, deter);
+    }
+
+    public static ADMMObjectiveTerm createSquaredHingeLossTerm(Hyperplane<LocalVariable> hyperplane, GroundRule groundRule, boolean deter) {
+        return new ADMMObjectiveTerm(hyperplane, groundRule, true, true, null, deter);
     }
 
     public void updateLagrange(float stepSize, float[] consensusValues) {
@@ -328,10 +375,18 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
         for (int i = 0; i < size; i++) {
             LocalVariable variable = variables[i];
 
-            float value =
-                    consensusValues[variable.getGlobalId()]
-                    - variable.getLagrange() / stepSize
-                    - (weight * coefficients[i] / stepSize);
+            float value = 0.0f;
+
+            if (this.deter && variable.getValue() > constant) {
+                value = consensusValues[variable.getGlobalId()]
+                        - variable.getLagrange() / stepSize
+                        + (weight * coefficients[i] / stepSize);
+            } else {
+                value =
+                        consensusValues[variable.getGlobalId()]
+                                - variable.getLagrange() / stepSize
+                                - (weight * coefficients[i] / stepSize);
+            }
 
             variable.setValue(value);
         }
@@ -490,6 +545,15 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
             value += coefficients[i] * variables[i].getValue();
         }
 
+        // Special case for deter
+        if (this.deter) {
+            if (value < constant) {
+                return 1.0f - (constant - value);
+            } else {
+                return 1.0f - (value - constant);
+            }
+        }
+
         return value - constant;
     }
 
@@ -500,6 +564,15 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
         float value = 0.0f;
         for (int i = 0; i < size; i++) {
             value += coefficients[i] * consensusValues[variables[i].getGlobalId()];
+        }
+
+        // Special case for deter
+        if (this.deter) {
+            if (value < constant) {
+                return 1.0f - (constant - value);
+            } else {
+                return 1.0f - (value - constant);
+            }
         }
 
         return value - constant;

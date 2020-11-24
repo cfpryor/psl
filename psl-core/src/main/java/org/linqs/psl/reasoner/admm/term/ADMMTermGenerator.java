@@ -52,6 +52,12 @@ public class ADMMTermGenerator extends HyperplaneTermGenerator<ADMMObjectiveTerm
     }
 
     @Override
+    public ADMMObjectiveTerm createLossTerm(TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
+                                            boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<LocalVariable> hyperplane, boolean deter) {
+        return ADMMObjectiveTerm.createLinearLossTerm(hyperplane, groundRule, deter);
+    }
+
+    @Override
     public ADMMObjectiveTerm createLinearConstraintTerm(TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
             GroundRule groundRule, Hyperplane<LocalVariable> hyperplane, FunctionComparator comparator) {
         return ADMMObjectiveTerm.createLinearConstraintTerm(hyperplane, groundRule, comparator);

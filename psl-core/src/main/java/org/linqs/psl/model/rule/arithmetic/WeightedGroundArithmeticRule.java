@@ -27,15 +27,18 @@ import org.linqs.psl.reasoner.function.GeneralFunction;
 import java.util.List;
 
 public class WeightedGroundArithmeticRule extends AbstractGroundArithmeticRule implements WeightedGroundRule {
+    protected boolean deter;
     protected WeightedGroundArithmeticRule(WeightedArithmeticRule rule, List<Float> coefficients,
             List<GroundAtom> atoms, FunctionComparator comparator, float constant) {
         super(rule, coefficients, atoms, comparator, constant);
+        this.deter = false;
         validate();
     }
 
     protected WeightedGroundArithmeticRule(WeightedArithmeticRule rule, float[] coefficients, GroundAtom[] atoms,
             FunctionComparator comparator, float constant) {
         super(rule, coefficients, atoms, comparator, constant);
+        this.deter = false;
         validate();
     }
 
@@ -44,9 +47,27 @@ public class WeightedGroundArithmeticRule extends AbstractGroundArithmeticRule i
             throw new IllegalArgumentException("WeightedGroundArithmeticRules do not support equality comparators. "
                     + "Create two ground rules instead, one with " + FunctionComparator.LTE + " and one with "
                     + FunctionComparator.GTE + ".");
-        } else if (!FunctionComparator.LTE.equals(comparator) && !FunctionComparator.GTE.equals(comparator)) {
+        } else if (!FunctionComparator.LTE.equals(comparator) && !FunctionComparator.GTE.equals(comparator) && !FunctionComparator.DETER.equals(comparator)) {
             throw new IllegalArgumentException("Unrecognized comparator: " + comparator);
         }
+    }
+
+    protected WeightedGroundArithmeticRule(WeightedArithmeticRule rule, List<Float> coefficients,
+                                           List<GroundAtom> atoms, FunctionComparator comparator, float constant, boolean deter) {
+        super(rule, coefficients, atoms, comparator, constant);
+        this.deter = true;
+        validate();
+    }
+
+    protected WeightedGroundArithmeticRule(WeightedArithmeticRule rule, float[] coefficients, GroundAtom[] atoms,
+                                           FunctionComparator comparator, float constant, boolean deter) {
+        super(rule, coefficients, atoms, comparator, constant);
+        this.deter = true;
+        validate();
+    }
+
+    public boolean isDeter() {
+        return deter;
     }
 
     @Override

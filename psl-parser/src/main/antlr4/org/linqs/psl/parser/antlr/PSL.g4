@@ -313,6 +313,7 @@ arithmeticRuleRelation
     :   LESS_THAN_EQUAL
     |   GREATER_THAN_EQUAL
     |   EQUAL
+    |   DETER
     ;
 
 LESS_THAN_EQUAL
@@ -325,6 +326,10 @@ GREATER_THAN_EQUAL
 
 EQUAL
     :   '='
+    ;
+
+DETER
+    :   '@Deter'
     ;
 
 //

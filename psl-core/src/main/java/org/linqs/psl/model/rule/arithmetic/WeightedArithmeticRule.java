@@ -57,12 +57,18 @@ public class WeightedArithmeticRule extends AbstractArithmeticRule implements We
     @Override
     protected AbstractGroundArithmeticRule makeGroundRule(float[] coeffs, GroundAtom[] atoms,
             FunctionComparator comparator, float constant) {
+        if (comparator.equals(FunctionComparator.DETER)) {
+            return new WeightedGroundArithmeticRule(this, coeffs, atoms, comparator, constant, true);
+        }
         return new WeightedGroundArithmeticRule(this, coeffs, atoms, comparator, constant);
     }
 
     @Override
     protected AbstractGroundArithmeticRule makeGroundRule(List<Float> coeffs, List<GroundAtom> atoms,
             FunctionComparator comparator, float constant) {
+        if (comparator.equals(FunctionComparator.DETER)) {
+            return new WeightedGroundArithmeticRule(this, coeffs, atoms, comparator, constant, true);
+        }
         return new WeightedGroundArithmeticRule(this, coeffs, atoms, comparator, constant);
     }
 
