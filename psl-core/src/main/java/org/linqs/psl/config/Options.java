@@ -46,6 +46,13 @@ import java.util.List;
  * The main() method will collect all the options and write them out to stdout as JSON.
  */
 public class Options {
+    public static final Option ADMM_BEGIN_DETER_ITER = new Option(
+            "admmreasoner.begindeteriteration",
+            1,
+            "What iteration to begin optimizing deter in admm.",
+            Option.FLAG_POSITIVE
+    );
+
     public static final Option ADMM_COMPUTE_PERIOD = new Option(
         "admmreasoner.computeperiod",
         50,

@@ -220,6 +220,10 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
         return getTermType() == TermType.LinearConstraintTerm;
     }
 
+    public boolean isDeter() {
+        return this.deter;
+    }
+
     /**
      * Get the specific type of term this instance represents.
      */

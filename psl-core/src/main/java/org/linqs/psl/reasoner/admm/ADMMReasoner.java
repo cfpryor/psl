@@ -63,6 +63,7 @@ public class ADMMReasoner extends Reasoner {
     private double augmentedLagrangePenalty;
 
     private int maxIterations;
+    private int beginDeterIter;
 
     private long termBlockSize;
     private long variableBlockSize;
@@ -73,6 +74,7 @@ public class ADMMReasoner extends Reasoner {
         computePeriod = Options.ADMM_COMPUTE_PERIOD.getInt();
         epsilonAbs = Options.ADMM_EPSILON_ABS.getDouble();
         epsilonRel = Options.ADMM_EPSILON_REL.getDouble();
+        beginDeterIter = Options.ADMM_BEGIN_DETER_ITER.getInt();
     }
 
     public double getEpsilonRel() {
@@ -144,7 +146,7 @@ public class ADMMReasoner extends Reasoner {
             augmentedLagrangePenalty = 0.0f;
 
             // Minimize all the terms.
-            Parallel.count(numTermBlocks, new TermWorker(termStore, termBlockSize));
+            Parallel.count(numTermBlocks, new TermWorker(termStore, termBlockSize, iteration));
 
             // Compute new consensus values and residuals.
             Parallel.count(numVariableBlocks, new VariableWorker(termStore, variableBlockSize));
@@ -268,17 +270,19 @@ public class ADMMReasoner extends Reasoner {
         private final ADMMTermStore termStore;
         private final long blockSize;
         private final float[] consensusValues;
+        private final int iteration;
 
-        public TermWorker(ADMMTermStore termStore, long blockSize) {
+        public TermWorker(ADMMTermStore termStore, long blockSize, int iteration) {
             super();
 
             this.termStore = termStore;
             this.blockSize = blockSize;
+            this.iteration = iteration;
             this.consensusValues = termStore.getConsensusValues();
         }
 
         public Object clone() {
-            return new TermWorker(termStore, blockSize);
+            return new TermWorker(termStore, blockSize, iteration);
         }
 
         @Override
@@ -291,6 +295,10 @@ public class ADMMReasoner extends Reasoner {
 
                 if (termIndex >= numTerms) {
                     break;
+                }
+
+                if (termStore.get(termIndex).isDeter() && iteration < beginDeterIter) {
+                    continue;
                 }
 
                 termStore.get(termIndex).updateLagrange(stepSize, consensusValues);
