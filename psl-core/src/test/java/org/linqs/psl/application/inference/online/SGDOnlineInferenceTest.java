@@ -193,6 +193,15 @@ public class SGDOnlineInferenceTest {
         OnlineTest.clientSession(commands);
     }
 
+    /**
+     * TODO(Charles): Either catch duplicate rule and warn on client side with server provided model or catch on
+     *  server side and return an ActionStatus with failure information.
+     * */
+    @Test
+    public void testDuplicateRuleAddition() {
+        // Pass
+    }
+
     @Test
     public void testAtomDeleting() {
         BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
