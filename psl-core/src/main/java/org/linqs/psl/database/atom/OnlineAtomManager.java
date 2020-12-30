@@ -26,6 +26,7 @@ import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
+import org.linqs.psl.reasoner.InitialValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,12 +39,14 @@ public class OnlineAtomManager extends PersistedAtomManager {
     private Set<GroundAtom> newObservedAtoms;
     private Set<GroundAtom> newRandomVariableAtoms;
 
+    private InitialValue initialValue;
+
     /**
      * The partition new observed atoms will be added to.
      */
     private int onlineReadPartition;
 
-    public OnlineAtomManager(Database database) {
+    public OnlineAtomManager(Database database, InitialValue initialValue) {
         super(database);
 
         if (!(database instanceof RDBMSDatabase)) {
@@ -57,6 +60,8 @@ public class OnlineAtomManager extends PersistedAtomManager {
         if (onlineReadPartition < 0) {
             onlineReadPartition = database.getReadPartitions().get(0).getID();
         }
+
+        this.initialValue = initialValue;
     }
 
     public ObservedAtom addObservedAtom(StandardPredicate predicate, float value, Constant... arguments) {
@@ -65,8 +70,9 @@ public class OnlineAtomManager extends PersistedAtomManager {
         return atom;
     }
 
-    public RandomVariableAtom addRandomVariableAtom(StandardPredicate predicate, Constant... arguments) {
-        RandomVariableAtom atom = database.getCache().instantiateRandomVariableAtom(predicate, arguments, 1.0f);
+    public RandomVariableAtom addRandomVariableAtom(StandardPredicate predicate, float value, Constant... arguments) {
+        RandomVariableAtom atom = database.getCache().instantiateRandomVariableAtom(predicate, arguments, value);
+        atom.setValue(initialValue.getVariableValue(atom));
         newRandomVariableAtoms.add(atom);
         addToPersistedCache(atom);
         return atom;

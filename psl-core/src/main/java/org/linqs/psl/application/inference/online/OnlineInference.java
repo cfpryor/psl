@@ -31,13 +31,13 @@ import org.linqs.psl.application.inference.online.messages.actions.template.modi
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineActionException;
+import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.database.atom.PersistedAtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.rule.Rule;
-import org.linqs.psl.model.rule.arithmetic.expression.coefficient.Add;
 import org.linqs.psl.reasoner.term.online.OnlineTermStore;
 
 import org.linqs.psl.util.StringUtils;
@@ -50,8 +50,10 @@ public abstract class OnlineInference extends InferenceApplication {
     private static final Logger log = LoggerFactory.getLogger(OnlineInference.class);
 
     private OnlineServer server;
-    private boolean stopped;
+
+    private boolean hotStart;
     private boolean modelUpdates;
+    private boolean stopped;
     private double objective;
 
     protected OnlineInference(List<Rule> rules, Database database) {
@@ -67,6 +69,7 @@ public abstract class OnlineInference extends InferenceApplication {
         stopped = false;
         modelUpdates = true;
         objective = 0.0;
+        hotStart = Options.ONLINE_HOT_START.getBoolean();
 
         startServer();
 
@@ -80,7 +83,7 @@ public abstract class OnlineInference extends InferenceApplication {
 
     @Override
     protected PersistedAtomManager createAtomManager(Database database) {
-        return new OnlineAtomManager(database);
+        return new OnlineAtomManager(database, this.initialValue);
     }
 
     @Override
@@ -235,6 +238,10 @@ public abstract class OnlineInference extends InferenceApplication {
     private void doOptimize() {
         if (!modelUpdates) {
             return;
+        }
+
+        if (!hotStart) {
+            initializeAtoms();
         }
 
         log.trace("Optimization Start");

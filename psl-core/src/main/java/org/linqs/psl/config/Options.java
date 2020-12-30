@@ -45,25 +45,6 @@ import java.util.List;
  * The main() method will collect all the options and write them out to stdout as JSON.
  */
 public class Options {
-    public static final Option ONLINE_HOST = new Option(
-        "inference.onlinehostname",
-        "127.0.0.1",
-        "The hostname for the online server."
-    );
-
-    public static final Option ONLINE_PORT_NUMBER = new Option(
-        "inference.onlineportnumber",
-        56734,
-        "The port number for the online server."
-    );
-
-    public static final Option ONLINE_READ_PARTITION = new Option(
-        "onlineatommanager.read",
-        -1,
-        "The partition to add new observations to."
-        + " If negative, the first read partition in the database will be used."
-    );
-
     public static final Option ADMM_COMPUTE_PERIOD = new Option(
         "admmreasoner.computeperiod",
         50,
@@ -539,6 +520,31 @@ public class Options {
         "A comma separated list of indexes to the predicate arguments that identity the target label (as opposed to the identity of the data point)."
     );
 
+    public static final Option ONLINE_HOT_START = new Option(
+            "inference.onlinehotstart",
+            true,
+            "Whether to use the MPE state of the atoms prior to the model updates as a hotstart."
+    );
+
+    public static final Option ONLINE_HOST = new Option(
+            "inference.onlinehostname",
+            "127.0.0.1",
+            "The hostname for the online server."
+    );
+
+    public static final Option ONLINE_PORT_NUMBER = new Option(
+            "inference.onlineportnumber",
+            56734,
+            "The port number for the online server."
+    );
+
+    public static final Option ONLINE_READ_PARTITION = new Option(
+            "onlineatommanager.read",
+            -1,
+            "The partition to add new observations to."
+                    + " If negative, the first read partition in the database will be used."
+    );
+
     public static final Option WLA_PDL_ADMM_STEPS = new Option(
         "pairedduallearner.admmsteps",
         1,
@@ -696,7 +702,7 @@ public class Options {
 
     public static final Option REASONER_TOLERANCE = new Option(
         "reasoner.tolerance",
-        1e-5f,
+        1e-8f,
         "How close two objective values need to be to be considered the same.",
         Option.FLAG_NON_NEGATIVE
     );
@@ -715,7 +721,7 @@ public class Options {
 
     public static final Option SGD_LEARNING_RATE = new Option(
         "sgd.learningrate",
-        1.0f,
+        10.0f,
         null,
         Option.FLAG_POSITIVE
     );

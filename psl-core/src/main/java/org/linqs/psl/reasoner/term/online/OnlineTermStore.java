@@ -69,6 +69,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
 
     public GroundAtom addAtom(StandardPredicate predicate, Constant[] arguments, float newValue, boolean readPartition) {
         if (((OnlineAtomManager)atomManager).hasAtom(predicate, arguments)) {
+            // TODO(Charles): Add warning.
             deleteAtom(predicate, arguments);
         }
 
@@ -76,7 +77,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         if (readPartition) {
             atom = ((OnlineAtomManager)atomManager).addObservedAtom(predicate, newValue, arguments);
         } else {
-            atom = ((OnlineAtomManager)atomManager).addRandomVariableAtom((StandardPredicate) predicate, arguments);
+            atom = ((OnlineAtomManager)atomManager).addRandomVariableAtom((StandardPredicate) predicate, newValue, arguments);
         }
 
         createLocalVariable(atom);

@@ -49,7 +49,12 @@ public class AddAtom extends OnlineAction {
     }
 
     public float getValue() {
-        return value;
+        if (value == -1.0f) {
+            // Default value when a value is not provided.
+            return 0.5f;
+        } else {
+            return value;
+        }
     }
 
     public Constant[] getArguments() {
