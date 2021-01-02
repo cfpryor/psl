@@ -233,10 +233,7 @@ public class OnlineServer implements Closeable {
             ArrayList<StandardPredicate> standardPredicates = new ArrayList<StandardPredicate>();
             for (Predicate predicate : Predicate.getAll()) {
                 if (predicate instanceof StandardPredicate) {
-                    log.trace(String.format("Predicate %s added to model information", predicate.toString()));
                     standardPredicates.add((StandardPredicate)predicate);
-                } else {
-                    log.trace(String.format("Predicate %s is not a StandardPredicate", predicate.toString()));
                 }
             }
 

@@ -127,11 +127,7 @@ public class OnlineClient implements Runnable {
         // Register model predicates.
         for (StandardPredicate predicate : modelInformation.predicates.values()) {
             StandardPredicate.get(predicate.getName(), predicate.getArgumentTypes());
-            log.trace(String.format("Registered predicate %s", predicate.getName()));
         }
-
-//        log.trace(String.format("Registered predicates %s", Arrays.toString(Predicate.getAll().toArray())));
-        System.out.println(String.format("Registered predicates %s", Arrays.toString(Predicate.getAll().toArray())));
     }
 
     /**
