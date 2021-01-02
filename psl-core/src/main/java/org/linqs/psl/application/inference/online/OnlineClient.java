@@ -24,6 +24,7 @@ import org.linqs.psl.application.inference.online.messages.responses.ModelInform
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
+import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -125,7 +127,11 @@ public class OnlineClient implements Runnable {
         // Register model predicates.
         for (StandardPredicate predicate : modelInformation.predicates.values()) {
             StandardPredicate.get(predicate.getName(), predicate.getArgumentTypes());
+            log.trace(String.format("Registered predicate %s", predicate.getName()));
         }
+
+//        log.trace(String.format("Registered predicates %s", Arrays.toString(Predicate.getAll().toArray())));
+        System.out.println(String.format("Registered predicates %s", Arrays.toString(Predicate.getAll().toArray())));
     }
 
     /**
