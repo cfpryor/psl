@@ -108,10 +108,19 @@ public class OnlineClient implements Runnable {
             // Read and register serverModel.
             registerServerModel(socketInputStream);
 
+            // Startup serverConnectionThread for reading server responses.
+            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
+            serverConnectionThread.start();
+
             // Cleanly exit server connection.
             socketOutputStream.writeObject(new Exit());
+
+            // Wait for serverConnectionThread.
+            serverConnectionThread.join();
         } catch(IOException ex) {
             throw new RuntimeException(ex);
+        } catch (InterruptedException ex) {
+            log.error("Client session interrupted");
         }
     }
 
