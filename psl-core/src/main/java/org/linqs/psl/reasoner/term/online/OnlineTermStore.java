@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,6 +44,8 @@ import java.util.List;
  * Variables are kept in memory, but terms are kept on disk.
  */
 public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingTermStore<T> {
+    private static final Logger log = LoggerFactory.getLogger(OnlineTermStore.class);
+
     public OnlineTermStore(List<Rule> rules, AtomManager atomManager,
             HyperplaneTermGenerator<T, GroundAtom> termGenerator) {
         super(rules, atomManager, termGenerator);
@@ -144,6 +145,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     public synchronized GroundAtom updateAtom(StandardPredicate predicate, Constant[] arguments, float newValue) {
         QueryAtom atom = new QueryAtom(predicate, arguments);
         if (!variables.containsKey(atom)) {
+            log.trace("Update atom did not contain key.");
             return null;
         }
 

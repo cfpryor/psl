@@ -135,6 +135,9 @@ public class OnlineClient implements Runnable {
         // Register model predicates.
         for (StandardPredicate predicate : modelInformation.predicates.values()) {
             StandardPredicate.get(predicate.getName(), predicate.getArgumentTypes());
+            log.trace("Registered predicate: " + StandardPredicate.get(predicate.getName()).toString() +
+                    " Client Hash: " + StandardPredicate.get(predicate.getName()).hashCode() +
+                    " Server Hash: " + predicate.hashCode());
         }
     }
 
