@@ -24,7 +24,6 @@ import org.linqs.psl.application.inference.online.messages.responses.ModelInform
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
-import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -84,6 +82,7 @@ public class OnlineClient implements Runnable {
                         continue;
                     }
 
+                    log.trace("Writing Action: " + onlineAction.toString());
                     socketOutputStream.writeObject(onlineAction);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -143,6 +142,8 @@ public class OnlineClient implements Runnable {
      * Private class for reading OnlineResponse objects from server.
      */
     private static class ServerConnectionThread extends Thread {
+        private Logger log = LoggerFactory.getLogger(ServerConnectionThread.class);
+
         private ObjectInputStream inputStream;
         private PrintStream out;
         private Socket socket;
@@ -169,6 +170,7 @@ public class OnlineClient implements Runnable {
                     throw new RuntimeException(ex);
                 }
 
+                log.trace("Received Server Response: " + response.toString());
                 serverResponses.add(response);
             }
         }
