@@ -24,6 +24,7 @@ import org.linqs.psl.application.inference.online.messages.responses.ModelInform
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
+import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +135,7 @@ public class OnlineClient implements Runnable {
 
         // Register model predicates.
         for (StandardPredicate predicate : modelInformation.predicates.values()) {
-            StandardPredicate.get(predicate.getName(), predicate.getArgumentTypes());
+            Predicate.addPredicate(predicate);
             log.trace("Registered predicate: " + StandardPredicate.get(predicate.getName()).toString() +
                     " Client Hash: " + StandardPredicate.get(predicate.getName()).hashCode() +
                     " Server Hash: " + predicate.hashCode());
