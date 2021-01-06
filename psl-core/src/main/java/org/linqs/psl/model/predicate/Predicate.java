@@ -70,12 +70,8 @@ public abstract class Predicate implements Serializable {
         predicates.put(this.name, this);
     }
 
-    public static void addPredicate(Predicate predicate) {
-        if (predicates.containsKey(predicate.getName())) {
-            throw new RuntimeException("Predicate with name '" + predicate.getName() + "' already exists.");
-        }
-
-        predicates.put(predicate.getName(), predicate);
+    public static Predicate addPredicateIfAbsent(Predicate predicate) {
+        return predicates.putIfAbsent(predicate.getName(), predicate);
     }
 
     /**
