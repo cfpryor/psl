@@ -252,7 +252,6 @@ public class OnlineServer implements Closeable {
             while (socket.isConnected() && !isInterrupted()) {
                 try {
                     newAction = (OnlineAction)inputStream.readObject();
-                    log.trace("Received action: " + newAction.toString());
                 } catch (IOException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }

@@ -175,7 +175,6 @@ public class OnlineClient implements Runnable {
                     throw new RuntimeException(ex);
                 }
 
-                log.trace("Received Server Response: " + response.toString());
                 serverResponses.add(response);
             }
         }

@@ -232,16 +232,21 @@ public abstract class StreamingTermStore<T extends ReasonerTerm> implements Vari
     }
 
     @Override
-    public void syncAtoms() {
+    public double syncAtoms() {
+        double movement = 0.0;
+
         for (int i = 0; i < totalVariableCount; i++) {
             if (variableAtoms[i] == null) {
                 continue;
             }
 
             if (variableAtoms[i] instanceof RandomVariableAtom) {
+                movement += Math.pow(variableAtoms[i].getValue() - variableValues[i], 2);
                 ((RandomVariableAtom)variableAtoms[i]).setValue(variableValues[i]);
             }
         }
+
+        return Math.sqrt(movement);
     }
 
     @Override

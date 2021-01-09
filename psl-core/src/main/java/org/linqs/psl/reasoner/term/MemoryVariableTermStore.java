@@ -87,10 +87,15 @@ public abstract class MemoryVariableTermStore<T extends ReasonerTerm, V extends 
     }
 
     @Override
-    public void syncAtoms() {
+    public double syncAtoms() {
+        double movement = 0.0;
+
         for (int i = 0; i < variables.size(); i++) {
+            movement += Math.pow(variableAtoms[i].getValue() - variableValues[i], 2);
             variableAtoms[i].setValue(variableValues[i]);
         }
+
+        return movement;
     }
 
     @Override

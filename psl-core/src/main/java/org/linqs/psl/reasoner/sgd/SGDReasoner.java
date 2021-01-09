@@ -23,7 +23,6 @@ import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.sgd.term.SGDObjectiveTerm;
 import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.reasoner.term.TermStore;
-import org.linqs.psl.util.ArrayUtils;
 import org.linqs.psl.util.IteratorUtils;
 import org.linqs.psl.util.MathUtils;
 
@@ -64,16 +63,24 @@ public class SGDReasoner extends Reasoner {
 
         long termCount = 0;
         float movement = 0.0f;
+        double change = 0.0;
         double objective = Double.POSITIVE_INFINITY;
-
-        // Starting the second round of iteration, keep track of the old objective.
-        // Note that the number of variables may change in the first iteration (since grounding happens then).
         double oldObjective = Double.POSITIVE_INFINITY;
-        float[] oldVariableValues = null;
+        double beta = Double.NEGATIVE_INFINITY;
+        double betaMax = Double.NEGATIVE_INFINITY;
+        double betaAvg = 0.0f;
+        double l = Double.NEGATIVE_INFINITY;
+        double lMax = Double.NEGATIVE_INFINITY;
+        double lAvg = 0.0f;
+        float[] oldVariableValues1 = null;
+        float[] oldVariableValues2 = null;
+        float[] oldGradient1 = null;
+        float[] oldGradient2 = null;
 
-        int iteration = 1;
         long totalTime = 0;
-        while (true) {
+        boolean converged = false;
+        int iteration = 1;
+        for (; iteration < (maxIterations * budget) && !converged; iteration++) {
             long start = System.currentTimeMillis();
 
             termCount = 0;
@@ -81,49 +88,73 @@ public class SGDReasoner extends Reasoner {
             objective = 0.0;
 
             for (SGDObjectiveTerm term : termStore) {
-                if (oldVariableValues != null) {
-                    objective += term.evaluate(oldVariableValues);
+                // Starting the second round of iteration, keep track of the old objective.
+                // Note that the number of variables may change in the first iteration.
+                if (iteration > 1) {
+                    objective += term.evaluate(oldVariableValues2);
+                    term.addGradient(oldGradient2, oldVariableValues2, termStore);
                 }
 
                 termCount++;
                 movement += term.minimize(iteration, termStore);
             }
 
-            if (termStore.getNumRandomVariables() != 0) {
-                movement /= termStore.getNumRandomVariables();
+            termStore.iterationComplete();
+
+            if (termCount != 0) {
+                movement /= termCount;
             }
+
+            converged = breakOptimization(iteration, objective, oldObjective, movement, termCount);
+
+            if (iteration == 1) {
+                // Initialize old variables values and oldGradients.
+                oldVariableValues2 = Arrays.copyOf(termStore.getVariableValues(), termStore.getVariableValues().length);
+                oldVariableValues1 = new float[oldVariableValues2.length];
+                oldGradient1 = new float[oldVariableValues2.length];
+                oldGradient2 = new float[oldVariableValues2.length];
+            } else if (iteration > 2) {
+                // Update beta and lipschitz constant estimators.
+                beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) /
+                        MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
+                l = MathUtils.pnorm(oldGradient1, 2);
+
+                betaAvg += beta;
+                lAvg += l;
+
+                betaMax = Math.max(beta, betaMax);
+                lMax = Math.max(l, lMax);
+            }
+
+            // Update old variables values and oldGradients.
+            System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues1.length);
+            System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues2, 0, oldVariableValues2.length);
+            System.arraycopy(oldGradient2, 0, oldGradient1, 0, oldGradient1.length);
+            oldObjective = objective;
 
             long end = System.currentTimeMillis();
             totalTime += System.currentTimeMillis() - start;
 
-            if (log.isTraceEnabled()) {
-                log.trace("Iteration {} -- Objective: {}, Normalized Objective: {}, Mean Movement: {}, Iteration Time: {}, Total Optimization Time: {}",
-                        iteration - 1, objective, objective / termCount, movement, (end - start), totalTime);
-            }
-
-            iteration++;
-            termStore.iterationComplete();
-
-            if (breakOptimization(iteration, objective, oldObjective, movement, termCount)) {
-                break;
-            }
-
-            // Keep track of the old variables for a deferred objective computation.
-            if (oldVariableValues == null) {
-                oldVariableValues = Arrays.copyOf(termStore.getVariableValues(), termStore.getVariableValues().length);
-                oldObjective = Double.POSITIVE_INFINITY;
-            } else {
-                System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues, 0, oldVariableValues.length);
-                oldObjective = objective;
+            if (iteration > 1) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Iteration {} -- Objective: {}, Normalized Objective: {}, Iteration Time: {}, Total Optimization Time: {}",
+                            iteration - 1, objective, objective / termCount, (end - start), totalTime);
+                }
             }
         }
 
         objective = computeObjective(termStore);
-        log.info("Optimization completed in {} iterations. Objective: {}, Normalized Objective: {}, Total Optimization Time: {}",
-                iteration, objective, objective / termCount, totalTime);
-        log.debug("Optimized with {} variables and {} terms.", termStore.getNumRandomVariables(), termCount);
+        lAvg /= iteration;
+        betaAvg /= iteration;
+        change = termStore.syncAtoms();
 
-        termStore.syncAtoms();
+        log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
+        log.info("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
+        log.info("Average observed rate of change of gradients (Beta average): {}", betaAvg);
+        log.info("Maximum observed magnitude of gradients (L max): {}", lMax);
+        log.info("Average observed magnitude of gradients (L average): {}", lAvg);
+        log.info("Movement of variables from initial state: {}", change);
+        log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
 
         return objective;
     }

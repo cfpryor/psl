@@ -18,6 +18,7 @@
 package org.linqs.psl.cli;
 
 import org.linqs.psl.application.inference.InferenceApplication;
+import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.database.DataStore;
 import org.linqs.psl.database.Database;
@@ -30,6 +31,7 @@ import org.linqs.psl.database.rdbms.driver.PostgreSQLDriver;
 import org.linqs.psl.evaluation.statistics.Evaluator;
 import org.linqs.psl.grounding.GroundRuleStore;
 import org.linqs.psl.model.Model;
+import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.Rule;
@@ -47,12 +49,8 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -336,8 +334,44 @@ public class Launcher {
 
     private void runOnlineClient() {
         log.info("Starting OnlinePSL client.");
-        OnlineClient.run(System.in, System.out);
+        List<OnlineResponse> serverResponses = OnlineClient.run(System.in, System.out);
         log.info("OnlinePSL client closed.");
+
+        // Output the results.
+        if (!(parsedOptions.hasOption(CommandLineLoader.OPTION_SERVER_RESPONSE_OUTPUT))) {
+            log.trace("Writing server responses to out stream.");
+            outputServerResponses(serverResponses);
+        } else {
+            String outputDirectoryPath = parsedOptions.getOptionValue(CommandLineLoader.OPTION_SERVER_RESPONSE_OUTPUT);
+            log.info("Writing inferred predicates to file: " + outputDirectoryPath);
+            outputServerResponses(serverResponses, outputDirectoryPath);
+        }
+    }
+
+    private void outputServerResponses(List<OnlineResponse> serverResponses) {
+        for (OnlineResponse response : serverResponses) {
+            System.out.println(response.toString());
+        }
+    }
+
+    private void outputServerResponses(List<OnlineResponse> serverResponses, String outputPath) {
+        File outputFile = new File(outputPath);
+
+        // mkdir -p
+        outputFile.mkdirs();
+
+        try {
+            FileWriter fileWriter = new FileWriter(outputFile);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            for (OnlineResponse response : serverResponses) {
+                bufferedWriter.write(response.toString());
+            }
+
+            bufferedWriter.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("Error writing online responses.", ex);
+        }
     }
 
     private void runPSL(Model model, DataStore dataStore, Set<StandardPredicate> closedPredicates) {

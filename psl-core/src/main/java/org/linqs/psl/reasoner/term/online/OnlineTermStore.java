@@ -145,7 +145,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     public synchronized GroundAtom updateAtom(StandardPredicate predicate, Constant[] arguments, float newValue) {
         QueryAtom atom = new QueryAtom(predicate, arguments);
         if (!variables.containsKey(atom)) {
-            log.trace("Update atom did not contain key.");
             return null;
         }
 
@@ -169,20 +168,25 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     /**
      * In addition to the typical behavior of setting values for random variable atoms,
      * also set the values for observed atoms.
+     * Returns movement in the random variables.
      */
     @Override
-    public void syncAtoms() {
+    public double syncAtoms() {
+        double movement = 0.0;
         for (int i = 0; i < totalVariableCount; i++) {
             if (variableAtoms[i] == null) {
                 continue;
             }
 
             if (variableAtoms[i] instanceof RandomVariableAtom) {
+                movement += Math.pow(variableAtoms[i].getValue() - variableValues[i], 2);
                 ((RandomVariableAtom)variableAtoms[i]).setValue(variableValues[i]);
             } else {
                 ((ObservedAtom)variableAtoms[i])._assumeValue(variableValues[i]);
             }
         }
+
+        return Math.sqrt(movement);
     }
 
     @Override

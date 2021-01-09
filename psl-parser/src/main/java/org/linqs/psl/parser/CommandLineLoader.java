@@ -73,6 +73,7 @@ public class CommandLineLoader {
     public static final String OPTION_MODEL_LONG = "model";
     public static final String OPTION_OUTPUT_DIR = "o";
     public static final String OPTION_OUTPUT_DIR_LONG = "output";
+    public static final String OPTION_SERVER_RESPONSE_OUTPUT= "serverOutput";
     public static final String OPTION_OUTPUT_GROUND_RULES_LONG = "groundrules";
     public static final String OPTION_OUTPUT_SATISFACTION_LONG = "satisfaction";
     public static final String OPTION_PROPERTIES = "D";
@@ -292,6 +293,12 @@ public class CommandLineLoader {
         newOptions.addOption(Option.builder(OPTION_OUTPUT_DIR)
                 .longOpt(OPTION_OUTPUT_DIR_LONG)
                 .desc("Optional path for writing results to filesystem (default is STDOUT)")
+                .hasArg()
+                .argName("path")
+                .build());
+
+        newOptions.addOption(Option.builder(OPTION_SERVER_RESPONSE_OUTPUT)
+                .desc("Optional path for writing server responses to filesystem (default is STDOUT)")
                 .hasArg()
                 .argName("path")
                 .build());
