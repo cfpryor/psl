@@ -66,6 +66,7 @@ public class SGDReasoner extends Reasoner {
         double change = 0.0;
         double objective = Double.POSITIVE_INFINITY;
         double oldObjective = Double.POSITIVE_INFINITY;
+        double alphaMin = Double.NEGATIVE_INFINITY;
         double beta = Double.NEGATIVE_INFINITY;
         double betaMax = Double.NEGATIVE_INFINITY;
         double betaAvg = 0.0f;
@@ -115,14 +116,16 @@ public class SGDReasoner extends Reasoner {
                 oldGradient2 = new float[oldVariableValues2.length];
             } else if (iteration > 2) {
                 // Update beta and lipschitz constant estimators.
-                beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) /
-                        MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
+                double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
+                if (variableChange != 0.0) {
+                    beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) / variableChange;
+                    betaAvg += beta;
+                    betaMax = Math.max(beta, betaMax);
+                    alphaMin = Math.min(beta, alphaMin);
+                }
+
                 l = MathUtils.pnorm(oldGradient1, 2);
-
-                betaAvg += beta;
                 lAvg += l;
-
-                betaMax = Math.max(beta, betaMax);
                 lMax = Math.max(l, lMax);
             }
 
@@ -130,6 +133,7 @@ public class SGDReasoner extends Reasoner {
             System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues1.length);
             System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues2, 0, oldVariableValues2.length);
             System.arraycopy(oldGradient2, 0, oldGradient1, 0, oldGradient1.length);
+            Arrays.fill(oldGradient2, 0.0f);
             oldObjective = objective;
 
             long end = System.currentTimeMillis();
@@ -149,10 +153,12 @@ public class SGDReasoner extends Reasoner {
         change = termStore.syncAtoms();
 
         log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
+        log.info("Minimum observed rate of change of gradients (Alpha min): {}", alphaMin);
         log.info("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
         log.info("Average observed rate of change of gradients (Beta average): {}", betaAvg);
         log.info("Maximum observed magnitude of gradients (L max): {}", lMax);
         log.info("Average observed magnitude of gradients (L average): {}", lAvg);
+        log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient2, 2));
         log.info("Movement of variables from initial state: {}", change);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
 

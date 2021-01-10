@@ -37,9 +37,11 @@ import org.linqs.psl.database.atom.PersistedAtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
+import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.reasoner.term.online.OnlineTermStore;
 
+import org.linqs.psl.util.MathUtils;
 import org.linqs.psl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ public abstract class OnlineInference extends InferenceApplication {
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
+    private double variableChange;
 
     protected OnlineInference(List<Rule> rules, Database database) {
         super(rules, database);
@@ -69,6 +72,7 @@ public abstract class OnlineInference extends InferenceApplication {
         stopped = false;
         modelUpdates = true;
         objective = 0.0;
+        variableChange = 0.0;
         hotStart = Options.ONLINE_HOT_START.getBoolean();
 
         startServer();
@@ -147,13 +151,21 @@ public abstract class OnlineInference extends InferenceApplication {
     }
 
     protected String doObserveAtom(ObserveAtom action) {
-        ObservedAtom atom = ((OnlineTermStore)termStore).observeAtom(action.getPredicate(), action.getArguments(), action.getValue());
+        if (((OnlineAtomManager)atomManager).hasAtom(action.getPredicate(), action.getArguments())) {
+            GroundAtom atom = atomManager.getAtom(action.getPredicate(), action.getArguments());
 
-        if (atom !=null) {
-            modelUpdates = true;
-            return String.format("Observed atom: %s", atom.toStringWithValue());
+            if (atom instanceof RandomVariableAtom) {
+                float oldAtomValue = atom.getValue();
+                ObservedAtom newAtom = ((OnlineTermStore)termStore).observeAtom(action.getPredicate(), action.getArguments(), action.getValue());
+                modelUpdates = true;
+                variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
+                return String.format("Observed atom: %s", atom.toStringWithValue());
+            } else {
+                return String.format("Atom: %s(%s) already observed.",
+                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+            }
         } else {
-            return String.format("Random Variable Atom: %s(%s) did not exist in model.",
+            return String.format("Atom: %s(%s) did not exist in model.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
     }
@@ -182,11 +194,19 @@ public abstract class OnlineInference extends InferenceApplication {
     }
 
     protected String doUpdateObservation(UpdateObservation action) {
-        GroundAtom atom = ((OnlineTermStore)termStore).updateAtom(action.getPredicate(), action.getArguments(), action.getValue());
+        if (((OnlineAtomManager)atomManager).hasAtom(action.getPredicate(), action.getArguments())) {
+            GroundAtom atom = ((OnlineAtomManager)atomManager).getAtom(action.getPredicate(), action.getArguments());
 
-        if (atom !=null) {
-            modelUpdates = true;
-            return String.format("Updated atom: %s", atom.toStringWithValue());
+            if (atom instanceof ObservedAtom) {
+                float oldAtomValue = atom.getValue();
+                GroundAtom updatedAtom = ((OnlineTermStore) termStore).updateAtom(action.getPredicate(), action.getArguments(), action.getValue());
+                modelUpdates = true;
+                variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
+                return String.format("Updated atom: %s", atom.toStringWithValue());
+            } else {
+                return String.format("Atom: %s(%s) is not an observation.",
+                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+            }
         } else {
             return String.format("Atom: %s(%s) did not exist in model.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
@@ -243,6 +263,8 @@ public abstract class OnlineInference extends InferenceApplication {
         if (!hotStart) {
             initializeAtoms();
         }
+
+        log.trace("Model updates resulted in variable change (delta): {}", Math.sqrt(variableChange));
 
         log.trace("Optimization Start");
         objective = reasoner.optimize(termStore);
