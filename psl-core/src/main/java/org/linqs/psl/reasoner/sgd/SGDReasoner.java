@@ -114,31 +114,32 @@ public class SGDReasoner extends Reasoner {
                 // Initialize old variables values and oldGradients.
                 oldVariableValues2 = Arrays.copyOf(termStore.getVariableValues(), termStore.getVariableValues().length);
                 oldVariableValues1 = new float[termStore.getVariableValues().length];
-                initialValues = new float[termStore.getVariableValues().length];
-                initialGradient = new float[termStore.getVariableValues().length];
                 oldGradient1 = new float[termStore.getVariableValues().length];
                 oldGradient2 = new float[termStore.getVariableValues().length];
-            } else if (iteration > 2) {
-                // Update beta and lipschitz constant estimators.
-                double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
-                if (variableChange != 0.0) {
-                    beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) / variableChange;
-                    betaAvg += beta;
-                    betaMax = Math.max(beta, betaMax);
-                    alphaMin = Math.min(beta, alphaMin);
-                }
-
-                l = MathUtils.pnorm(oldGradient1, 2);
+            } else {
+                // Update Lipschitz constant estimators.
+                l = MathUtils.pnorm(oldGradient2, 2);
                 lAvg += l;
                 lMax = Math.max(l, lMax);
-            }
 
-            // Update old variables values and oldGradients.
-            System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues1.length);
-            System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues2, 0, oldVariableValues2.length);
-            System.arraycopy(oldGradient2, 0, oldGradient1, 0, oldGradient1.length);
-            Arrays.fill(oldGradient2, 0.0f);
-            oldObjective = objective;
+                if (iteration > 2) {
+                    // Update beta constant estimators.
+                    double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
+                    if (variableChange != 0.0) {
+                        beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) / variableChange;
+                        betaAvg += beta;
+                        betaMax = Math.max(beta, betaMax);
+                        alphaMin = Math.min(beta, alphaMin);
+                    }
+                }
+
+                // Update old variables values and oldGradients.
+                System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues1.length);
+                System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues2, 0, oldVariableValues2.length);
+                System.arraycopy(oldGradient2, 0, oldGradient1, 0, oldGradient1.length);
+                Arrays.fill(oldGradient2, 0.0f);
+                oldObjective = objective;
+            }
 
             long end = System.currentTimeMillis();
             totalTime += System.currentTimeMillis() - start;
@@ -152,17 +153,25 @@ public class SGDReasoner extends Reasoner {
         }
 
         // Compute the initial gradient.
+        initialValues = new float[termStore.getVariableValues().length];
+        initialGradient = new float[termStore.getVariableValues().length];
         for (int i = 0; i < termStore.getVariableAtoms().length; i ++) {
-            initialValues[i] = termStore.getVariableAtoms()[i].getValue();
+            if (termStore.getVariableAtoms()[i] != null) {
+                initialValues[i] = termStore.getVariableAtoms()[i].getValue();
+            }
         }
 
         for (SGDObjectiveTerm term : termStore) {
             term.addGradient(initialGradient, initialValues, termStore);
         }
 
+        l = MathUtils.pnorm(initialGradient, 2);
+        lAvg += l;
+        lMax = Math.max(l, lMax);
+
         objective = computeObjective(termStore);
         lAvg /= iteration;
-        betaAvg /= iteration;
+        betaAvg /= (iteration - 2);
         change = termStore.syncAtoms();
 
         log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
