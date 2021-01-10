@@ -180,7 +180,7 @@ public class SGDReasoner extends Reasoner {
         log.info("Average observed rate of change of gradients (Beta average): {}", betaAvg);
         log.info("Maximum observed magnitude of gradients (L max): {}", lMax);
         log.info("Average observed magnitude of gradients (L average): {}", lAvg);
-        log.info("Initial observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(initialGradient, 2));
+        log.info("Initial observed magnitude of gradient (g_{x}): {}", MathUtils.pnorm(initialGradient, 2));
         log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient2, 2));
         log.info("Movement of variables from initial state: {}", change);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
