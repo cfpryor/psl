@@ -67,14 +67,16 @@ public class SGDReasoner extends Reasoner {
         double objective = Double.POSITIVE_INFINITY;
         double oldObjective = Double.POSITIVE_INFINITY;
         double alphaMin = Double.NEGATIVE_INFINITY;
-        double beta = Double.NEGATIVE_INFINITY;
+        double beta = 0.0;
         double betaMax = Double.NEGATIVE_INFINITY;
-        double betaAvg = 0.0f;
-        double l = Double.NEGATIVE_INFINITY;
+        double betaAvg = 0.0;
+        double l = 0.0;
         double lMax = Double.NEGATIVE_INFINITY;
-        double lAvg = 0.0f;
+        double lAvg = 0.0;
+        float[] initialValues = null;
         float[] oldVariableValues1 = null;
         float[] oldVariableValues2 = null;
+        float[] initialGradient = null;
         float[] oldGradient1 = null;
         float[] oldGradient2 = null;
 
@@ -111,9 +113,11 @@ public class SGDReasoner extends Reasoner {
             if (iteration == 1) {
                 // Initialize old variables values and oldGradients.
                 oldVariableValues2 = Arrays.copyOf(termStore.getVariableValues(), termStore.getVariableValues().length);
-                oldVariableValues1 = new float[oldVariableValues2.length];
-                oldGradient1 = new float[oldVariableValues2.length];
-                oldGradient2 = new float[oldVariableValues2.length];
+                oldVariableValues1 = new float[termStore.getVariableValues().length];
+                initialValues = new float[termStore.getVariableValues().length];
+                initialGradient = new float[termStore.getVariableValues().length];
+                oldGradient1 = new float[termStore.getVariableValues().length];
+                oldGradient2 = new float[termStore.getVariableValues().length];
             } else if (iteration > 2) {
                 // Update beta and lipschitz constant estimators.
                 double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
@@ -147,6 +151,15 @@ public class SGDReasoner extends Reasoner {
             }
         }
 
+        // Compute the initial gradient.
+        for (int i = 0; i < termStore.getVariableAtoms().length; i ++) {
+            initialValues[i] = termStore.getVariableAtoms()[i].getValue();
+        }
+
+        for (SGDObjectiveTerm term : termStore) {
+            term.addGradient(initialGradient, initialValues, termStore);
+        }
+
         objective = computeObjective(termStore);
         lAvg /= iteration;
         betaAvg /= iteration;
@@ -158,6 +171,7 @@ public class SGDReasoner extends Reasoner {
         log.info("Average observed rate of change of gradients (Beta average): {}", betaAvg);
         log.info("Maximum observed magnitude of gradients (L max): {}", lMax);
         log.info("Average observed magnitude of gradients (L average): {}", lAvg);
+        log.info("Initial observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(initialGradient, 2));
         log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient2, 2));
         log.info("Movement of variables from initial state: {}", change);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
