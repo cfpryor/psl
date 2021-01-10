@@ -66,7 +66,7 @@ public class SGDReasoner extends Reasoner {
         double change = 0.0;
         double objective = Double.POSITIVE_INFINITY;
         double oldObjective = Double.POSITIVE_INFINITY;
-        double alphaMin = Double.NEGATIVE_INFINITY;
+        double alphaMin = Double.POSITIVE_INFINITY;
         double beta = 0.0;
         double betaMax = Double.NEGATIVE_INFINITY;
         double betaAvg = 0.0;
