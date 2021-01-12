@@ -355,13 +355,13 @@ public class Launcher {
     }
 
     private void outputServerResponses(List<OnlineResponse> serverResponses, String outputPath) {
-        File outputFile = new File(outputPath);
+        File outputDir = new File(outputPath);
 
         // mkdir -p
-        outputFile.mkdirs();
+        outputDir.mkdirs();
 
         try {
-            FileWriter fileWriter = new FileWriter(outputFile);
+            FileWriter fileWriter = new FileWriter(new File(outputDir, "serverResponses.txt"));
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             for (OnlineResponse response : serverResponses) {

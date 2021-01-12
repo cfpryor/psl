@@ -83,7 +83,6 @@ public class OnlineClient implements Runnable {
                         continue;
                     }
 
-                    log.trace("Writing Action: " + onlineAction.toString());
                     socketOutputStream.writeObject(onlineAction);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
