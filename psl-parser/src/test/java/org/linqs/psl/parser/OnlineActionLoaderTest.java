@@ -162,4 +162,37 @@ public class OnlineActionLoaderTest {
 
         OnlinePSLTest.assertActions(input, expected);
     }
+
+    @Test
+    public void testActivateRule() {
+        String input =
+                "ActivateRule 1: Single(A) & Double(A, B) >> Single(B) ^2";
+        String[] expected = new String[]{
+                "ACTIVATERULE\t1.0: ( SINGLE(A) & DOUBLE(A, B) ) >> SINGLE(B) ^2"
+        };
+
+        OnlinePSLTest.assertActions(input, expected);
+    }
+
+    @Test
+    public void testDeleteRule() {
+        String input =
+                "DeleteRule 1: Single(A) & Double(A, B) >> Single(B) ^2";
+        String[] expected = new String[]{
+                "DELETERULE\t1.0: ( SINGLE(A) & DOUBLE(A, B) ) >> SINGLE(B) ^2"
+        };
+
+        OnlinePSLTest.assertActions(input, expected);
+    }
+
+    @Test
+    public void testDeactivateRule() {
+        String input =
+                "DeactivateRule 1: Single(A) & Double(A, B) >> Single(B) ^2";
+        String[] expected = new String[]{
+                "DEACTIVATERULE\t1.0: ( SINGLE(A) & DOUBLE(A, B) ) >> SINGLE(B) ^2"
+        };
+
+        OnlinePSLTest.assertActions(input, expected);
+    }
 }

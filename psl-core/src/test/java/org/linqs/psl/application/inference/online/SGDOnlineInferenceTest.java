@@ -27,7 +27,10 @@ import org.linqs.psl.application.inference.online.messages.actions.model.updates
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.DeleteAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.ObserveAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.UpdateObservation;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.ActivateRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeleteRule;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.formula.Conjunction;
 import org.linqs.psl.model.formula.Implication;
@@ -129,46 +132,46 @@ public class SGDOnlineInferenceTest {
         OnlineTest.assertAtomValues(commands, new double[] {0.0});
     }
 
-//    /**
-//     * Make sure that new atoms are added to model, are considered during inference, and
-//     * result in the expected groundings.
-//     */
-//    @Test
-//    public void testAddAtoms() {
-//        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
-//
-//        // Check that adding atoms will not create new random variable atoms.
-//        commands.add(new AddAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
-//        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}));
-//        commands.add(new Exit());
-//
-//        OnlineTest.assertAtomValues(commands, new double[] {-1.0, -1.0, -1.0, -1.0});
-//
-//        // Reset model.
-//        cleanup();
-//        setup();
-//
-//        // Check that atoms are added to the model and hold the expected values.
-//        commands.add(new AddAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
-//        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}, 0.0f));
-//        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}, 0.0f));
-//        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}, 0.0f));
-//        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}, 0.0f));
-//        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}, 0.0f));
-//        commands.add(new QueryAtom(StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}));
-//        commands.add(new Exit());
-//
-//        OnlineTest.assertAtomValues(commands, new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-//    }
+    /**
+     * Make sure that new atoms are added to model, are considered during inference, and
+     * result in the expected groundings.
+     */
+    @Test
+    public void testAddAtoms() {
+        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+
+        // Check that adding atoms will not create new random variable atoms.
+        commands.add(new AddAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
+        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}));
+        commands.add(new Exit());
+
+        OnlineTest.assertAtomValues(commands, new double[] {-1.0, -1.0, -1.0, -1.0});
+
+        // Reset model.
+        cleanup();
+        setup();
+
+        // Check that atoms are added to the model and hold the expected values.
+        commands.add(new AddAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
+        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}, 0.0f));
+        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}, 0.0f));
+        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}, 0.0f));
+        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}, 0.0f));
+        commands.add(new AddAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}, 0.0f));
+        commands.add(new QueryAtom(StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Connor")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Connor")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Alice")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Connor")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Connor"), new UniqueStringID("Bob")}));
+        commands.add(new Exit());
+
+        OnlineTest.assertAtomValues(commands, new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    }
 
     @Test
     public void testRuleAddition() {
@@ -188,6 +191,56 @@ public class SGDOnlineInferenceTest {
                 true);
 
         commands.add(new AddRule(newRule));
+        commands.add(new Exit());
+
+        OnlineTest.clientSession(commands);
+    }
+
+    @Test
+    public void testRuleDeletion() {
+        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        Rule rule = (new WeightedLogicalRule(
+                new Implication(
+                        new Conjunction(
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Nice"), new Variable("A")),
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Nice"), new Variable("B")),
+                                new org.linqs.psl.model.atom.QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B"))
+                        ),
+                        new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("B"))
+                ),
+                0.5,
+                true));
+
+        commands.add(new DeleteRule(rule));
+        commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
+        commands.add(new Exit());
+
+        OnlineTest.clientSession(commands);
+    }
+
+    @Test
+    public void testRuleDeactivateActivate() {
+        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        Rule rule = (new WeightedLogicalRule(
+                new Implication(
+                        new Conjunction(
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Nice"), new Variable("A")),
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Nice"), new Variable("B")),
+                                new org.linqs.psl.model.atom.QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B"))
+                        ),
+                        new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("B"))
+                ),
+                0.5,
+                true));
+
+        commands.add(new DeactivateRule(rule));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+        commands.add(new ActivateRule(rule));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+        commands.add(new DeactivateRule(rule));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+        commands.add(new ActivateRule(rule));
+        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
         commands.add(new Exit());
 
         OnlineTest.clientSession(commands);

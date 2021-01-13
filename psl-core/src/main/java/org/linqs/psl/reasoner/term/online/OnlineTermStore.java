@@ -36,18 +36,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.
  * Variables are kept in memory, but terms are kept on disk.
+ * Note: numpages represents the number of active pages, not total.
  */
 public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingTermStore<T> {
+    protected ArrayList<Integer> activeTermPages;
+    protected ArrayList<Integer> activeVolatilePages;
+    protected Integer nextTermPageIndex;
+    protected Integer nextVolatilePageIndex;
+
+    // Keep track of template pages.
+    protected Map<Rule, ArrayList<Integer>> pageMapping;
+
     public OnlineTermStore(List<Rule> rules, AtomManager atomManager,
-            HyperplaneTermGenerator<T, GroundAtom> termGenerator) {
+                           HyperplaneTermGenerator<T, GroundAtom> termGenerator) {
         super(rules, atomManager, termGenerator);
+
+        activeTermPages = new ArrayList<Integer>();
+        activeVolatilePages = new ArrayList<Integer>();
+        nextTermPageIndex = 0;
+        nextVolatilePageIndex = 0;
+        pageMapping = new HashMap<Rule, ArrayList<Integer>>();
     }
 
     @Override
@@ -153,6 +167,53 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return groundAtom;
     }
 
+    public Rule activateRule(Rule rule) {
+        for (Integer i : pageMapping.get(rule)){
+            activeTermPages.add(i);
+            // This represents the number of active pages.
+            numPages++;
+        }
+        rules.add(rule);
+        return rule;
+    }
+
+    public Rule addRule(Rule rule) {
+        return rule;
+    }
+
+    public Rule deactivateRule(Rule rule) {
+        for (Integer i : pageMapping.get(rule)) {
+            activeTermPages.remove(activeTermPages.indexOf(i));
+            // This represents the number of active pages.
+            numPages--;
+        }
+        rules.remove(rule);
+        return rule;
+    }
+
+    public Rule deleteRule(Rule rule) {
+        for (Integer i : pageMapping.get(rule)) {
+            activeTermPages.remove(activeTermPages.indexOf(i));
+            // This represents the number of active pages.
+            numPages--;
+        }
+        pageMapping.remove(rule);
+        rules.remove(rule);
+        return rule;
+    }
+
+    public void addRuleMapping(Rule rule, int pageIndex) {
+        if (!pageMapping.containsKey(rule)) {
+            pageMapping.put(rule, new ArrayList<Integer>());
+        }
+
+        pageMapping.get(rule).add(pageIndex);
+    }
+
+    public int getNextTermPageIndex() {
+        return nextTermPageIndex;
+    }
+
     public void groundingIterationComplete(long termCount, int numPages, ByteBuffer termBuffer, ByteBuffer volatileBuffer) {
         seenTermCount += termCount;
 
@@ -181,6 +242,32 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
                 ((ObservedAtom)variableAtoms[i])._assumeValue(variableValues[i]);
             }
         }
+    }
+
+    @Override
+    public String getTermPagePath(int index) {
+        // Make sure the path is built.
+        // This implementation gets the index active term page.
+        for (int i = activeTermPages.size(); i <= index; i++) {
+            termPagePaths.add(Paths.get(pageDir, String.format("%08d_term.page", nextTermPageIndex)).toString());
+            activeTermPages.add(nextTermPageIndex);
+            nextTermPageIndex++;
+        }
+
+        return termPagePaths.get(activeTermPages.get(index));
+    }
+
+    @Override
+    public String getVolatilePagePath(int index) {
+        // Make sure the path is built.
+        // This implementation gets the index active term page.
+        for (int i = activeVolatilePages.size(); i <= index; i++) {
+            volatilePagePaths.add(Paths.get(pageDir, String.format("%08d_volatile.page", nextVolatilePageIndex)).toString());
+            activeVolatilePages.add(nextVolatilePageIndex);
+            nextVolatilePageIndex++;
+        }
+
+        return volatilePagePaths.get(activeVolatilePages.get(index));
     }
 
     @Override

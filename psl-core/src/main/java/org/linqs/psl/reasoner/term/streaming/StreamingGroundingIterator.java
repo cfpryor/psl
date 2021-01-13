@@ -224,6 +224,11 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
             return null;
         }
 
+        // Template specific grounding
+        if (termCache.size() > 0) {
+            flushCache();
+        }
+
         // Start grounding the next rule.
         startGroundingQuery();
 
@@ -240,7 +245,7 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
         queryResults = queryIterable.iterator();
     }
 
-    private void flushCache() {
+    protected void flushCache() {
         // It is possible to get two flush requests in a row, so check to see if we actually need it.
         if (termCache.size() == 0) {
             return;

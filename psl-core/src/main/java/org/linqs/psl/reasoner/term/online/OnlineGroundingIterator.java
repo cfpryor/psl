@@ -20,6 +20,7 @@ package org.linqs.psl.reasoner.term.online;
 import org.linqs.psl.database.Partition;
 import org.linqs.psl.database.atom.AtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
+import org.linqs.psl.database.rdbms.RDBMSDatabase;
 import org.linqs.psl.grounding.PartialGrounding;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.predicate.StandardPredicate;
@@ -115,5 +116,24 @@ public abstract class OnlineGroundingIterator<T extends ReasonerTerm> extends St
         }
 
         super.close();
+    }
+
+    @Override
+    public void flushCache() {
+        // It is possible to get two flush requests in a row, so check to see if we actually need it.
+        if (termCache.size() == 0) {
+            return;
+        }
+
+        // Add the page to the rule mapping.
+        ((OnlineTermStore)parentStore).addRuleMapping(rules.get(currentRule - 1), ((OnlineTermStore)parentStore).getNextTermPageIndex());
+
+        String termPagePath = parentStore.getTermPagePath(nextPage);
+        String volatilePagePath = parentStore.getVolatilePagePath(nextPage);
+
+        writeFullPage(termPagePath, volatilePagePath);
+
+        // Move on to the next page.
+        nextPage++;
     }
 }

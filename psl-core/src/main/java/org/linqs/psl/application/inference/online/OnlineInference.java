@@ -27,7 +27,10 @@ import org.linqs.psl.application.inference.online.messages.actions.model.updates
 import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.WriteInferredPredicates;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.ActivateRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeleteRule;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineActionException;
@@ -104,10 +107,16 @@ public abstract class OnlineInference extends InferenceApplication {
     protected void executeAction(OnlineAction action) {
         String response = null;
 
-        if (action.getClass() == AddAtom.class) {
+        if (action.getClass() == ActivateRule.class) {
+            response = doActivateRule((ActivateRule)action);
+        } else if (action.getClass() == AddAtom.class) {
             response = doAddAtom((AddAtom)action);
         } else if (action.getClass() == AddRule.class) {
             response = doAddRule((AddRule)action);
+        } else if (action.getClass() == DeactivateRule.class) {
+            response = doDeactivateRule((DeactivateRule)action);
+        } else if (action.getClass() == DeleteRule.class) {
+            response = doDeleteRule((DeleteRule)action);
         } else if (action.getClass() == ObserveAtom.class) {
             response = doObserveAtom((ObserveAtom)action);
         } else if (action.getClass() == DeleteAtom.class) {
@@ -137,13 +146,32 @@ public abstract class OnlineInference extends InferenceApplication {
         return String.format("Added atom: %s", atom.toStringWithValue());
     }
 
-    protected String doAddRule(AddRule action) {
-        Rule newRule = action.getRule();
-
-        //TODO.
+    protected String doActivateRule(ActivateRule action) {
+        Rule rule = ((OnlineTermStore)termStore).activateRule(action.getRule());
 
         modelUpdates = true;
-        return String.format("Added rule: %s", newRule.toString());
+        return String.format("Activated rule: %s", rule.toString());
+    }
+
+    protected String doAddRule(AddRule action) {
+        Rule rule = ((OnlineTermStore)termStore).addRule(action.getRule());
+
+        modelUpdates = true;
+        return String.format("Activated rule: %s", rule.toString());
+    }
+
+    protected String doDeactivateRule(DeactivateRule action) {
+        Rule rule = ((OnlineTermStore)termStore).deactivateRule(action.getRule());
+
+        modelUpdates = true;
+        return String.format("Activated rule: %s", rule.toString());
+    }
+
+    protected String doDeleteRule(DeleteRule action) {
+        Rule rule = ((OnlineTermStore)termStore).deleteRule(action.getRule());
+
+        modelUpdates = true;
+        return String.format("Activated rule: %s", rule.toString());
     }
 
     protected String doObserveAtom(ObserveAtom action) {
