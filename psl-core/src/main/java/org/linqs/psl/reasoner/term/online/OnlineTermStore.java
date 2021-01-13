@@ -32,12 +32,13 @@ import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.IteratorUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.
@@ -228,20 +229,25 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     /**
      * In addition to the typical behavior of setting values for random variable atoms,
      * also set the values for observed atoms.
+     * Returns movement in the random variables.
      */
     @Override
-    public void syncAtoms() {
+    public double syncAtoms() {
+        double movement = 0.0;
         for (int i = 0; i < totalVariableCount; i++) {
             if (variableAtoms[i] == null) {
                 continue;
             }
 
             if (variableAtoms[i] instanceof RandomVariableAtom) {
+                movement += Math.pow(variableAtoms[i].getValue() - variableValues[i], 2);
                 ((RandomVariableAtom)variableAtoms[i]).setValue(variableValues[i]);
             } else {
                 ((ObservedAtom)variableAtoms[i])._assumeValue(variableValues[i]);
             }
         }
+
+        return Math.sqrt(movement);
     }
 
     @Override

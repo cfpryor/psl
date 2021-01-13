@@ -155,4 +155,32 @@ public final class MathUtils {
 
         return result;
     }
+
+    public static float[] vectorDifference(float[] vector1, float[] vector2) {
+        if (vector1.length != vector2.length) {
+            throw new ArithmeticException("Cannot compute the difference between vectors with different lengths.");
+        }
+
+        float[] vectorDifference = new float[vector2.length];
+
+        for (int i = 0; i < vector1.length; i++) {
+            vectorDifference[i] = vector1[i] - vector2[i];
+        }
+
+        return vectorDifference;
+    }
+
+    public static float pnorm(float[] vector, float p) {
+        float norm = 0.0f;
+
+        if (p <= 1.0) {
+            throw new ArithmeticException("Cannot compute a vector p norm with p < 1.0.");
+        }
+
+        for (int i = 0; i < vector.length; i++) {
+            norm += (float)Math.pow(vector[i], p);
+        }
+
+        return (float)Math.pow(norm, 1 / p);
+    }
 }

@@ -115,6 +115,22 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         return movement;
     }
 
+    /**
+     * Adds the potential contribution to the provided gradient vector with the variable values provided.
+     */
+    public void addGradient(float[] gradientVector, float[] variableValues, VariableTermStore termStore) {
+        GroundAtom[] variableAtoms = termStore.getVariableAtoms();
+        float dot = dot(variableValues);
+
+        for (int i = 0 ; i < size; i++) {
+            if (variableAtoms[variableIndexes[i]] instanceof ObservedAtom) {
+                continue;
+            }
+
+            gradientVector[variableIndexes[i]] += computeGradient(i, dot);
+        }
+    }
+
     private float computeGradient(int varId, float dot) {
         if (hinge && dot <= 0.0f) {
             return 0.0f;

@@ -31,6 +31,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -51,9 +52,15 @@ public class OnlineClient {
             OnlineAction onlineAction = null;
             BlockingQueue<OnlineAction> onlineActions = new LinkedBlockingQueue<OnlineAction>();
 
-            // Startup onlineClientThread for sending actions to server.
+            // TODO(Charles): Clean up pattern for initializing local model.
+            // Initialize onlineClient with shared data structures.
             org.linqs.psl.application.inference.online.OnlineClient onlineClient =
                     new org.linqs.psl.application.inference.online.OnlineClient(out, onlineActions, serverResponses);
+
+            // Initialize local model.
+            onlineClient.initLocalModel();
+
+            // Run onlineClient thread for client session.
             Thread onlineClientThread = new Thread(onlineClient);
             onlineClientThread.start();
 
@@ -72,7 +79,7 @@ public class OnlineClient {
                     }
                     onlineAction = OnlineActionLoader.loadAction(userInput);
                     onlineActions.add(onlineAction);
-                } catch (ParseCancellationException ex) {
+                } catch (ParseCancellationException | InputMismatchException ex) {
                     log.error(String.format("Error parsing command: [%s].", userInput));
                     log.error(ex.getMessage());
                 } catch (IOException ex) {

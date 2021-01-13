@@ -33,7 +33,7 @@ public class ModelInformation extends OnlineResponse {
         super(UUID.randomUUID());
         this.predicates = new HashMap<String, StandardPredicate>();
 
-        for (int i = 1; i < predicates.length; i++) {
+        for (int i = 0; i < predicates.length; i++) {
             this.predicates.put(predicates[i].getName(), StandardPredicate.get(predicates[i].getName()));
         }
     }

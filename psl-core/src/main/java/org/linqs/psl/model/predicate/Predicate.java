@@ -65,9 +65,13 @@ public abstract class Predicate implements Serializable {
             throw new RuntimeException("Predicate with name '" + name + "' already exists.");
         }
 
-        hashcode = HashCode.build(HashCode.build(name), types);
+        hashcode = HashCode.build(HashCode.build(this.name), types);
 
         predicates.put(this.name, this);
+    }
+
+    public static Predicate addPredicateIfAbsent(Predicate predicate) {
+        return predicates.putIfAbsent(predicate.getName(), predicate);
     }
 
     /**
@@ -94,6 +98,13 @@ public abstract class Predicate implements Serializable {
      */
     public ConstantType getArgumentType(int position) {
         return types[position];
+    }
+
+    /**
+     * Returns the ArgumentTypes which a {@link Term} must have to be a valid.
+     */
+    public ConstantType[] getArgumentTypes() {
+        return types;
     }
 
     @Override
