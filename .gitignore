@@ -19,3 +19,4 @@ classpath.out
 
 .secrets
 .idea/workspace.xml
+*.xml
