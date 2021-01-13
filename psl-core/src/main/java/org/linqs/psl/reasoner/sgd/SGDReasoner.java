@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Uses an SGD optimization method to optimize its GroundRules.
@@ -67,12 +69,16 @@ public class SGDReasoner extends Reasoner {
         double objective = Double.POSITIVE_INFINITY;
         double oldObjective = Double.POSITIVE_INFINITY;
         double alphaMin = Double.POSITIVE_INFINITY;
-        double beta = 0.0;
-        double betaMax = Double.NEGATIVE_INFINITY;
-        double betaAvg = 0.0;
-        double l = 0.0;
-        double lMax = Double.NEGATIVE_INFINITY;
-        double lAvg = 0.0;
+        List<Float> betas = new ArrayList<Float>();
+        Float[] betasSorted = null;
+        float betaMedian = 0.0f;
+        float betaMax = Float.NEGATIVE_INFINITY;
+        float betaAvg = 0.0f;
+        List<Float> ls = new ArrayList<Float>();
+        Float[] lsSorted = null;
+        float lMedian = 0.0f;
+        float lMax = Float.NEGATIVE_INFINITY;
+        float lAvg = 0.0f;
         float[] initialValues = null;
         float[] secondValues = null;
         float[] oldVariableValues1 = null;
@@ -121,20 +127,20 @@ public class SGDReasoner extends Reasoner {
                 oldGradient2 = new float[termStore.getVariableValues().length];
             } else {
                 // Update Lipschitz constant estimators.
-                l = MathUtils.pnorm(oldGradient2, 2);
-                lAvg += l;
-                lMax = Math.max(l, lMax);
+                ls.add(MathUtils.pnorm(oldGradient2, 2));
+                lAvg += ls.get(ls.size() - 1);
+                lMax = Math.max(ls.get(ls.size() - 1), lMax);
 
                 if (iteration == 2) {
                     secondGradient = Arrays.copyOf(oldGradient2, termStore.getVariableValues().length);
                 } else {
                     // Update beta constant estimators.
-                    double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
+                    float variableChange = MathUtils.pnorm(MathUtils.vectorDifference(oldVariableValues2, oldVariableValues1), 2);
                     if (variableChange != 0.0) {
-                        beta = MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) / variableChange;
-                        betaAvg += beta;
-                        betaMax = Math.max(beta, betaMax);
-                        alphaMin = Math.min(beta, alphaMin);
+                        betas.add(MathUtils.pnorm(MathUtils.vectorDifference(oldGradient2, oldGradient1), 2) / variableChange);
+                        betaAvg += betas.get(betas.size() - 1);
+                        betaMax = Math.max(betas.get(betas.size() - 1), betaMax);
+                        alphaMin = Math.min(betas.get(betas.size() - 1), alphaMin);
                     }
                 }
 
@@ -170,32 +176,50 @@ public class SGDReasoner extends Reasoner {
             term.addGradient(initialGradient, initialValues, termStore);
         }
 
-        double variableChange = MathUtils.pnorm(MathUtils.vectorDifference(secondValues, initialValues), 2);
+        float variableChange = MathUtils.pnorm(MathUtils.vectorDifference(secondValues, initialValues), 2);
         if (variableChange != 0.0) {
-            beta = MathUtils.pnorm(MathUtils.vectorDifference(secondGradient, initialGradient), 2) / variableChange;
-            betaAvg += beta;
-            betaMax = Math.max(beta, betaMax);
-            alphaMin = Math.min(beta, alphaMin);
+            betas.add(0, MathUtils.pnorm(MathUtils.vectorDifference(secondGradient, initialGradient), 2) / variableChange);
+            betaAvg += betas.get(0);
+            betaMax = Math.max(betas.get(0), betaMax);
+            alphaMin = Math.min(betas.get(0), alphaMin);
         }
 
-        l = MathUtils.pnorm(initialGradient, 2);
-        lAvg += l;
-        lMax = Math.max(l, lMax);
+        ls.add(0, MathUtils.pnorm(initialGradient, 2));
+        lAvg += ls.get(0);
+        lMax = Math.max(ls.get(0), lMax);
 
         objective = computeObjective(termStore);
         lAvg /= iteration;
-        betaAvg /= (iteration - 1);
+        lsSorted = ls.toArray(new Float[0]);
+        Arrays.sort(lsSorted);
+        lMedian = lsSorted.length % 2 == 0?
+                (lsSorted[(int)(lsSorted.length / 2.0)] + lsSorted[(int)(lsSorted.length / 2 - 1)])
+                : lsSorted[(int)Math.floor(lsSorted.length / 2.0)];
+        if (betas.size() != 0) {
+            betaAvg /= (iteration - 1);
+            betasSorted = betas.toArray(new Float[0]);
+            Arrays.sort(betasSorted);
+            betaMedian = betasSorted.length % 2 == 0 ?
+                    (betasSorted[(int) (betasSorted.length / 2.0)] + betasSorted[(int) (betasSorted.length / 2.0 - 1)])
+                    : betasSorted[(int) Math.floor(betasSorted.length / 2.0)];
+        }
+
         change = termStore.syncAtoms();
 
         log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
         log.info("Minimum observed rate of change of gradients (Alpha min): {}", alphaMin);
+        log.info("Observed rates of change of gradients (Beta): {}", betas.toString());
         log.info("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
+        log.info("Maximum observed rate of change of gradients (Beta median): {}", betaMedian);
         log.info("Average observed rate of change of gradients (Beta average): {}", betaAvg);
+        log.info("Observed rates of magnitudes of gradients (L): {}", ls.toString());
         log.info("Maximum observed magnitude of gradients (L max): {}", lMax);
+        log.info("Maximum observed magnitude of gradients (L median): {}", lMedian);
         log.info("Average observed magnitude of gradients (L average): {}", lAvg);
         log.info("Initial observed magnitude of gradient (g_{x}): {}", MathUtils.pnorm(initialGradient, 2));
         log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient2, 2));
         log.info("Movement of variables from initial state: {}", change);
+        log.info("Average Movement of variables from initial state: {}", change / termCount);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
 
         return objective;

@@ -57,6 +57,7 @@ public abstract class OnlineInference extends InferenceApplication {
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
+    private double variableChangeCount;
     private double variableChange;
 
     protected OnlineInference(List<Rule> rules, Database database) {
@@ -72,6 +73,7 @@ public abstract class OnlineInference extends InferenceApplication {
         stopped = false;
         modelUpdates = true;
         objective = 0.0;
+        variableChangeCount = 0;
         variableChange = 0.0;
         hotStart = Options.ONLINE_HOT_START.getBoolean();
 
@@ -159,6 +161,7 @@ public abstract class OnlineInference extends InferenceApplication {
                 ObservedAtom newAtom = ((OnlineTermStore)termStore).observeAtom(action.getPredicate(), action.getArguments(), action.getValue());
                 if (newAtom != null) {
                     modelUpdates = true;
+                    variableChangeCount ++;
                     variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
                     return String.format("Observed atom: %s", atom.toStringWithValue());
                 } else {
@@ -207,6 +210,7 @@ public abstract class OnlineInference extends InferenceApplication {
                 GroundAtom updatedAtom = ((OnlineTermStore) termStore).updateAtom(action.getPredicate(), action.getArguments(), action.getValue());
                 if (updatedAtom != null) {
                     modelUpdates = true;
+                    variableChangeCount ++;
                     variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
                     return String.format("Updated atom: %s", atom.toStringWithValue());
                 } else {
@@ -274,7 +278,9 @@ public abstract class OnlineInference extends InferenceApplication {
             initializeAtoms();
         }
 
+        log.trace("Model updates modifying values for (variable change count): {} unique variables", Math.sqrt(variableChangeCount));
         log.trace("Model updates resulted in variable change (delta): {}", Math.sqrt(variableChange));
+        variableChangeCount = 0.0;
         variableChange = 0.0;
 
         log.trace("Optimization Start");
