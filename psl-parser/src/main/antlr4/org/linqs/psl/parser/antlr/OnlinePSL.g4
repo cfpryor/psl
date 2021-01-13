@@ -31,6 +31,9 @@ onlineProgram
 action
     :   addAtom
     |   addRule
+    |   deleteRule
+    |   deactivateRule
+    |   activateRule
     |   deleteAtom
     |   exit
     |   observeAtom
@@ -47,6 +50,18 @@ addAtom
 
 addRule
     :   ADD_RULE pslRule
+    ;
+
+deleteRule
+    :   DELETE_RULE pslRule
+    ;
+
+activateRule
+    :   ACTIVATE_RULE pslRule
+    ;
+
+deactivateRule
+    :   DEACTIVATE_RULE pslRule
     ;
 
 deleteAtom
@@ -97,6 +112,18 @@ ADD_ATOM
 
 ADD_RULE
     :   A D D R U L E
+    ;
+
+DELETE_RULE
+    :   D E L E T E R U L E
+    ;
+
+DEACTIVATE_RULE
+    :   D E A C T I V A T E R U L E
+    ;
+
+ACTIVATE_RULE
+    :   A C T I V A T E R U L E
     ;
 
 DELETE_ATOM
