@@ -10,7 +10,10 @@ import org.linqs.psl.application.inference.online.messages.actions.model.updates
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.DeleteAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.ObserveAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.updates.UpdateObservation;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.ActivateRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeleteRule;
 import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
@@ -21,6 +24,9 @@ import org.linqs.psl.parser.antlr.OnlinePSLParser;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.ActionContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.AddAtomContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.AddRuleContext;
+import org.linqs.psl.parser.antlr.OnlinePSLParser.DeleteRuleContext;
+import org.linqs.psl.parser.antlr.OnlinePSLParser.ActivateRuleContext;
+import org.linqs.psl.parser.antlr.OnlinePSLParser.DeactivateRuleContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.DeleteAtomContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.ExitContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.NumberContext;
@@ -141,6 +147,12 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
             return visitAddAtom(ctx.addAtom());
         } else if (ctx.addRule() != null) {
             return visitAddRule(ctx.addRule());
+        } else if (ctx.deleteRule() != null) {
+            return visitDeleteRule(ctx.deleteRule());
+        } else if (ctx.activateRule() != null) {
+            return visitActivateRule(ctx.activateRule());
+        } else if (ctx.deactivateRule() != null) {
+            return visitDeactivateRule(ctx.deactivateRule());
         } else if (ctx.deleteAtom() != null) {
             return visitDeleteAtom(ctx.deleteAtom());
         } else if (ctx.exit() != null) {
@@ -183,6 +195,27 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
         Rule rule = ModelLoader.loadRule(ctx.pslRule().getText());
 
         return new AddRule(rule);
+    }
+
+    @Override
+    public DeleteRule visitDeleteRule(DeleteRuleContext ctx) {
+        Rule rule = ModelLoader.loadRule(ctx.pslRule().getText());
+
+        return new DeleteRule(rule);
+    }
+
+    @Override
+    public ActivateRule visitActivateRule(ActivateRuleContext ctx) {
+        Rule rule = ModelLoader.loadRule(ctx.pslRule().getText());
+
+        return new ActivateRule(rule);
+    }
+
+    @Override
+    public DeactivateRule visitDeactivateRule(DeactivateRuleContext ctx) {
+        Rule rule = ModelLoader.loadRule(ctx.pslRule().getText());
+
+        return new DeactivateRule(rule);
     }
 
     @Override
