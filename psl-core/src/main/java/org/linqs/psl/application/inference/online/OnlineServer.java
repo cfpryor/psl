@@ -238,7 +238,6 @@ public class OnlineServer implements Closeable {
             ArrayList<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
 
             try {
-                System.out.println(String.format("sending predicates: %s", Arrays.toString(predicates.toArray())));
                 ModelInformation modelInformation = new ModelInformation(predicates.toArray(new Predicate[]{}),
                         this.server.rules.toArray(new Rule[]{}));
                 outputStream.writeObject(modelInformation);
