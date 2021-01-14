@@ -24,16 +24,9 @@ import org.linqs.psl.model.rule.Rule;
  * Add a new rule to the model.
  * String format: DEACTIVATE <predicate> <args> ... [value]
  */
-public class DeactivateRule extends OnlineAction {
-    private Rule rule;
-
+public class DeactivateRule extends TemplateModification {
     public DeactivateRule(Rule rule) {
-        super();
-        this.rule = rule;
-    }
-
-    public Rule getRule() {
-        return rule;
+        super(rule);
     }
 
     @Override

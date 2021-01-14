@@ -20,8 +20,12 @@ package org.linqs.psl.cli;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.actions.template.modifications.*;
+import org.linqs.psl.application.inference.online.messages.responses.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
+import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.parser.OnlineActionLoader;
+import org.linqs.psl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +35,7 @@ import java.io.PrintStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -46,6 +51,7 @@ public class OnlineClient {
 
     public static List<OnlineResponse> run(InputStream in, PrintStream out) {
         List<OnlineResponse> serverResponses = new ArrayList<OnlineResponse>();
+        ModelInformation modelInformation = null;
 
         try (BufferedReader commandReader = new BufferedReader(new InputStreamReader(in))) {
             String userInput = null;
@@ -58,7 +64,7 @@ public class OnlineClient {
                     new org.linqs.psl.application.inference.online.OnlineClient(out, onlineActions, serverResponses);
 
             // Initialize local model.
-            onlineClient.initLocalModel();
+            modelInformation = onlineClient.initLocalModel();
 
             // Run onlineClient thread for client session.
             Thread onlineClientThread = new Thread(onlineClient);
@@ -78,6 +84,22 @@ public class OnlineClient {
                         continue;
                     }
                     onlineAction = OnlineActionLoader.loadAction(userInput);
+                    // TODO(Charles): Better pattern is needed for verifying template modifications.
+                    // Current issue is the hash codes of rules on client are different than on the server side.
+                    if (onlineAction instanceof TemplateModification && !(onlineAction instanceof AddRule)) {
+                        Rule clientRule = ((TemplateModification)onlineAction).getRule();
+                        int serverRuleIndex = modelInformation.rules.indexOf(clientRule);
+                        if (serverRuleIndex != -1) {
+                            Rule serverRule = modelInformation.rules.get(serverRuleIndex);
+                            ((TemplateModification)onlineAction).setRule(serverRule);
+                        } else {
+                            log.trace("Server does not have rule: {}", clientRule.toString());
+                            log.trace("Server has rules: {}", StringUtils.join("\n",
+                                    modelInformation.rules.toArray()));
+                            continue;
+                        }
+
+                    }
                     onlineActions.add(onlineAction);
                 } catch (ParseCancellationException | InputMismatchException ex) {
                     log.error(String.format("Error parsing command: [%s].", userInput));

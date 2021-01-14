@@ -17,23 +17,15 @@
  */
 package org.linqs.psl.application.inference.online.messages.actions.template.modifications;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.model.rule.Rule;
 
 /**
  * Add a new rule to the model.
  * String format: ACTIVATE <predicate> <args> ... [value]
  */
-public class ActivateRule extends OnlineAction {
-    private Rule rule;
-
+public class ActivateRule extends TemplateModification {
     public ActivateRule(Rule rule) {
-        super();
-        this.rule = rule;
-    }
-
-    public Rule getRule() {
-        return rule;
+        super(rule);
     }
 
     @Override

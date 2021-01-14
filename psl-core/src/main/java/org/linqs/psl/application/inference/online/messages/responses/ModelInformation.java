@@ -17,35 +17,48 @@
  */
 package org.linqs.psl.application.inference.online.messages.responses;
 
+import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
-import org.linqs.psl.model.term.ConstantType;
+import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class ModelInformation extends OnlineResponse {
-    public Map<String, StandardPredicate> predicates;
+    public Map<String, Predicate> predicates;
+    public List<Rule> rules;
 
-    public ModelInformation(StandardPredicate[] predicates) {
+    public ModelInformation(Predicate[] predicates, Rule[] rules) {
         super(UUID.randomUUID());
-        this.predicates = new HashMap<String, StandardPredicate>();
+        this.predicates = new HashMap<String, Predicate>();
+        this.rules = new ArrayList<Rule>();
 
         for (int i = 0; i < predicates.length; i++) {
-            this.predicates.put(predicates[i].getName(), StandardPredicate.get(predicates[i].getName()));
+            this.predicates.put(predicates[i].getName(), predicates[i]);
         }
+
+        this.rules.addAll(Arrays.asList(rules));
     }
 
-    public Collection<StandardPredicate> getPredicates() {
+    public Collection<Predicate> getPredicates() {
         return predicates.values();
+    }
+
+    public Collection<Rule> getRules() {
+        return rules;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "ModelInfo\t%s",
-                StringUtils.join("\t", predicates.values().toArray(new StandardPredicate[]{})));
+                "ModelInfo:\nPredicates:%s\nRules:%s",
+                StringUtils.join("\t", predicates.values().toArray(new Predicate[]{})),
+                StringUtils.join("\n", rules.toArray(new Rule[]{})));
     }
 }

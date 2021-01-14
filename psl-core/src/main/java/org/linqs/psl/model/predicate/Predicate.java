@@ -70,8 +70,8 @@ public abstract class Predicate implements Serializable {
         predicates.put(this.name, this);
     }
 
-    public static Predicate addPredicateIfAbsent(Predicate predicate) {
-        return predicates.putIfAbsent(predicate.getName(), predicate);
+    public static Predicate addPredicate(Predicate predicate) {
+        return predicates.put(predicate.getName(), predicate);
     }
 
     /**

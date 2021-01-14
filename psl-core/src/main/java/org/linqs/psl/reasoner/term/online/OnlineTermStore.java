@@ -23,6 +23,7 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.QueryAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
+import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.model.term.Constant;
@@ -176,10 +177,17 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
             return null;
         }
 
-        for (Integer i : pageMapping.get(rule)){
-            activeTermPages.add(i);
-            // This represents the number of active pages.
-            numPages++;
+        int activePageIndex = 0;
+        for (Integer i : rulePages) {
+            activePageIndex = activeTermPages.indexOf(i);
+            if (activePageIndex == -1) {
+                activeTermPages.add(i);
+                // This represents the number of active pages.
+                numPages++;
+            } else {
+                log.warn("Page: {} already activated for rule: {}", i, rule.toString());
+                log.warn("Active Term Pages: {}", activeTermPages);
+            }
         }
         rules.add(rule);
         return rule;
@@ -193,14 +201,24 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         ArrayList<Integer> rulePages = pageMapping.get(rule);
         if (rulePages == null) {
             // No pages with rule.
-            log.trace("Deactivate Failed Page Mapping{}", Arrays.asList(pageMapping));
             return null;
         }
 
+        log.trace("Deactivating Pages: {}", rulePages);
+        int activePageIndex = 0;
         for (Integer i : rulePages) {
-            activeTermPages.remove(activeTermPages.indexOf(i));
-            // This represents the number of active pages.
-            numPages--;
+            activePageIndex = activeTermPages.indexOf(i);
+            if (activePageIndex != -1) {
+//                log.trace("Deactivating: {}", i);
+//                log.trace("Active Term Pages: {}", activeTermPages);
+                activeTermPages.remove(activePageIndex);
+//                log.trace("Active Term Pages: {}", activeTermPages);
+                // This represents the number of active pages.
+                numPages--;
+            } else {
+                log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
+                log.warn("Active Term Pages: {}", activeTermPages);
+            }
         }
         rules.remove(rule);
         return rule;

@@ -24,6 +24,7 @@ import org.linqs.psl.application.inference.online.messages.responses.ModelInform
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
+import org.linqs.psl.model.Model;
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class OnlineClient implements Runnable {
                         log.warn("Interrupted while taking an online action from the queue.", ex);
                         continue;
                     }
-
+                    log.trace("Sending Action {}", onlineAction.toString());
                     socketOutputStream.writeObject(onlineAction);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -98,14 +99,15 @@ public class OnlineClient implements Runnable {
         }
     }
 
-    public void initLocalModel() {
+    public ModelInformation initLocalModel() {
+        ModelInformation modelInformation = null;
         try (
                 Socket server = new Socket(hostname, port);
                 ObjectOutputStream socketOutputStream = new ObjectOutputStream(server.getOutputStream());
                 ObjectInputStream socketInputStream = new ObjectInputStream(server.getInputStream())) {
 
             // Read and register serverModel.
-            registerServerModel(socketInputStream);
+            modelInformation = registerServerModel(socketInputStream);
 
             // Startup serverConnectionThread for reading server responses.
             ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
@@ -121,9 +123,11 @@ public class OnlineClient implements Runnable {
         } catch (InterruptedException ex) {
             log.error("Client session interrupted");
         }
+
+        return modelInformation;
     }
 
-    private void registerServerModel(ObjectInputStream socketInputStream) {
+    private ModelInformation registerServerModel(ObjectInputStream socketInputStream) {
         // Get model information from server.
         ModelInformation modelInformation = null;
         try {
@@ -133,21 +137,21 @@ public class OnlineClient implements Runnable {
         }
 
         // Register model predicates.
-        for (StandardPredicate predicate : modelInformation.predicates.values()) {
+        for (Predicate predicate : modelInformation.predicates.values()) {
             // Todo (Charles): We will likely want to replace if predicate already existed.
-            Predicate.addPredicateIfAbsent(predicate);
-            log.trace("Registered predicate: " + StandardPredicate.get(predicate.getName()).toString() +
-                    " Client Hash: " + StandardPredicate.get(predicate.getName()).hashCode() +
+            Predicate.addPredicate(predicate);
+            log.trace("Registered predicate: " + Predicate.get(predicate.getName()).toString() +
+                    " Client Hash: " + Predicate.get(predicate.getName()).hashCode() +
                     " Server Hash: " + predicate.hashCode());
         }
+
+        return modelInformation;
     }
 
     /**
      * Private class for reading OnlineResponse objects from server.
      */
     private static class ServerConnectionThread extends Thread {
-        private Logger log = LoggerFactory.getLogger(ServerConnectionThread.class);
-
         private ObjectInputStream inputStream;
         private PrintStream out;
         private Socket socket;

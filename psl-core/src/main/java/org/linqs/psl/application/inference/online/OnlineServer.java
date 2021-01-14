@@ -27,6 +27,7 @@ import org.linqs.psl.config.Options;
 
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
+import org.linqs.psl.model.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,13 +53,15 @@ public class OnlineServer implements Closeable {
 
     private ServerConnectionThread serverThread;
     private BlockingQueue<OnlineAction> queue;
+    private List<Rule> rules;
 
     private ConcurrentHashMap<UUID, ClientConnectionThread> messageIDConnectionMap;
 
-    public OnlineServer() {
-        serverThread = new ServerConnectionThread();
+    public OnlineServer(List<Rule> rules) {
+        serverThread = new ServerConnectionThread(this);
         queue = new LinkedBlockingQueue<OnlineAction>();
         messageIDConnectionMap = new ConcurrentHashMap<UUID, ClientConnectionThread>();
+        this.rules = rules;
     }
 
     /**
@@ -135,10 +136,12 @@ public class OnlineServer implements Closeable {
     private class ServerConnectionThread extends Thread {
         private File tmpFile;
         private ServerSocket socket;
+        private OnlineServer server;
         private HashSet<ClientConnectionThread> clientConnections;
 
-        public ServerConnectionThread() {
+        public ServerConnectionThread(OnlineServer server) {
             tmpFile = null;
+            this.server = server;
             clientConnections = new HashSet<ClientConnectionThread>();
 
             int port = Options.ONLINE_PORT_NUMBER.getInt();
@@ -168,7 +171,7 @@ public class OnlineServer implements Closeable {
                     throw new RuntimeException(ex);
                 }
 
-                ClientConnectionThread connectionThread = new ClientConnectionThread(client);
+                ClientConnectionThread connectionThread = new ClientConnectionThread(client, this.server);
                 clientConnections.add(connectionThread);
                 connectionThread.start();
             }
@@ -215,11 +218,13 @@ public class OnlineServer implements Closeable {
 
     private class ClientConnectionThread extends Thread {
         public Socket socket;
+        public OnlineServer server;
         public ObjectInputStream inputStream;
         public ObjectOutputStream outputStream;
 
-        public ClientConnectionThread(Socket socket) {
+        public ClientConnectionThread(Socket socket, OnlineServer server) {
             this.socket = socket;
+            this.server = server;
 
             try {
                 inputStream = new ObjectInputStream(socket.getInputStream());
@@ -230,15 +235,12 @@ public class OnlineServer implements Closeable {
             }
 
             // Send Client model information for action validation.
-            ArrayList<StandardPredicate> standardPredicates = new ArrayList<StandardPredicate>();
-            for (Predicate predicate : Predicate.getAll()) {
-                if (predicate instanceof StandardPredicate) {
-                    standardPredicates.add((StandardPredicate)predicate);
-                }
-            }
+            ArrayList<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
 
             try {
-                ModelInformation modelInformation = new ModelInformation(standardPredicates.toArray(new StandardPredicate[]{}));
+                System.out.println(String.format("sending predicates: %s", Arrays.toString(predicates.toArray())));
+                ModelInformation modelInformation = new ModelInformation(predicates.toArray(new Predicate[]{}),
+                        this.server.rules.toArray(new Rule[]{}));
                 outputStream.writeObject(modelInformation);
             } catch (IOException ex) {
                 close();
