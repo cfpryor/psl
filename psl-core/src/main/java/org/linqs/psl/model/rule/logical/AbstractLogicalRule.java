@@ -219,9 +219,19 @@ public abstract class AbstractLogicalRule extends AbstractRule {
             return false;
         }
 
-        return
-                (new HashSet<Atom>(thisPosLiterals)).equals(new HashSet<Atom>(otherPosLiterals)) &&
-                (new HashSet<Atom>(thisNegLiterals)).equals(new HashSet<Atom>(otherNegLiterals));
+        for (Atom atom : thisPosLiterals) {
+            if (!otherPosLiterals.contains(atom)) {
+                return false;
+            }
+        }
+
+        for (Atom atom : thisNegLiterals) {
+            if (!otherNegLiterals.contains(atom)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

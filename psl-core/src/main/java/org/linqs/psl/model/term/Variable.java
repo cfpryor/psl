@@ -70,10 +70,6 @@ public class Variable implements Term {
             return false;
         }
 
-        if (this.hashCode() != other.hashCode()) {
-            return false;
-        }
-
         return getName().equals(((Variable)other).getName());
     }
 

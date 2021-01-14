@@ -93,9 +93,11 @@ public class OnlineClient {
                             Rule serverRule = modelInformation.rules.get(serverRuleIndex);
                             ((TemplateModification)onlineAction).setRule(serverRule);
                         } else {
-                            log.trace("Server does not have rule: {}", clientRule.toString());
-                            log.trace("Server has rules: {}", StringUtils.join("\n",
-                                    modelInformation.rules.toArray()));
+                            log.trace("Server does not have rule: {} : hash: {}", clientRule.toString(), clientRule.hashCode());
+                            log.trace("Server has rules:");
+                            for (Rule rule : modelInformation.rules) {
+                                log.trace("{} : hash: {}", rule.toString(), rule.hashCode());
+                            }
                             continue;
                         }
 
