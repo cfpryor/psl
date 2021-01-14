@@ -126,7 +126,7 @@ public abstract class OnlineGroundingIterator<T extends ReasonerTerm> extends St
         }
 
         // Add the page to the rule mapping.
-        ((OnlineTermStore)parentStore).addRuleMapping(rules.get(currentRule - 1), ((OnlineTermStore)parentStore).getNextTermPageIndex());
+        ((OnlineTermStore)parentStore).addRuleMapping(rules.get(currentRule), ((OnlineTermStore)parentStore).getNextTermPageIndex());
 
         String termPagePath = parentStore.getTermPagePath(nextPage);
         String volatilePagePath = parentStore.getVolatilePagePath(nextPage);
