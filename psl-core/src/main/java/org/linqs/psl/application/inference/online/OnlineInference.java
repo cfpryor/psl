@@ -43,9 +43,8 @@ import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.reasoner.term.online.OnlineTermStore;
-
-import org.linqs.psl.util.MathUtils;
 import org.linqs.psl.util.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,29 +154,41 @@ public abstract class OnlineInference extends InferenceApplication {
     protected String doActivateRule(ActivateRule action) {
         Rule rule = ((OnlineTermStore)termStore).activateRule(action.getRule());
 
-        modelUpdates = true;
-        return String.format("Activated rule: %s", rule.toString());
+        if (rule != null ) {
+            modelUpdates = true;
+            return String.format("Activated rule: %s", rule.toString());
+        } else {
+            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
+        }
     }
 
     protected String doAddRule(AddRule action) {
         Rule rule = ((OnlineTermStore)termStore).addRule(action.getRule());
 
         modelUpdates = true;
-        return String.format("Activated rule: %s", rule.toString());
+        return String.format("Added rule: %s", rule.toString());
     }
 
     protected String doDeactivateRule(DeactivateRule action) {
         Rule rule = ((OnlineTermStore)termStore).deactivateRule(action.getRule());
 
-        modelUpdates = true;
-        return String.format("Activated rule: %s", rule.toString());
+        if (rule != null ) {
+            modelUpdates = true;
+            return String.format("Deactivated rule: %s", rule.toString());
+        } else {
+            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
+        }
     }
 
     protected String doDeleteRule(DeleteRule action) {
         Rule rule = ((OnlineTermStore)termStore).deleteRule(action.getRule());
 
-        modelUpdates = true;
-        return String.format("Activated rule: %s", rule.toString());
+        if (rule != null ) {
+            modelUpdates = true;
+            return String.format("Deleted rule: %s", rule.toString());
+        } else {
+            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
+        }
     }
 
     protected String doObserveAtom(ObserveAtom action) {
@@ -306,8 +317,8 @@ public abstract class OnlineInference extends InferenceApplication {
             initializeAtoms();
         }
 
-        log.trace("Model updates modifying values for (variable change count): {} unique variables", Math.sqrt(variableChangeCount));
-        log.trace("Model updates resulted in variable change (delta): {}", Math.sqrt(variableChange));
+        log.trace("Model updates:  (variable change count): {} unique variables", Math.sqrt(variableChangeCount));
+        log.trace("Model updates: (variable delta): {}", Math.sqrt(variableChange));
         variableChangeCount = 0.0;
         variableChange = 0.0;
 
@@ -333,10 +344,10 @@ public abstract class OnlineInference extends InferenceApplication {
                 executeAction(action);
             } catch (OnlineActionException ex) {
                 server.onActionExecution(action, new ActionStatus(action, false, ex.getMessage()));
-                log.warn("Exception when executing action: " + action, ex);
+                log.warn("Exception when executing action: " + action.toString(), ex);
             } catch (RuntimeException ex) {
                 server.onActionExecution(action, new ActionStatus(action, false, ex.getMessage()));
-                throw new RuntimeException("Critically failed to run command. Last seen command: " + action, ex);
+                throw new RuntimeException("Critically failed to run command. Last seen command: " + action.toString(), ex);
             }
         }
 

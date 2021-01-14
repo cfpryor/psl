@@ -223,9 +223,7 @@ public abstract class AbstractGroundLogicalRule implements GroundRule {
             return true;
         }
 
-        if (other == null
-                || !(other instanceof AbstractGroundLogicalRule)
-                || this.hashCode() != other.hashCode()) {
+        if (other == null || !(other instanceof AbstractGroundLogicalRule)) {
             return false;
         }
 

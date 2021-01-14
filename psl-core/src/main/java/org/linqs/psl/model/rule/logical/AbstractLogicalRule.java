@@ -206,10 +206,6 @@ public abstract class AbstractLogicalRule extends AbstractRule {
 
         AbstractLogicalRule otherRule = (AbstractLogicalRule)other;
 
-        if (this.hash != otherRule.hash) {
-            return false;
-        }
-
         // Final deep equality check.
         List<Atom> thisPosLiterals = this.negatedDNF.getPosLiterals();
         List<Atom> otherPosLiterals = otherRule.negatedDNF.getPosLiterals();

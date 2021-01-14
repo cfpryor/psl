@@ -39,7 +39,7 @@ public class DeleteRule extends OnlineAction {
     @Override
     public String toString() {
         return String.format(
-                "DELETE\t%s",
+                "DELETERULE\t%s",
                 rule.toString());
     }
 }

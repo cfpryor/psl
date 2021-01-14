@@ -365,7 +365,7 @@ public class Launcher {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             for (OnlineResponse response : serverResponses) {
-                bufferedWriter.write(response.toString());
+                bufferedWriter.write(response.toString() + "\n");
             }
 
             bufferedWriter.close();

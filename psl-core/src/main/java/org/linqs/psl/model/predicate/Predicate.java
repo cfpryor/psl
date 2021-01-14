@@ -149,7 +149,7 @@ public abstract class Predicate implements Serializable {
 
         // First check the hashcode to reduce the time we have to do a deepEquals() on the arguments.
         // Note that the hashcode is not perfect, but provides a quick insurance on inequality.
-        return hashCode() == other.hashCode() && name.equals(other.name) && Arrays.deepEquals(types, other.types);
+        return name.equals(other.name) && Arrays.deepEquals(types, other.types);
     }
 
     /**

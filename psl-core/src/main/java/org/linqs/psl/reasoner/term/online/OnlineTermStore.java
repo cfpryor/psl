@@ -32,13 +32,12 @@ import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.IteratorUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.
@@ -46,6 +45,8 @@ import java.util.Map;
  * Note: numpages represents the number of active pages, not total.
  */
 public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingTermStore<T> {
+    private static final Logger log = LoggerFactory.getLogger(OnlineTermStore.class);
+
     protected ArrayList<Integer> activeTermPages;
     protected ArrayList<Integer> activeVolatilePages;
     protected Integer nextTermPageIndex;
@@ -169,6 +170,12 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     }
 
     public Rule activateRule(Rule rule) {
+        ArrayList<Integer> rulePages = pageMapping.get(rule);
+        if (rulePages == null) {
+            // No pages with rule.
+            return null;
+        }
+
         for (Integer i : pageMapping.get(rule)){
             activeTermPages.add(i);
             // This represents the number of active pages.
@@ -183,7 +190,14 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     }
 
     public Rule deactivateRule(Rule rule) {
-        for (Integer i : pageMapping.get(rule)) {
+        ArrayList<Integer> rulePages = pageMapping.get(rule);
+        if (rulePages == null) {
+            // No pages with rule.
+            log.trace("Deactivate Failed Page Mapping{}", Arrays.asList(pageMapping));
+            return null;
+        }
+
+        for (Integer i : rulePages) {
             activeTermPages.remove(activeTermPages.indexOf(i));
             // This represents the number of active pages.
             numPages--;
@@ -193,7 +207,13 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     }
 
     public Rule deleteRule(Rule rule) {
-        for (Integer i : pageMapping.get(rule)) {
+        ArrayList<Integer> rulePages = pageMapping.get(rule);
+        if (rulePages == null) {
+            // No pages with rule.
+            return null;
+        }
+
+        for (Integer i : rulePages) {
             activeTermPages.remove(activeTermPages.indexOf(i));
             // This represents the number of active pages.
             numPages--;
