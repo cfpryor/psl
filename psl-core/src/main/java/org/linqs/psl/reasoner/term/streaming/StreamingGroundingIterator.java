@@ -221,6 +221,7 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
         currentRule++;
         if (currentRule >= rules.size()) {
             // There are no more rules, we are done.
+            currentRule--;
             return null;
         }
 
