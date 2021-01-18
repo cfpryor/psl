@@ -93,7 +93,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         float value = 0.0f;
 
         for (int i = 0; i < size; i++) {
-            if (variableIndexes[i] > termStore.previousVariableValues.length) {
+            if (variableIndexes[i] >= termStore.previousVariableValues.length) {
                 value += coefficients[i] * termStore.getVariableValues()[variableIndexes[i]];
             } else {
                 value += coefficients[i] * termStore.previousVariableValues[variableIndexes[i]];
@@ -107,16 +107,12 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
      * Returns the sum of gradients of the provided atoms and values.
      */
     public void deltaGradient(SGDOnlineTermStore termStore, boolean add) {
+        float dot = deltaDot(termStore);
         for (int i = 0 ; i < size; i++) {
-            if (variableIndexes[i] > termStore.previousVariableValues.length) {
-                if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom) {
-                    continue;
-                }
-            } else if (termStore.previousVariableAtoms[variableIndexes[i]] instanceof ObservedAtom) {
+            if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom) {
                 continue;
             }
 
-            float dot = deltaDot(termStore);
             if (add) {
                 termStore.deltaModelGradient[variableIndexes[i]] += computeGradient(i, dot);
             } else {

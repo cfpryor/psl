@@ -18,7 +18,6 @@
 package org.linqs.psl.application.inference.online.messages.responses;
 
 import org.linqs.psl.model.predicate.Predicate;
-import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.util.StringUtils;
 

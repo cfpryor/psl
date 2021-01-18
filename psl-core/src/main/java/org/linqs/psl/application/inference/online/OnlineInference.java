@@ -59,7 +59,7 @@ public abstract class OnlineInference extends InferenceApplication {
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
-    private double variableChangeCount;
+    private int variableChangeCount;
     private double variableChange;
 
     protected OnlineInference(List<Rule> rules, Database database) {
@@ -317,9 +317,9 @@ public abstract class OnlineInference extends InferenceApplication {
             initializeAtoms();
         }
 
-        log.trace("Model updates:  (variable change count): {} unique variables", Math.sqrt(variableChangeCount));
+        log.trace("Model updates:  (variable change count): {} unique variables", variableChangeCount);
         log.trace("Model updates: (variable delta): {}", Math.sqrt(variableChange));
-        variableChangeCount = 0.0;
+        variableChangeCount = 0;
         variableChange = 0.0;
 
         log.trace("Optimization Start");

@@ -202,11 +202,11 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
     }
 
     public void updatePreviousVariables() {
-        previousVariableAtoms = new GroundAtom[variableAtoms.length];
-        System.arraycopy(variableAtoms, 0, previousVariableAtoms, 0, variableAtoms.length);
+        previousVariableAtoms = new GroundAtom[totalVariableCount];
+        System.arraycopy(variableAtoms, 0, previousVariableAtoms, 0, totalVariableCount);
 
-        previousVariableValues = new float[variableValues.length];
-        System.arraycopy(variableValues, 0, previousVariableValues, 0, variableValues.length);
+        previousVariableValues = new float[totalVariableCount];
+        System.arraycopy(variableValues, 0, previousVariableValues, 0, totalVariableCount);
     }
 
     @Override
