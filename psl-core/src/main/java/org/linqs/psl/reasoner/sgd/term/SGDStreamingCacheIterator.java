@@ -17,6 +17,7 @@
  */
 package org.linqs.psl.reasoner.sgd.term;
 
+import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.reasoner.term.streaming.StreamingCacheIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.RuntimeStats;
@@ -25,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 public class SGDStreamingCacheIterator extends StreamingCacheIterator<SGDObjectiveTerm> {
     public SGDStreamingCacheIterator(
@@ -35,6 +37,27 @@ public class SGDStreamingCacheIterator extends StreamingCacheIterator<SGDObjecti
             int numPages) {
         super(parentStore, readonly, termCache, termPool, termBuffer,
                 volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
+    }
+
+    @Override
+    public SGDObjectiveTerm next() {
+        if (nextTerm == null) {
+            throw new IllegalStateException("Called next() when hasNext() == false (or before the first hasNext() call).");
+        }
+
+        SGDObjectiveTerm term = nextTerm;
+        nextTerm = null;
+
+        // Compute the delta gradient
+        if (parentStore instanceof SGDOnlineTermStore) {
+            Map<Integer, Rule> deltaPages = ((SGDOnlineTermStore)parentStore).getDeltaPages();
+            if (deltaPages.containsKey(currentPage)) {
+                // DeltaPages has the rule for deactivated rules and null for activated rules.
+                ((SGDOnlineTermStore)parentStore).computeDeltaModelGradient(term, deltaPages.get(currentPage) == null);
+            }
+        }
+
+        return term;
     }
 
     @Override

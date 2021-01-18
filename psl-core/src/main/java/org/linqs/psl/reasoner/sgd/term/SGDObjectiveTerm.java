@@ -89,6 +89,42 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         }
     }
 
+    private float deltaDot(SGDOnlineTermStore termStore) {
+        float value = 0.0f;
+
+        for (int i = 0; i < size; i++) {
+            if (variableIndexes[i] > termStore.previousVariableValues.length) {
+                value += coefficients[i] * termStore.getVariableValues()[variableIndexes[i]];
+            } else {
+                value += coefficients[i] * termStore.previousVariableValues[variableIndexes[i]];
+            }
+        }
+
+        return value - constant;
+    }
+
+    /**
+     * Returns the sum of gradients of the provided atoms and values.
+     */
+    public void deltaGradient(SGDOnlineTermStore termStore, boolean add) {
+        for (int i = 0 ; i < size; i++) {
+            if (variableIndexes[i] > termStore.previousVariableValues.length) {
+                if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom) {
+                    continue;
+                }
+            } else if (termStore.previousVariableAtoms[variableIndexes[i]] instanceof ObservedAtom) {
+                continue;
+            }
+
+            float dot = deltaDot(termStore);
+            if (add) {
+                termStore.deltaModelGradient[variableIndexes[i]] += computeGradient(i, dot);
+            } else {
+                termStore.deltaModelGradient[variableIndexes[i]] -= computeGradient(i, dot);
+            }
+        }
+    }
+
     /**
      * Minimize the term by changing the random variables and return how much the random variables were moved by.
      */

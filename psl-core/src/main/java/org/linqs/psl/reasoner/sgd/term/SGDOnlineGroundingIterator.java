@@ -41,6 +41,23 @@ public class SGDOnlineGroundingIterator extends OnlineGroundingIterator<SGDObjec
     }
 
     @Override
+    public SGDObjectiveTerm next() {
+        if (nextTerm == null) {
+            throw new IllegalStateException("Called next() when hasNext() == false (or before the first hasNext() call).");
+        }
+
+        SGDObjectiveTerm term = nextTerm;
+        nextTerm = null;
+
+        // Compute the delta gradient
+        if (parentStore instanceof SGDOnlineTermStore) {
+            ((SGDOnlineTermStore)parentStore).computeDeltaModelGradient(term, true);
+        }
+
+        return term;
+    }
+
+    @Override
     protected void writeFullPage(String termPagePath, String volatilePagePath) {
         flushTermCache(termPagePath);
 

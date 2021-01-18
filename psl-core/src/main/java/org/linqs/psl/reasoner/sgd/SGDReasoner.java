@@ -21,6 +21,7 @@ import org.linqs.psl.config.Options;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.sgd.term.SGDObjectiveTerm;
+import org.linqs.psl.reasoner.sgd.term.SGDOnlineTermStore;
 import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.reasoner.term.TermStore;
 import org.linqs.psl.util.IteratorUtils;
@@ -91,6 +92,15 @@ public class SGDReasoner extends Reasoner {
         long totalTime = 0;
         boolean converged = false;
         int iteration = 1;
+
+        // Computing the gradient for all the activated and deactivated pages
+        if (termStore instanceof SGDOnlineTermStore && ((SGDOnlineTermStore)termStore).deltaPagesEmpty()) {
+            for (SGDObjectiveTerm term : termStore) {
+                continue;
+            }
+            ((SGDOnlineTermStore)termStore).clearDeltaPages();
+        }
+
         for (; iteration < (maxIterations * budget) && !converged; iteration++) {
             long start = System.currentTimeMillis();
 
@@ -221,6 +231,12 @@ public class SGDReasoner extends Reasoner {
         log.info("Movement of variables from initial state: {}", change);
         log.info("Average Movement of variables from initial state: {}", change / termCount);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
+
+        // Store atoms and values for the delta model.
+        if (termStore instanceof SGDOnlineTermStore) {
+            log.info("Delta model change in gradient: {}", ((SGDOnlineTermStore)termStore).getDeltaModelGradient());
+            ((SGDOnlineTermStore)termStore).updatePreviousVariables();
+        }
 
         return objective;
     }
