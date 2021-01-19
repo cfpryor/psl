@@ -37,7 +37,7 @@ import java.util.Map;
 public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
     private static final Logger log = LoggerFactory.getLogger(SGDOnlineTermStore.class);
 
-    protected float[] deltaModelGradient;
+    protected double[] deltaModelGradient;
     protected float[] previousVariableValues;
     protected GroundAtom[] previousVariableAtoms;
     protected Map<Integer, Rule> deltaPages;
@@ -52,7 +52,7 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         previousVariableValues = new float[variableValues.length];
         System.arraycopy(variableValues, 0, previousVariableValues, 0, variableValues.length);
 
-        deltaModelGradient = new float[variableValues.length * 2];
+        deltaModelGradient = new double[variableValues.length * 2];
     }
 
     @Override
@@ -173,7 +173,7 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         // Make sure there is room in delta model gradient
         if (variableValues.length > deltaModelGradient.length) {
             // Double the size of the array if realocation is required
-            float[] tmpDeltaModelGradient = new float[deltaModelGradient.length * 2];
+            double[] tmpDeltaModelGradient = new double[deltaModelGradient.length * 2];
             System.arraycopy(deltaModelGradient, 0, tmpDeltaModelGradient, 0, deltaModelGradient.length);
             deltaModelGradient = tmpDeltaModelGradient;
         }
@@ -185,15 +185,15 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         return  deltaPages;
     }
 
-    public float getDeltaModelGradient(){
-        float total = 0.0f;
+    public double getDeltaModelGradient(){
+        double total = 0.0;
 
         for (int i = 0; i < deltaModelGradient.length; i++) {
-            total += (float) Math.pow(deltaModelGradient[i], 2.0f);
+            total += Math.pow(deltaModelGradient[i], 2.0f);
             deltaModelGradient[i] = 0.0f;
         }
 
-        total = (float) Math.pow(total, 0.5f);
+        total = (double) Math.pow(total, 0.5f);
         return total;
     }
 

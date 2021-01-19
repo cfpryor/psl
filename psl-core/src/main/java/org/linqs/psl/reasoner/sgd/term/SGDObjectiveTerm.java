@@ -109,7 +109,8 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     public void deltaGradient(SGDOnlineTermStore termStore, boolean add) {
         float dot = deltaDot(termStore);
         for (int i = 0 ; i < size; i++) {
-            if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom) {
+            if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom ||
+                    termStore.previousVariableAtoms[variableIndexes[i]] instanceof ObservedAtom) {
                 continue;
             }
 
