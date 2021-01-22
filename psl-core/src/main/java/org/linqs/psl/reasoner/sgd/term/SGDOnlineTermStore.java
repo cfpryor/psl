@@ -119,15 +119,12 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         for (Integer i : rulePages) {
             activePageIndex = activeTermPages.indexOf(i);
             if (activePageIndex != -1) {
-                activeTermPages.remove(i);
                 // If rule was activated an deactivated before an optimization then remove from delta pages.
                 if (deltaPages.containsKey(i)) {
                     deltaPages.remove(i);
                 } else {
                     deltaPages.put(i, rule);
                 }
-                // This represents the number of active pages.
-                numPages--;
             } else {
                 log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
                 log.warn("Active Term Pages: {}", activeTermPages);
@@ -169,7 +166,7 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         // Deactivate the pages now.
         for (Integer i : deltaPages.keySet()){
             if (deltaPages.get(i) != null) {
-                ((OnlineTermStore)this).deactivateRule(deltaPages.get(i));
+                super.deactivateRule(deltaPages.get(i));
             }
         }
         deltaPages.clear();
