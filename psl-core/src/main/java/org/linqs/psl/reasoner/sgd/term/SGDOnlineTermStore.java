@@ -89,7 +89,12 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
             activePageIndex = activeTermPages.indexOf(i);
             if (activePageIndex == -1) {
                 activeTermPages.add(i);
-                deltaPages.put(i, null);
+                // If rule was deactivated and activated before an optimization then remove from delta pages.
+                if (deltaPages.containsKey(i)) {
+                    deltaPages.remove(i);
+                } else {
+                    deltaPages.put(i, null);
+                }
                 // This represents the number of active pages.
                 numPages++;
             } else {
@@ -114,7 +119,15 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         for (Integer i : rulePages) {
             activePageIndex = activeTermPages.indexOf(i);
             if (activePageIndex != -1) {
-                deltaPages.put(i, rule);
+                activeTermPages.remove(i);
+                // If rule was activated an deactivated before an optimization then remove from delta pages.
+                if (deltaPages.containsKey(i)) {
+                    deltaPages.remove(i);
+                } else {
+                    deltaPages.put(i, rule);
+                }
+                // This represents the number of active pages.
+                numPages--;
             } else {
                 log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
                 log.warn("Active Term Pages: {}", activeTermPages);
@@ -189,11 +202,11 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         double total = 0.0;
 
         for (int i = 0; i < deltaModelGradient.length; i++) {
-            total += Math.pow(deltaModelGradient[i], 2.0f);
-            deltaModelGradient[i] = 0.0f;
+            total += Math.pow(deltaModelGradient[i], 2.0);
+            deltaModelGradient[i] = 0.0;
         }
 
-        total = (double) Math.pow(total, 0.5f);
+        total = Math.pow(total, 0.5);
         return total;
     }
 

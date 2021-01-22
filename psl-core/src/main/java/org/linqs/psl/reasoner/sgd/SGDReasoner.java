@@ -94,7 +94,7 @@ public class SGDReasoner extends Reasoner {
         int iteration = 1;
 
         // Computing the gradient for all the activated and deactivated pages
-        if (termStore instanceof SGDOnlineTermStore && ((SGDOnlineTermStore)termStore).deltaPagesEmpty()) {
+        if (termStore instanceof SGDOnlineTermStore && !((SGDOnlineTermStore)termStore).deltaPagesEmpty()) {
             for (SGDObjectiveTerm term : termStore) {
                 continue;
             }
