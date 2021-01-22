@@ -114,14 +114,15 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
             return null;
         }
 
-        log.trace("Deactivating Pages: {}", rulePages);
+        log.trace("SGD ONLINE TERM STORE Deactivating Pages: {} from Active Term Pages: {}", rulePages, activeTermPages);
         int activePageIndex = 0;
         for (Integer i : rulePages) {
             activePageIndex = activeTermPages.indexOf(i);
             if (activePageIndex != -1) {
-                // If rule was activated an deactivated before an optimization then remove from delta pages.
+                // If rule was activated and deactivated before an optimization then remove from delta pages.
                 if (deltaPages.containsKey(i)) {
                     deltaPages.remove(i);
+                    activeTermPages.remove(i);
                 } else {
                     deltaPages.put(i, rule);
                 }

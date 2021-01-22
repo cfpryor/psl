@@ -204,7 +204,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
             return null;
         }
 
-        log.trace("Deactivating Pages: {}", rulePages);
+        log.trace("ONLINE TERM STORE Deactivating Pages: {} from Active Term Pages: {}", rulePages, activeTermPages);
         int activePageIndex = 0;
         for (Integer i : rulePages) {
             activePageIndex = activeTermPages.indexOf(i);
