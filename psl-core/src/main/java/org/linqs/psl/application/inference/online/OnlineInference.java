@@ -202,7 +202,7 @@ public abstract class OnlineInference extends InferenceApplication {
                     modelUpdates = true;
                     variableChangeCount ++;
                     variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
-                    return String.format("Observed atom: %s", atom.toStringWithValue());
+                    return String.format("Observed atom: %s => %s", atom.toStringWithValue(), newAtom.toStringWithValue());
                 } else {
                     return String.format("Atom: %s(%s) did not exist in ground model.",
                             action.getPredicate(), StringUtils.join(", ", action.getArguments()));
@@ -251,7 +251,7 @@ public abstract class OnlineInference extends InferenceApplication {
                     modelUpdates = true;
                     variableChangeCount ++;
                     variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
-                    return String.format("Updated atom: %s", atom.toStringWithValue());
+                    return String.format("Updated atom: %s => %s", atom.toStringWithValue(), updatedAtom.toStringWithValue());
                 } else {
                     return String.format("Atom: %s(%s) did not exist in ground model.",
                             action.getPredicate(), StringUtils.join(", ", action.getArguments()));

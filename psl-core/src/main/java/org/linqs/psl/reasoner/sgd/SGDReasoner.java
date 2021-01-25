@@ -155,7 +155,7 @@ public class SGDReasoner extends Reasoner {
                 }
 
                 // Update old variables values and oldGradients.
-                System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues1.length);
+                System.arraycopy(oldVariableValues2, 0, oldVariableValues1, 0, oldVariableValues2.length);
                 System.arraycopy(termStore.getVariableValues(), 0, oldVariableValues2, 0, oldVariableValues2.length);
                 System.arraycopy(oldGradient2, 0, oldGradient1, 0, oldGradient1.length);
                 Arrays.fill(oldGradient2, 0.0f);

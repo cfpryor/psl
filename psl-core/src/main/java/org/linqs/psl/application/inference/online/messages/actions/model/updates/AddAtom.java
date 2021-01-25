@@ -20,6 +20,7 @@ package org.linqs.psl.application.inference.online.messages.actions.model.update
 import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
+import org.linqs.psl.util.RandUtils;
 import org.linqs.psl.util.StringUtils;
 
 /**
@@ -51,7 +52,7 @@ public class AddAtom extends OnlineAction {
     public float getValue() {
         if (value == -1.0f) {
             // Default value when a value is not provided.
-            return 0.5f;
+            return RandUtils.nextFloat();
         } else {
             return value;
         }
