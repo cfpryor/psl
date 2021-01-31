@@ -67,7 +67,8 @@ public class SGDReasoner extends Reasoner {
         long termCount = 0;
         float movement = 0.0f;
         double change = 0.0;
-        double objective = Double.POSITIVE_INFINITY;
+        double objective = 0.0;
+        double initialObjective = 0.0;
         double oldObjective = Double.POSITIVE_INFINITY;
         double alphaMin = Double.POSITIVE_INFINITY;
         List<Float> betas = new ArrayList<Float>();
@@ -173,7 +174,7 @@ public class SGDReasoner extends Reasoner {
             }
         }
 
-        // Compute the initial gradient.
+        // Compute the initial gradient and objective.
         initialValues = new float[termStore.getVariableValues().length];
         initialGradient = new float[termStore.getVariableValues().length];
         for (int i = 0; i < termStore.getVariableAtoms().length; i ++) {
@@ -184,6 +185,7 @@ public class SGDReasoner extends Reasoner {
 
         for (SGDObjectiveTerm term : termStore) {
             term.addGradient(initialGradient, initialValues, termStore);
+            initialObjective += term.evaluate(initialValues);
         }
 
         float variableChange = MathUtils.pnorm(MathUtils.vectorDifference(secondValues, initialValues), 2);
@@ -217,6 +219,7 @@ public class SGDReasoner extends Reasoner {
         change = termStore.syncAtoms();
 
         log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
+        log.info("Initial Objective: {}", initialObjective);
         log.info("Minimum observed rate of change of gradients (Alpha min): {}", alphaMin);
         log.info("Observed rates of change of gradients (Beta): {}", betas.toString());
         log.info("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
@@ -227,7 +230,7 @@ public class SGDReasoner extends Reasoner {
         log.info("Maximum observed magnitude of gradients (L median): {}", lMedian);
         log.info("Average observed magnitude of gradients (L average): {}", lAvg);
         log.info("Initial observed magnitude of gradient (g_{x}): {}", MathUtils.pnorm(initialGradient, 2));
-        log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient2, 2));
+        log.info("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient1, 2));
         log.info("Movement of variables from initial state: {}", change);
         log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
 
