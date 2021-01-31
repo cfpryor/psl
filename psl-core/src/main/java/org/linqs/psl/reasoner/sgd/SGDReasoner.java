@@ -220,6 +220,7 @@ public class SGDReasoner extends Reasoner {
 
         log.info("Final Objective: {}, Final Normalized Objective: {}, Total Optimization Time: {}", objective, objective / termCount, totalTime);
         log.info("Initial Objective: {}", initialObjective);
+        log.info("Initial Normalized Objective: {}", initialObjective / termCount);
         log.info("Minimum observed rate of change of gradients (Alpha min): {}", alphaMin);
         log.info("Observed rates of change of gradients (Beta): {}", betas.toString());
         log.info("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
