@@ -42,12 +42,14 @@ public class SGDReasoner extends Reasoner {
     private static final Logger log = LoggerFactory.getLogger(SGDReasoner.class);
 
     private int maxIterations;
+    private int minIterations;
 
     private boolean watchMovement;
     private float movementThreshold;
 
     public SGDReasoner() {
         maxIterations = Options.SGD_MAX_ITER.getInt();
+        minIterations = Options.SGD_MIN_ITER.getInt();
 
         watchMovement = Options.SGD_MOVEMENT.getBoolean();
         movementThreshold = Options.SGD_MOVEMENT_THRESHOLD.getFloat();
@@ -248,6 +250,11 @@ public class SGDReasoner extends Reasoner {
         // Always break when the allocated iterations is up.
         if (iteration > (int)(maxIterations * budget)) {
             return true;
+        }
+
+        // Never break when the allocated iterations less than minIterations.
+        if (iteration < (int)(minIterations * budget)) {
+            return false;
         }
 
         // Run through the maximum number of iterations.

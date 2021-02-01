@@ -733,6 +733,13 @@ public class Options {
         Option.FLAG_POSITIVE
     );
 
+    public static final Option SGD_MIN_ITER = new Option(
+            "sgd.maxiterations",
+            5,
+            "The minimum number of iterations of SGD to perform in a round of inference.",
+            Option.FLAG_POSITIVE
+    );
+
     public static final Option SGD_MOVEMENT = new Option(
         "sgd.movement",
         true,
