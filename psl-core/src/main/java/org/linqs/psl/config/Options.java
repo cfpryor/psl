@@ -734,7 +734,7 @@ public class Options {
     );
 
     public static final Option SGD_MIN_ITER = new Option(
-            "sgd.maxiterations",
+            "sgd.miniterations",
             5,
             "The minimum number of iterations of SGD to perform in a round of inference.",
             Option.FLAG_POSITIVE
