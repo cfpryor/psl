@@ -23,7 +23,6 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.QueryAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
-import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.model.term.Constant;
@@ -32,14 +31,18 @@ import org.linqs.psl.reasoner.term.ReasonerTerm;
 import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.IteratorUtils;
-
 import org.linqs.psl.util.RandUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.

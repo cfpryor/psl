@@ -206,6 +206,10 @@ public abstract class AbstractLogicalRule extends AbstractRule {
 
         AbstractLogicalRule otherRule = (AbstractLogicalRule)other;
 
+        if (this.hash != otherRule.hash) {
+            return false;
+        }
+
         // Final deep equality check.
         List<Atom> thisPosLiterals = this.negatedDNF.getPosLiterals();
         List<Atom> otherPosLiterals = otherRule.negatedDNF.getPosLiterals();
@@ -219,19 +223,9 @@ public abstract class AbstractLogicalRule extends AbstractRule {
             return false;
         }
 
-        for (Atom atom : thisPosLiterals) {
-            if (!otherPosLiterals.contains(atom)) {
-                return false;
-            }
-        }
-
-        for (Atom atom : thisNegLiterals) {
-            if (!otherNegLiterals.contains(atom)) {
-                return false;
-            }
-        }
-
-        return true;
+        return
+                (new HashSet<Atom>(thisPosLiterals)).equals(new HashSet<Atom>(otherPosLiterals)) &&
+                (new HashSet<Atom>(thisNegLiterals)).equals(new HashSet<Atom>(otherNegLiterals));
     }
 
     /**

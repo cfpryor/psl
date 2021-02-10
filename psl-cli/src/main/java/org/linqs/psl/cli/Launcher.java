@@ -31,7 +31,6 @@ import org.linqs.psl.database.rdbms.driver.PostgreSQLDriver;
 import org.linqs.psl.evaluation.statistics.Evaluator;
 import org.linqs.psl.grounding.GroundRuleStore;
 import org.linqs.psl.model.Model;
-import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.Rule;
@@ -49,7 +48,13 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Set;
 
