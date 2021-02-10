@@ -287,7 +287,6 @@ public abstract class Atom implements Formula, SummationAtomOrAtom {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
-        Predicate p = GroundingOnlyPredicate.NotEqual;
         if (predicate instanceof GroundingOnlyPredicate)  {
             s.append("(");
             if (predicate.equals(GroundingOnlyPredicate.NotEqual)) {

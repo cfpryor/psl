@@ -26,6 +26,8 @@ import org.linqs.psl.application.inference.online.messages.responses.OnlineRespo
 import org.linqs.psl.config.Options;
 
 import org.linqs.psl.model.predicate.ExternalFunctionalPredicate;
+import org.linqs.psl.model.predicate.FunctionalPredicate;
+import org.linqs.psl.model.predicate.GroundingOnlyPredicate;
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.rule.Rule;
 import org.slf4j.Logger;
@@ -237,9 +239,9 @@ public class OnlineServer implements Closeable {
             ArrayList<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
             ArrayList<Predicate> modelInformationPredicates = new ArrayList<Predicate>();
 
-            // Remove External Function Predicates.
+            // Remove External Function and Grounding Only Predicates.
             for (Predicate predicate : predicates) {
-                if (!(predicate instanceof ExternalFunctionalPredicate)) {
+                if (!(predicate instanceof FunctionalPredicate)) {
                     modelInformationPredicates.add(predicate);
                 }
             }

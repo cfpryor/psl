@@ -65,7 +65,7 @@ public abstract class Predicate implements Serializable {
             throw new RuntimeException("Predicate with name '" + name + "' already exists.");
         }
 
-        hashcode = HashCode.build(HashCode.build(this.name), types);
+        hashcode = HashCode.build(this.name);
 
         predicates.put(this.name, this);
     }

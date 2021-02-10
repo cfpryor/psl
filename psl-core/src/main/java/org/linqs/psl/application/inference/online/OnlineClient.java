@@ -138,7 +138,6 @@ public class OnlineClient implements Runnable {
 
         // Register model predicates.
         for (Predicate predicate : modelInformation.predicates.values()) {
-            // Todo (Charles): We will likely want to replace if predicate already existed.
             Predicate.addPredicate(predicate);
             log.trace("Registered predicate: " + Predicate.get(predicate.getName()).toString() +
                     " Client Hash: " + Predicate.get(predicate.getName()).hashCode() +

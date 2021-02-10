@@ -24,7 +24,7 @@ import org.linqs.psl.model.term.Constant;
 /**
  * A FunctionalPredicate which uses an {@link ExternalFunction} to compute truth values.
  */
-// TODO(Charles): ExternalFunctionalPredicates are currrently not serializable because ExternalFunctions are not serializable.
+// TODO(Charles): ExternalFunctionalPredicates are currently not serializable because ExternalFunctions are not serializable.
 public class ExternalFunctionalPredicate extends FunctionalPredicate {
     private final ExternalFunction extFun;
 
