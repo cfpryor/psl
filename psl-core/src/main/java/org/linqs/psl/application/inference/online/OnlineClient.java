@@ -104,34 +104,6 @@ public class OnlineClient implements Runnable {
         }
     }
 
-//    public ModelInformation initLocalModel() {
-//        ModelInformation modelInformation = null;
-//        try (
-//                Socket server = new Socket(hostname, port);
-//                ObjectOutputStream socketOutputStream = new ObjectOutputStream(server.getOutputStream());
-//                ObjectInputStream socketInputStream = new ObjectInputStream(server.getInputStream())) {
-//
-//            // Read and register serverModel.
-//            modelInformation = registerServerModel(socketInputStream);
-//
-//            // Startup serverConnectionThread for reading server responses.
-//            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
-//            serverConnectionThread.start();
-//
-//            // Cleanly exit server connection.
-//            socketOutputStream.writeObject(new Exit());
-//
-//            // Wait for serverConnectionThread.
-//            serverConnectionThread.join();
-//        } catch(IOException ex) {
-//            throw new RuntimeException(ex);
-//        } catch (InterruptedException ex) {
-//            log.error("Client session interrupted");
-//        }
-//
-//        return modelInformation;
-//    }
-
     private void registerServerModel(ObjectInputStream socketInputStream) {
         // Get model information from server.
         ModelInformation modelInformation = null;

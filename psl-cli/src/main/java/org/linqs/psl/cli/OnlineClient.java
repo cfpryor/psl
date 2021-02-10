@@ -59,14 +59,10 @@ public class OnlineClient {
             OnlineAction onlineAction = null;
             BlockingQueue<OnlineAction> onlineActions = new LinkedBlockingQueue<OnlineAction>();
 
-            // TODO(Charles): Clean up pattern for initializing local model.
             // Initialize onlineClient with shared data structures.
             org.linqs.psl.application.inference.online.OnlineClient onlineClient =
                     new org.linqs.psl.application.inference.online.OnlineClient(out, onlineActions,
                             serverResponses, modelRegistrationLatch);
-
-//            // Initialize local model. Necessary for parser as this creates predicates.
-//            modelInformation = onlineClient.initLocalModel();
 
             // Run onlineClient thread for client session.
             Thread onlineClientThread = new Thread(onlineClient);
