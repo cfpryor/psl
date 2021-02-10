@@ -123,9 +123,11 @@ public abstract class CLITest {
         File[] tempDirFiles = null;
         String serverTempFileName = null;
 
+        // Set the inference application.
         serverArgs.add("--" + CommandLineLoader.OPERATION_INFER_LONG);
         serverArgs.add("SGDOnlineInference");
 
+        // Set the model, data, and output directory for server.
         serverArgs.add("--" + CommandLineLoader.OPTION_MODEL_LONG);
         serverArgs.add(modelPath);
 
@@ -135,11 +137,11 @@ public abstract class CLITest {
         serverArgs.add("--" + CommandLineLoader.OPTION_OUTPUT_DIR_LONG);
         serverArgs.add(outDir);
 
-        // Set the logging level.
+        // Set the logging level for server.
         serverArgs.add("-" + CommandLineLoader.OPTION_PROPERTIES);
         serverArgs.add("log4j.threshold=" + loggingLevel);
 
-        //Start server.
+        // Start server.
         Runnable serverTask = () -> {
             Launcher.main(serverArgs.toArray(new String[0]), true);
         };
@@ -170,13 +172,14 @@ public abstract class CLITest {
             }
         } while (!exists);
 
-        // Start client.
+        // Set the client option.
         clientArgs.add("--" + CommandLineLoader.OPERATION_ONLINE_CLIENT_LONG);
 
+        // Set the client output directory.
         clientArgs.add("--" + CommandLineLoader.OPTION_OUTPUT_DIR_LONG);
         clientArgs.add(outDir);
 
-        // Set the logging level.
+        // Set the logging level for client.
         clientArgs.add("-" + CommandLineLoader.OPTION_PROPERTIES);
         clientArgs.add("log4j.threshold=" + loggingLevel);
 
