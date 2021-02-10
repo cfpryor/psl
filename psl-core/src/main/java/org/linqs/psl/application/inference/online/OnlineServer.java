@@ -25,20 +25,19 @@ import org.linqs.psl.application.inference.online.messages.responses.ModelInform
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
+import org.linqs.psl.model.predicate.ExternalFunctionalPredicate;
 import org.linqs.psl.model.predicate.Predicate;
-import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.File;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -236,9 +235,17 @@ public class OnlineServer implements Closeable {
 
             // Send Client model information for action validation.
             ArrayList<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
+            ArrayList<Predicate> modelInformationPredicates = new ArrayList<Predicate>();
+
+            // Remove External Function Predicates.
+            for (Predicate predicate : predicates) {
+                if (!(predicate instanceof ExternalFunctionalPredicate)) {
+                    modelInformationPredicates.add(predicate);
+                }
+            }
 
             try {
-                ModelInformation modelInformation = new ModelInformation(predicates.toArray(new Predicate[]{}),
+                ModelInformation modelInformation = new ModelInformation(modelInformationPredicates.toArray(new Predicate[]{}),
                         this.server.rules.toArray(new Rule[]{}));
                 outputStream.writeObject(modelInformation);
             } catch (IOException ex) {
