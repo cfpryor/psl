@@ -38,6 +38,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * A client that takes input on stdin and passes it to the online host specified in configuration.
@@ -48,15 +49,18 @@ public class OnlineClient implements Runnable {
     private PrintStream out;
     private List<OnlineResponse> serverResponses;
     private BlockingQueue<OnlineAction> actionQueue;
+    private CountDownLatch modelRegistrationLatch;
     private String hostname;
     private int port;
 
-    public OnlineClient(PrintStream out, BlockingQueue<OnlineAction> actionQueue, List<OnlineResponse> serverResponses) {
+    public OnlineClient(PrintStream out, BlockingQueue<OnlineAction> actionQueue, List<OnlineResponse> serverResponses,
+                        CountDownLatch modelRegistrationLatch) {
         this.out = out;
         this.serverResponses = serverResponses;
         this.actionQueue = actionQueue;
         this.hostname = Options.ONLINE_HOST.getString();
         this.port = Options.ONLINE_PORT_NUMBER.getInt();
+        this.modelRegistrationLatch = modelRegistrationLatch;
     }
 
     public void run() {
@@ -68,6 +72,7 @@ public class OnlineClient implements Runnable {
 
             // Read and register serverModel.
             registerServerModel(socketInputStream);
+            modelRegistrationLatch.countDown();
 
             // Startup serverConnectionThread for reading server responses.
             ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
@@ -99,35 +104,35 @@ public class OnlineClient implements Runnable {
         }
     }
 
-    public ModelInformation initLocalModel() {
-        ModelInformation modelInformation = null;
-        try (
-                Socket server = new Socket(hostname, port);
-                ObjectOutputStream socketOutputStream = new ObjectOutputStream(server.getOutputStream());
-                ObjectInputStream socketInputStream = new ObjectInputStream(server.getInputStream())) {
+//    public ModelInformation initLocalModel() {
+//        ModelInformation modelInformation = null;
+//        try (
+//                Socket server = new Socket(hostname, port);
+//                ObjectOutputStream socketOutputStream = new ObjectOutputStream(server.getOutputStream());
+//                ObjectInputStream socketInputStream = new ObjectInputStream(server.getInputStream())) {
+//
+//            // Read and register serverModel.
+//            modelInformation = registerServerModel(socketInputStream);
+//
+//            // Startup serverConnectionThread for reading server responses.
+//            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
+//            serverConnectionThread.start();
+//
+//            // Cleanly exit server connection.
+//            socketOutputStream.writeObject(new Exit());
+//
+//            // Wait for serverConnectionThread.
+//            serverConnectionThread.join();
+//        } catch(IOException ex) {
+//            throw new RuntimeException(ex);
+//        } catch (InterruptedException ex) {
+//            log.error("Client session interrupted");
+//        }
+//
+//        return modelInformation;
+//    }
 
-            // Read and register serverModel.
-            modelInformation = registerServerModel(socketInputStream);
-
-            // Startup serverConnectionThread for reading server responses.
-            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
-            serverConnectionThread.start();
-
-            // Cleanly exit server connection.
-            socketOutputStream.writeObject(new Exit());
-
-            // Wait for serverConnectionThread.
-            serverConnectionThread.join();
-        } catch(IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (InterruptedException ex) {
-            log.error("Client session interrupted");
-        }
-
-        return modelInformation;
-    }
-
-    private ModelInformation registerServerModel(ObjectInputStream socketInputStream) {
+    private void registerServerModel(ObjectInputStream socketInputStream) {
         // Get model information from server.
         ModelInformation modelInformation = null;
         try {
@@ -143,8 +148,6 @@ public class OnlineClient implements Runnable {
                     " Client Hash: " + Predicate.get(predicate.getName()).hashCode() +
                     " Server Hash: " + predicate.hashCode());
         }
-
-        return modelInformation;
     }
 
     /**
