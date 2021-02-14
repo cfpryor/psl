@@ -37,14 +37,18 @@ import java.util.Map;
 public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
     private static final Logger log = LoggerFactory.getLogger(SGDOnlineTermStore.class);
 
-    protected double[] deltaModelGradient;
-    protected float[] previousVariableValues;
-    protected GroundAtom[] previousVariableAtoms;
-    protected Map<Integer, Rule> deltaPages;
+    double[] deltaModelGradient;
+    float[] previousVariableValues;
+    GroundAtom[] previousVariableAtoms;
+    // Pages of activated and deactivated term pages since last optimize call.
+    private Map<Integer, Rule> deltaPages;
+    // Pages of missing potentials from approximation.
+    private ArrayList<Integer> approximationPages;
 
     public SGDOnlineTermStore(List<Rule> rules, AtomManager atomManager, SGDTermGenerator termGenerator) {
         super(rules, atomManager, termGenerator);
         deltaPages = new HashMap<Integer, Rule>();
+        approximationPages = new ArrayList<Integer>();
 
         previousVariableAtoms = new GroundAtom[variableAtoms.length];
         System.arraycopy(variableAtoms, 0, previousVariableAtoms, 0, variableAtoms.length);
@@ -56,21 +60,21 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
         return new SGDOnlineGroundingIterator(
                 this, rules, atomManager, termGenerator,
                 termCache, termPool, termBuffer, volatileBuffer, pageSize, numPages);
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getCacheIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getCacheIterator() {
         return new SGDStreamingCacheIterator(
                 this, false, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getNoWriteIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getNoWriteIterator() {
         return new SGDStreamingCacheIterator(
                 this, true, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
@@ -84,26 +88,34 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
             return null;
         }
 
-        int activePageIndex = 0;
-        for (Integer i : rulePages) {
-            activePageIndex = activeTermPages.indexOf(i);
-            if (activePageIndex == -1) {
-                // If rule was deactivated and activated before an optimization then remove from delta pages.
-                if (deltaPages.containsKey(i)) {
-                    deltaPages.remove(i);
-                } else {
-                    activeTermPages.add(i);
-                    deltaPages.put(i, null);
-                    // This represents the number of active pages.
-                    numPages++;
-                }
-            } else {
-                log.warn("Page: {} already activated for rule: {}", i, rule.toString());
-                log.warn("Active Term Pages: {}", activeTermPages);
+        for (Integer pageIndex : rulePages) {
+            if (!activatePage(pageIndex)) {
+                log.warn("Page: {} already activated for rule: {}", pageIndex, rule.toString());
             }
         }
+
         rules.add(rule);
         return rule;
+    }
+
+    private Boolean activatePage(Integer pageIndex) {
+        int activePageIndex = activeTermPages.indexOf(pageIndex);
+        if (activePageIndex != -1) {
+            return false;
+        }
+
+        activeTermPages.add(pageIndex);
+        // This represents the number of active pages.
+        numPages++;
+
+        // If rule was deactivated and activated before an optimization then remove from delta pages.
+        if (deltaPages.containsKey(pageIndex)) {
+            deltaPages.remove(pageIndex);
+        } else {
+            deltaPages.put(pageIndex, null);
+        }
+
+        return true;
     }
 
     @Override
@@ -115,24 +127,30 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         }
 
         log.trace("SGD ONLINE TERM STORE Deactivating Pages: {} from Active Term Pages: {}", rulePages, activeTermPages);
-        int activePageIndex = 0;
-        for (Integer i : rulePages) {
-            activePageIndex = activeTermPages.indexOf(i);
-            if (activePageIndex != -1) {
+        for (Integer pageIndex : rulePages) {
+            if (deactivatePage(pageIndex)) {
                 // If rule was activated and deactivated before an optimization then remove from delta pages.
-                if (deltaPages.containsKey(i)) {
-                    deltaPages.remove(i);
-                    activeTermPages.remove(i);
-                    numPages--;
+                if (deltaPages.containsKey(pageIndex)) {
+                    deltaPages.remove(pageIndex);
                 } else {
-                    deltaPages.put(i, rule);
+                    deltaPages.put(pageIndex, rule);
                 }
             } else {
-                log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
-                log.warn("Active Term Pages: {}", activeTermPages);
+                log.warn("Page: {} already deactivated for rule: {}", pageIndex, rule.toString());
             }
         }
         return rule;
+    }
+
+    private Boolean deactivatePage(Integer pageIndex) {
+        int activePageIndex = activeTermPages.indexOf(pageIndex);
+        if (activePageIndex == -1) {
+            return false;
+        }
+
+        activeTermPages.remove(pageIndex);
+        numPages--;
+        return true;
     }
 
     @Override
@@ -164,7 +182,7 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         return atom;
     }
 
-    public void clearDeltaPages(){
+    public void clearDeltaPages() {
         // Deactivate the pages now.
         for (Integer i : deltaPages.keySet()){
             if (deltaPages.get(i) != null) {
@@ -181,7 +199,7 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
         }
     }
 
-    public void computeDeltaModelGradient(SGDObjectiveTerm term, boolean add){
+    public void computeDeltaModelGradient(SGDObjectiveTerm term, boolean add) {
         // Make sure there is room in delta model gradient
         if (variableValues.length > deltaModelGradient.length) {
             // Double the size of the array if realocation is required
@@ -211,6 +229,22 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
 
     public boolean deltaPagesEmpty() {
         return deltaPages.isEmpty();
+    }
+
+    public void activateApproximationPages() {
+        for (Integer page_index : approximationPages) {
+            activatePage(page_index);
+        }
+    }
+
+    public void deactivateApproximationPages() {
+        for (Integer page_index : approximationPages) {
+            deactivatePage(page_index);
+        }
+    }
+
+    public void addApproximationPages() {
+        approximationPages.addAll(newTermPages);
     }
 
     public void updatePreviousVariables() {

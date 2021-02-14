@@ -64,21 +64,21 @@ public class DCDStreamingTermStore extends StreamingTermStore<DCDObjectiveTerm> 
     }
 
     @Override
-    protected StreamingIterator<DCDObjectiveTerm> getGroundingIterator() {
+    public StreamingIterator<DCDObjectiveTerm> getGroundingIterator() {
         return new DCDStreamingGroundingIterator(
                 this, rules, atomManager, termGenerator,
                 termCache, termPool, termBuffer, volatileBuffer, pageSize, numPages);
     }
 
     @Override
-    protected StreamingIterator<DCDObjectiveTerm> getCacheIterator() {
+    public StreamingIterator<DCDObjectiveTerm> getCacheIterator() {
         return new DCDStreamingCacheIterator(
                 this, false, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
     }
 
     @Override
-    protected StreamingIterator<DCDObjectiveTerm> getNoWriteIterator() {
+    public StreamingIterator<DCDObjectiveTerm> getNoWriteIterator() {
         return new DCDStreamingCacheIterator(
                 this, true, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);

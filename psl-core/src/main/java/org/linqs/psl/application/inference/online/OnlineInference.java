@@ -42,7 +42,11 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.Rule;
+import org.linqs.psl.reasoner.sgd.term.SGDOnlineTermStore;
+import org.linqs.psl.reasoner.term.ReasonerTerm;
 import org.linqs.psl.reasoner.term.online.OnlineTermStore;
+import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
+import org.linqs.psl.util.IteratorUtils;
 import org.linqs.psl.util.StringUtils;
 
 import org.slf4j.Logger;
@@ -56,6 +60,7 @@ public abstract class OnlineInference extends InferenceApplication {
     private OnlineServer server;
 
     private boolean hotStart;
+    private boolean computeApproximationDelta;
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
@@ -78,6 +83,7 @@ public abstract class OnlineInference extends InferenceApplication {
         variableChangeCount = 0;
         variableChange = 0.0;
         hotStart = Options.ONLINE_HOT_START.getBoolean();
+        computeApproximationDelta = Options.ONLINE_COMPUTE_APPROXIMATION_DELTA.getBoolean();
 
         startServer();
 
@@ -231,12 +237,11 @@ public abstract class OnlineInference extends InferenceApplication {
 
     protected String doStop(Stop action) {
         stopped = true;
-
         return "OnlinePSL inference stopped.";
     }
 
     protected String doSync(Sync action) {
-        doOptimize();
+        optimize();
         return "OnlinePSL inference synced.";
     }
 
@@ -269,7 +274,7 @@ public abstract class OnlineInference extends InferenceApplication {
     protected String doWriteInferredPredicates(WriteInferredPredicates action) {
         String response = null;
 
-        doOptimize();
+        optimize();
 
         if (action.getOutputDirectoryPath() != null) {
             log.info("Writing inferred predicates to file: " + action.getOutputDirectoryPath());
@@ -287,7 +292,7 @@ public abstract class OnlineInference extends InferenceApplication {
     protected String doQueryAtom(QueryAtom action) {
         double atomValue = -1.0;
 
-        doOptimize();
+        optimize();
 
         if (((OnlineAtomManager)atomManager).hasAtom(action.getPredicate(), action.getArguments())) {
             atomValue = atomManager.getAtom(action.getPredicate(), action.getArguments()).getValue();
@@ -308,7 +313,7 @@ public abstract class OnlineInference extends InferenceApplication {
     /**
      * Optimize if there were any new or deleted atoms since last optimization.
      */
-    private void doOptimize() {
+    private void optimize() {
         if (!modelUpdates) {
             return;
         }
@@ -325,6 +330,37 @@ public abstract class OnlineInference extends InferenceApplication {
         log.trace("Optimization Start");
         objective = reasoner.optimize(termStore);
         log.trace("Optimization End");
+        if (computeApproximationDelta) {
+            // Add context atoms back into online atom manager.
+            ((OnlineTermStore)termStore).addContextAtoms();
+            // Set Inverse Non-Powerset Grounding Option.
+            Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(true);
+            // Reset New Term Pages.
+            ((OnlineTermStore)termStore).clearNewTermPages();
+            // Activate the approximation missing potential pages.
+            ((SGDOnlineTermStore)termStore).activateApproximationPages();
+            // Ground Missing Potentials and calculate delta model gradient.
+            for (Object ignored : termStore) {
+                // Ground.
+            }
+            termStore.iterationComplete();
+            // Log the approximation
+            if (termStore instanceof SGDOnlineTermStore) {
+                log.info("Approximation Delta Model Gradient Magnitude: {}", ((SGDOnlineTermStore)termStore).getDeltaModelGradient());
+            }
+            // Add newly grounded pages to approximation pages set.
+            ((SGDOnlineTermStore)termStore).addApproximationPages();
+            // Deactivate approximation Pages.
+            ((SGDOnlineTermStore)termStore).deactivateApproximationPages();
+            // Reset New Term Pages.
+            ((OnlineTermStore)termStore).clearNewTermPages();
+            // Reset Inverse Non-Powerset Grounding Option.
+            Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(false);
+            // Flush Context Atoms
+            ((OnlineTermStore)termStore).clearContextAtoms();
+            // Reset delta pages.
+            ((SGDOnlineTermStore)termStore).clearDeltaPages();
+        }
 
         modelUpdates = false;
     }
@@ -332,7 +368,7 @@ public abstract class OnlineInference extends InferenceApplication {
     @Override
     public double internalInference() {
         // Initial round of inference.
-        doOptimize();
+        optimize();
 
         while (!stopped) {
             OnlineAction action = server.getAction();

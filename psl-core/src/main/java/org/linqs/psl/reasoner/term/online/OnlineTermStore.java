@@ -19,6 +19,7 @@ package org.linqs.psl.reasoner.term.online;
 
 import org.linqs.psl.database.atom.AtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
+import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.QueryAtom;
@@ -40,9 +41,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.
@@ -53,9 +56,14 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     private static final Logger log = LoggerFactory.getLogger(OnlineTermStore.class);
 
     protected ArrayList<Integer> activeTermPages;
+    protected ArrayList<Integer> newTermPages;
     protected ArrayList<Integer> activeVolatilePages;
     protected Integer nextTermPageIndex;
     protected Integer nextVolatilePageIndex;
+
+    // Keep track of context atoms and templates.
+    protected Set<ObservedAtom> contextObservedAtoms;
+    protected Set<RandomVariableAtom> contextRandomVariableAtoms;
 
     // Keep track of template pages.
     protected Map<Rule, ArrayList<Integer>> pageMapping;
@@ -63,8 +71,11 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     public OnlineTermStore(List<Rule> rules, AtomManager atomManager,
                            HyperplaneTermGenerator<T, GroundAtom> termGenerator) {
         super(rules, atomManager, termGenerator);
+        contextObservedAtoms = new HashSet<ObservedAtom>();
+        contextRandomVariableAtoms = new HashSet<RandomVariableAtom>();
 
         activeTermPages = new ArrayList<Integer>();
+        newTermPages = new ArrayList<Integer>();
         activeVolatilePages = new ArrayList<Integer>();
         nextTermPageIndex = 0;
         nextVolatilePageIndex = 0;
@@ -97,8 +108,10 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         GroundAtom atom = null;
         if (readPartition) {
             atom = ((OnlineAtomManager)atomManager).addObservedAtom(predicate, newValue, arguments);
+            contextObservedAtoms.add((ObservedAtom)atom);
         } else {
             atom = ((OnlineAtomManager)atomManager).addRandomVariableAtom((StandardPredicate) predicate, newValue, arguments);
+            contextRandomVariableAtoms.add((RandomVariableAtom)atom);
         }
 
         createLocalVariable(atom);
@@ -124,7 +137,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         ((OnlineAtomManager)atomManager).deleteAtom(predicate, arguments);
 
         // Create observed atom with same predicates and arguments as the existing random variable atom.
-        ObservedAtom observedAtom = ((OnlineAtomManager)atomManager).addObservedAtom(predicate, newValue, arguments);
+        ObservedAtom observedAtom = ((OnlineAtomManager)atomManager).addObservedAtom(false, predicate, newValue, arguments);
         variableAtoms[getVariableIndex(observedAtom)] = observedAtom;
         variableValues[getVariableIndex(observedAtom)] = newValue;
 
@@ -192,6 +205,21 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return atom;
     }
 
+    public void addContextAtoms() {
+        for (ObservedAtom atom : contextObservedAtoms) {
+            ((OnlineAtomManager)atomManager).addObservedAtom(atom);
+        }
+
+        for (RandomVariableAtom atom : contextRandomVariableAtoms) {
+            ((OnlineAtomManager)atomManager).addRandomVariableAtom(atom);
+        }
+    }
+
+    public void clearContextAtoms() {
+        contextObservedAtoms.clear();
+        contextRandomVariableAtoms.clear();
+    }
+
     public synchronized GroundAtom updateAtom(StandardPredicate predicate, Constant[] arguments, float newValue) {
         QueryAtom atom = new QueryAtom(predicate, arguments);
         if (!variables.containsKey(atom)) {
@@ -220,7 +248,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
                 numPages++;
             } else {
                 log.warn("Page: {} already activated for rule: {}", i, rule.toString());
-                log.warn("Active Term Pages: {}", activeTermPages);
             }
         }
         rules.add(rule);
@@ -248,7 +275,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
                 numPages--;
             } else {
                 log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
-                log.warn("Active Term Pages: {}", activeTermPages);
             }
         }
         rules.remove(rule);
@@ -319,6 +345,10 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return Math.sqrt(movement);
     }
 
+    public void clearNewTermPages() {
+        newTermPages.clear();
+    }
+
     @Override
     public String getTermPagePath(int index) {
         // Make sure the path is built.
@@ -326,6 +356,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         for (int i = activeTermPages.size(); i <= index; i++) {
             termPagePaths.add(Paths.get(pageDir, String.format("%08d_term.page", nextTermPageIndex)).toString());
             activeTermPages.add(nextTermPageIndex);
+            newTermPages.add(nextTermPageIndex);
             nextTermPageIndex++;
         }
 

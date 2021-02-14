@@ -333,6 +333,7 @@ public abstract class StreamingTermStore<T extends ReasonerTerm> implements Vari
     public String getTermPagePath(int index) {
         // Make sure the path is built.
         for (int i = termPagePaths.size(); i <= index; i++) {
+            // Creating new term page path.
             termPagePaths.add(Paths.get(pageDir, String.format("%08d_term.page", i)).toString());
         }
 
@@ -342,6 +343,7 @@ public abstract class StreamingTermStore<T extends ReasonerTerm> implements Vari
     public String getVolatilePagePath(int index) {
         // Make sure the path is built.
         for (int i = volatilePagePaths.size(); i <= index; i++) {
+            // Creating new volatile page path.
             volatilePagePaths.add(Paths.get(pageDir, String.format("%08d_volatile.page", i)).toString());
         }
 
@@ -540,15 +542,15 @@ public abstract class StreamingTermStore<T extends ReasonerTerm> implements Vari
      * By default, this is only called for the initial round of iteration,
      * but children may override call this in different situations (like online inference).
      */
-    protected abstract StreamingIterator<T> getGroundingIterator();
+    public abstract StreamingIterator<T> getGroundingIterator();
 
     /**
      * Get an iterator that will read and write from disk.
      */
-    protected abstract StreamingIterator<T> getCacheIterator();
+    public abstract StreamingIterator<T> getCacheIterator();
 
     /**
      * Get an iterator that will not write to disk.
      */
-    protected abstract StreamingIterator<T> getNoWriteIterator();
+    public abstract StreamingIterator<T> getNoWriteIterator();
 }

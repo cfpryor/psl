@@ -207,15 +207,28 @@ public class PartialGrounding {
         int partialTargetIndex = 0;
         int num_partial_targets = 0;
 
-        if (Options.PARTIAL_GROUNDING_POWERSET.getBoolean()) {
-            subsetIterable = IteratorUtils.powerset(allPartialTargetAtoms.size());
-        } else {
-            // Build subsetIterable so that only only one atom can come from a special partition at a time.
+        if (Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.getBoolean()) {
+            // Build subsetIterable so that only MORE than one atom can come from a special partition at a time.
             subsetIterable = new ArrayList<boolean[]>();
-            for (int i=0; i < allPartialTargetAtoms.size(); i++) {
-                boolean[] subset = new boolean[allPartialTargetAtoms.size()];
-                subset[i] = true;
-                ((List<boolean[]>)subsetIterable).add(subset);
+            for (int i = 0; i < allPartialTargetAtoms.size() - 1; i++) {
+                for (int j = i + 1; j < allPartialTargetAtoms.size(); j++) {
+                    boolean[] subset = new boolean[allPartialTargetAtoms.size()];
+                    subset[i] = true;
+                    subset[j] = true;
+                    ((List<boolean[]>) subsetIterable).add(subset);
+                }
+            }
+        } else {
+            if (Options.PARTIAL_GROUNDING_POWERSET.getBoolean()) {
+                subsetIterable = IteratorUtils.powerset(allPartialTargetAtoms.size());
+            } else {
+                // Build subsetIterable so that only one atom can come from a special partition at a time.
+                subsetIterable = new ArrayList<boolean[]>();
+                for (int i = 0; i < allPartialTargetAtoms.size(); i++) {
+                    boolean[] subset = new boolean[allPartialTargetAtoms.size()];
+                    subset[i] = true;
+                    ((List<boolean[]>) subsetIterable).add(subset);
+                }
             }
         }
 
@@ -246,6 +259,9 @@ public class PartialGrounding {
             }
         }
 
+        if (queries.size() == 0) {
+            return null;
+        }
         // This falls back to a normal SELECT when there is only one.
         UnionQuery union = new UnionQuery(SetOperationQuery.Type.UNION_ALL, queries.toArray(new SelectQuery[0]));
         return relationalDB.executeQueryIterator(projectionMap, varTypes, union.validate().toString());

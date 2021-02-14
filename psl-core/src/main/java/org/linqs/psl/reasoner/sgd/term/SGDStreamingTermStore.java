@@ -36,21 +36,21 @@ public class SGDStreamingTermStore extends StreamingTermStore<SGDObjectiveTerm> 
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
         return new SGDStreamingGroundingIterator(
                 this, rules, atomManager, termGenerator,
                 termCache, termPool, termBuffer, volatileBuffer, pageSize, numPages);
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getCacheIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getCacheIterator() {
         return new SGDStreamingCacheIterator(
                 this, false, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
     }
 
     @Override
-    protected StreamingIterator<SGDObjectiveTerm> getNoWriteIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getNoWriteIterator() {
         return new SGDStreamingCacheIterator(
                 this, true, termCache, termPool,
                 termBuffer, volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);

@@ -520,6 +520,14 @@ public class Options {
         "A comma separated list of indexes to the predicate arguments that identity the target label (as opposed to the identity of the data point)."
     );
 
+    public static final Option ONLINE_COMPUTE_APPROXIMATION_DELTA = new Option(
+            "inference.onlinecomputeapproximationdelta",
+            false,
+            "Whether to use compute the delta model gradient for the approximate grounding technique. " +
+                    "This is used for debugging and experimentation."
+    );
+
+
     public static final Option ONLINE_HOT_START = new Option(
             "inference.onlinehotstart",
             true,
@@ -572,6 +580,12 @@ public class Options {
         "Whether or not to iterate over the powerset of partial targets during a partial grounding."
         + " If true the partial grounding will result in no regret in the inference. "
         + " If false an approximation will be made such that only one atom in a ground rule can come from a special partition."
+    );
+
+    public static final Option PARTIAL_GROUNDING_INVERSE_NON_POWERSET = new Option(
+        "partialgrounding.inverse_non_powerset",
+        false,
+        ""
     );
 
     public static final Option PAM_THROW_ACCESS_EXCEPTION = new Option(
