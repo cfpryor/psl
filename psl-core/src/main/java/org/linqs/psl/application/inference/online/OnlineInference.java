@@ -335,11 +335,11 @@ public abstract class OnlineInference extends InferenceApplication {
             ((OnlineTermStore)termStore).addContextAtoms();
             // Set Inverse Non-Powerset Grounding Option.
             Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(true);
-            // Reset New Term Pages.
+            // Reset new term pages. May be new term pages from execution of client actions.
             ((OnlineTermStore)termStore).clearNewTermPages();
             // Activate the approximation missing potential pages.
             ((SGDOnlineTermStore)termStore).activateApproximationPages();
-            // Ground Missing Potentials and calculate delta model gradient.
+            // Ground missing potentials and calculate delta model gradient.
             for (Object ignored : termStore) {
                 // Ground.
             }
@@ -350,15 +350,15 @@ public abstract class OnlineInference extends InferenceApplication {
             }
             // Add newly grounded pages to approximation pages set.
             ((SGDOnlineTermStore)termStore).addApproximationPages();
-            // Deactivate approximation Pages.
+            // Deactivate approximation pages.
             ((SGDOnlineTermStore)termStore).deactivateApproximationPages();
-            // Reset New Term Pages.
+            // Reset new term pages.
             ((OnlineTermStore)termStore).clearNewTermPages();
-            // Reset Inverse Non-Powerset Grounding Option.
+            // Reset inverse non-powerset grounding option.
             Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(false);
-            // Flush Context Atoms
+            // Flush context atoms.
             ((OnlineTermStore)termStore).clearContextAtoms();
-            // Reset delta pages.
+            // Reset delta pages. We dot want the deactivation calls to contribute to delta model gradient.
             ((SGDOnlineTermStore)termStore).clearDeltaPages();
         }
 

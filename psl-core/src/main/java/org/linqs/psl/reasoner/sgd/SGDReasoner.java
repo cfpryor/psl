@@ -249,19 +249,19 @@ public class SGDReasoner extends Reasoner {
             log.trace("Maximum observed rate of change of gradients (Beta max): {}", betaMax);
             log.trace("Maximum observed rate of change of gradients (Beta median): {}", betaMedian);
             log.trace("Average observed rate of change of gradients (Beta average): {}", betaAvg);
-            log.trace("Observed rates of magnitudes of gradients (L): {}", ls.toString());
+            log.trace("Observed magnitudes of gradients (L): {}", ls.toString());
             log.trace("Maximum observed magnitude of gradients (L max): {}", lMax);
             log.trace("Maximum observed magnitude of gradients (L median): {}", lMedian);
             log.trace("Average observed magnitude of gradients (L average): {}", lAvg);
-            log.trace("Initial observed magnitude of gradient (g_{x}): {}", MathUtils.pnorm(initialGradient, 2));
-            log.trace("Final observed magnitude of gradient (g_{x^*}): {}", MathUtils.pnorm(oldGradient1, 2));
+            log.trace("Initial observed magnitude of gradient (|g_{x}|): {}", MathUtils.pnorm(initialGradient, 2));
+            log.trace("Final observed magnitude of gradient (|g_{x^*}|): {}", MathUtils.pnorm(oldGradient1, 2));
             log.trace("Movement of variables from initial state: {}", change);
         }
-        log.debug("Optimized with {} variables and {} terms.", termStore.getNumVariables(), termCount);
+        log.debug("Optimized with {} random variables and {} terms.", termStore.getNumRandomVariables(), termCount);
 
         // Store atoms and values for the delta model.
-        if (termStore instanceof SGDOnlineTermStore) {
-            log.info("Delta model change in gradient: {}", ((SGDOnlineTermStore)termStore).getDeltaModelGradient());
+        if (termStore instanceof SGDOnlineTermStore && log.isTraceEnabled()) {
+            log.trace("Delta model change in gradient: {}", ((SGDOnlineTermStore)termStore).getDeltaModelGradient());
             ((SGDOnlineTermStore)termStore).updatePreviousVariables();
         }
 
