@@ -322,7 +322,7 @@ public abstract class OnlineInference extends InferenceApplication {
             initializeAtoms();
         }
 
-        log.trace("Model updates:  (variable change count): {} unique variables", variableChangeCount);
+        log.trace("Model updates: (variable change count): {} unique variables", variableChangeCount);
         log.trace("Model updates: (variable delta): {}", Math.sqrt(variableChange));
         variableChangeCount = 0;
         variableChange = 0.0;
