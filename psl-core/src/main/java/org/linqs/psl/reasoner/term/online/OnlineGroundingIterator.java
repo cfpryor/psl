@@ -17,11 +17,9 @@
  */
 package org.linqs.psl.reasoner.term.online;
 
-import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Partition;
 import org.linqs.psl.database.atom.AtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
-import org.linqs.psl.database.rdbms.RDBMSDatabase;
 import org.linqs.psl.grounding.PartialGrounding;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.predicate.StandardPredicate;
@@ -107,22 +105,12 @@ public abstract class OnlineGroundingIterator<T extends ReasonerTerm> extends St
         }
 
         if (!parentStore.isInitialRound()) {
-            if (!Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.getBoolean()) {
-                // Move all the new atoms out of the special partition and into the read/write partitions.
-                for (StandardPredicate onlinePredicate : onlinePredicates) {
-                    atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_READ_ID,
-                            ((OnlineAtomManager) atomManager).getOnlineReadPartition());
-                    atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_WRITE_ID,
-                            atomManager.getDatabase().getWritePartition().getID());
-                }
-            } else {
-                // Move the duplicated atoms out of the special partition and into the null partition.
-                for (StandardPredicate onlinePredicate : onlinePredicates) {
-                    atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_READ_ID,
-                            Partition.SPECIAL_NULL_ID);
-                    atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_WRITE_ID,
-                            Partition.SPECIAL_NULL_ID);
-                }
+            // Move all the new atoms out of the special partition and into the read/write partitions.
+            for (StandardPredicate onlinePredicate : onlinePredicates) {
+                atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_READ_ID,
+                        ((OnlineAtomManager) atomManager).getOnlineReadPartition());
+                atomManager.getDatabase().moveToPartition(onlinePredicate, Partition.SPECIAL_WRITE_ID,
+                        atomManager.getDatabase().getWritePartition().getID());
             }
         }
 

@@ -27,7 +27,6 @@ public class Partition {
      */
     public static final int SPECIAL_WRITE_ID = -1;
     public static final int SPECIAL_READ_ID = -2;
-    public static final int SPECIAL_NULL_ID = -3;
 
     private final int id;
     private final String name;

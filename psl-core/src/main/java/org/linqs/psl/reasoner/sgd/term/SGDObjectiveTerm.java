@@ -19,7 +19,6 @@ package org.linqs.psl.reasoner.sgd.term;
 
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
-import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.reasoner.term.Hyperplane;
 import org.linqs.psl.reasoner.term.ReasonerTerm;
@@ -41,10 +40,8 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     private float[] coefficients;
     private int[] variableIndexes;
 
-    public SGDObjectiveTerm(VariableTermStore<SGDObjectiveTerm, GroundAtom> termStore,
-            boolean squared, boolean hinge,
-            Hyperplane<GroundAtom> hyperplane,
-            float weight, float learningRate) {
+    public SGDObjectiveTerm(VariableTermStore<SGDObjectiveTerm, GroundAtom> termStore, boolean squared, boolean hinge,
+            Hyperplane<GroundAtom> hyperplane, float weight, float learningRate) {
         this.squared = squared;
         this.hinge = hinge;
 
@@ -89,40 +86,6 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         }
     }
 
-    private float deltaDot(SGDOnlineTermStore termStore) {
-        float value = 0.0f;
-
-        for (int i = 0; i < size; i++) {
-            if (variableIndexes[i] >= termStore.previousVariableValues.length) {
-                value += coefficients[i] * termStore.getVariableValues()[variableIndexes[i]];
-            } else {
-                value += coefficients[i] * termStore.previousVariableValues[variableIndexes[i]];
-            }
-        }
-
-        return value - constant;
-    }
-
-    /**
-     * Returns the sum of gradients of the provided atoms and values.
-     */
-    public void deltaGradient(SGDOnlineTermStore termStore, boolean add) {
-        float dot = deltaDot(termStore);
-        for (int i = 0 ; i < size; i++) {
-            if (termStore.getVariableAtoms()[variableIndexes[i]] instanceof ObservedAtom ||
-                    (variableIndexes[i] < termStore.previousVariableAtoms.length &&
-                            termStore.previousVariableAtoms[variableIndexes[i]] instanceof ObservedAtom)) {
-                continue;
-            }
-
-            if (add) {
-                termStore.deltaModelGradient[variableIndexes[i]] += computeGradient(i, dot);
-            } else {
-                termStore.deltaModelGradient[variableIndexes[i]] -= computeGradient(i, dot);
-            }
-        }
-    }
-
     /**
      * Minimize the term by changing the random variables and return how much the random variables were moved by.
      */
@@ -147,22 +110,6 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         }
 
         return movement;
-    }
-
-    /**
-     * Adds the potential contribution to the provided gradient vector with the variable values provided.
-     */
-    public void addGradient(float[] gradientVector, float[] variableValues, VariableTermStore termStore) {
-        GroundAtom[] variableAtoms = termStore.getVariableAtoms();
-        float dot = dot(variableValues);
-
-        for (int i = 0 ; i < size; i++) {
-            if (variableAtoms[variableIndexes[i]] instanceof ObservedAtom) {
-                continue;
-            }
-
-            gradientVector[variableIndexes[i]] += computeGradient(i, dot);
-        }
     }
 
     private float computeGradient(int varId, float dot) {

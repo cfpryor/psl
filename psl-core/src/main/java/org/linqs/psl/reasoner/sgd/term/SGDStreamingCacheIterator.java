@@ -48,15 +48,6 @@ public class SGDStreamingCacheIterator extends StreamingCacheIterator<SGDObjecti
         SGDObjectiveTerm term = nextTerm;
         nextTerm = null;
 
-        // Compute the delta gradient
-        if (parentStore instanceof SGDOnlineTermStore) {
-            Map<Integer, Rule> deltaPages = ((SGDOnlineTermStore)parentStore).getDeltaPages();
-            if (deltaPages.containsKey(currentPage)) {
-                // DeltaPages has the rule for deactivated rules and null for activated rules.
-                ((SGDOnlineTermStore)parentStore).computeDeltaModelGradient(term, deltaPages.get(currentPage) == null);
-            }
-        }
-
         return term;
     }
 

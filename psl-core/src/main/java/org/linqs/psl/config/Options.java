@@ -520,14 +520,6 @@ public class Options {
         "A comma separated list of indexes to the predicate arguments that identity the target label (as opposed to the identity of the data point)."
     );
 
-    public static final Option ONLINE_COMPUTE_APPROXIMATION_DELTA = new Option(
-            "inference.onlinecomputeapproximationdelta",
-            false,
-            "Whether to use compute the delta model gradient for the approximate grounding technique. " +
-                    "This is used for debugging and experimentation."
-    );
-
-
     public static final Option ONLINE_HOT_START = new Option(
             "inference.onlinehotstart",
             true,

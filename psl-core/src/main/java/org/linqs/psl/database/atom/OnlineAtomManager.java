@@ -65,37 +65,17 @@ public class OnlineAtomManager extends PersistedAtomManager {
     }
 
     public ObservedAtom addObservedAtom(StandardPredicate predicate, float value, Constant... arguments) {
-        return addObservedAtom(true, predicate, value, arguments);
-    }
-
-    public ObservedAtom addObservedAtom(Boolean context, StandardPredicate predicate, float value, Constant... arguments) {
         ObservedAtom atom = database.getCache().instantiateObservedAtom(predicate, arguments, value);
-        if (context) {
-            addObservedAtom(atom);
-        }
-        return atom;
-    }
-
-    public void addObservedAtom(ObservedAtom atom) {
         newObservedAtoms.add(atom);
+        return atom;
     }
 
     public RandomVariableAtom addRandomVariableAtom(StandardPredicate predicate, float value, Constant... arguments) {
-        return addRandomVariableAtom(true, predicate, value, arguments);
-    }
-
-    public RandomVariableAtom addRandomVariableAtom(Boolean context, StandardPredicate predicate, float value, Constant... arguments) {
         RandomVariableAtom atom = database.getCache().instantiateRandomVariableAtom(predicate, arguments, value);
         atom.setValue(initialValue.getVariableValue(atom));
         addToPersistedCache(atom);
-        if (context) {
-            addRandomVariableAtom(atom);
-        }
-        return atom;
-    }
-
-    public void addRandomVariableAtom(RandomVariableAtom atom) {
         newRandomVariableAtoms.add(atom);
+        return atom;
     }
 
     public boolean hasAtom(StandardPredicate predicate, Constant... arguments) {

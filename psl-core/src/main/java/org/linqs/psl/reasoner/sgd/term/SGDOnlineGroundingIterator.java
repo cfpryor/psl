@@ -49,11 +49,6 @@ public class SGDOnlineGroundingIterator extends OnlineGroundingIterator<SGDObjec
         SGDObjectiveTerm term = nextTerm;
         nextTerm = null;
 
-        // Compute the delta gradient
-        if (parentStore instanceof SGDOnlineTermStore) {
-            ((SGDOnlineTermStore)parentStore).computeDeltaModelGradient(term, true);
-        }
-
         return term;
     }
 

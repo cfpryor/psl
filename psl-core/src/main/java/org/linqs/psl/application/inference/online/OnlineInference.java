@@ -42,11 +42,7 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.Rule;
-import org.linqs.psl.reasoner.sgd.term.SGDOnlineTermStore;
-import org.linqs.psl.reasoner.term.ReasonerTerm;
 import org.linqs.psl.reasoner.term.online.OnlineTermStore;
-import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
-import org.linqs.psl.util.IteratorUtils;
 import org.linqs.psl.util.StringUtils;
 
 import org.slf4j.Logger;
@@ -60,7 +56,6 @@ public abstract class OnlineInference extends InferenceApplication {
     private OnlineServer server;
 
     private boolean hotStart;
-    private boolean computeApproximationDelta;
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
@@ -83,7 +78,6 @@ public abstract class OnlineInference extends InferenceApplication {
         variableChangeCount = 0;
         variableChange = 0.0;
         hotStart = Options.ONLINE_HOT_START.getBoolean();
-        computeApproximationDelta = Options.ONLINE_COMPUTE_APPROXIMATION_DELTA.getBoolean();
 
         startServer();
 
@@ -298,7 +292,7 @@ public abstract class OnlineInference extends InferenceApplication {
             atomValue = atomManager.getAtom(action.getPredicate(), action.getArguments()).getValue();
         }
 
-        // TODO: Combine query response with status.
+        // TODO(Charles): Combine query response with status.
         server.onActionExecution(action, new QueryAtomResponse(action, atomValue));
 
         if (atomValue == -1.0) {
@@ -322,45 +316,14 @@ public abstract class OnlineInference extends InferenceApplication {
             initializeAtoms();
         }
 
-        log.trace("Model updates:  (variable change count): {} unique variables", variableChangeCount);
-        log.trace("Model updates: (variable delta): {}", Math.sqrt(variableChange));
+        log.debug("Model updates:  (variable change count): {} unique variables", variableChangeCount);
+        log.debug("Model updates: (variable delta): {}", Math.sqrt(variableChange));
         variableChangeCount = 0;
         variableChange = 0.0;
 
         log.trace("Optimization Start");
         objective = reasoner.optimize(termStore);
         log.trace("Optimization End");
-        if (computeApproximationDelta) {
-            // Add context atoms back into online atom manager.
-            ((OnlineTermStore)termStore).addContextAtoms();
-            // Set Inverse Non-Powerset Grounding Option.
-            Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(true);
-            // Reset New Term Pages.
-            ((OnlineTermStore)termStore).clearNewTermPages();
-            // Activate the approximation missing potential pages.
-            ((SGDOnlineTermStore)termStore).activateApproximationPages();
-            // Ground Missing Potentials and calculate delta model gradient.
-            for (Object ignored : termStore) {
-                // Ground.
-            }
-            termStore.iterationComplete();
-            // Log the approximation
-            if (termStore instanceof SGDOnlineTermStore) {
-                log.info("Approximation Delta Model Gradient Magnitude: {}", ((SGDOnlineTermStore)termStore).getDeltaModelGradient());
-            }
-            // Add newly grounded pages to approximation pages set.
-            ((SGDOnlineTermStore)termStore).addApproximationPages();
-            // Deactivate approximation Pages.
-            ((SGDOnlineTermStore)termStore).deactivateApproximationPages();
-            // Reset New Term Pages.
-            ((OnlineTermStore)termStore).clearNewTermPages();
-            // Reset Inverse Non-Powerset Grounding Option.
-            Options.PARTIAL_GROUNDING_INVERSE_NON_POWERSET.set(false);
-            // Flush Context Atoms
-            ((OnlineTermStore)termStore).clearContextAtoms();
-            // Reset delta pages.
-            ((SGDOnlineTermStore)termStore).clearDeltaPages();
-        }
 
         modelUpdates = false;
     }
