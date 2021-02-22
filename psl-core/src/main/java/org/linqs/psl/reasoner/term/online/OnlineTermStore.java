@@ -221,6 +221,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     }
 
     public Rule addRule(Rule rule) {
+        // TODO:
         return rule;
     }
 

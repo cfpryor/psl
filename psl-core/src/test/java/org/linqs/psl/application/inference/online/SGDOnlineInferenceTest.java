@@ -193,6 +193,8 @@ public class SGDOnlineInferenceTest {
         commands.add(new AddRule(newRule));
         commands.add(new Exit());
 
+        // TODO(Charles): Currently empty test. No asserts are being made.
+
         OnlineTest.clientSession(commands);
     }
 
@@ -214,6 +216,8 @@ public class SGDOnlineInferenceTest {
         commands.add(new DeleteRule(rule));
         commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
         commands.add(new Exit());
+
+        // TODO(Charles): Currently empty test. No asserts are being made.
 
         OnlineTest.clientSession(commands);
     }
@@ -243,6 +247,8 @@ public class SGDOnlineInferenceTest {
         commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
         commands.add(new Exit());
 
+        // TODO(Charles): Currently empty test. No asserts are being made.
+
         OnlineTest.clientSession(commands);
     }
 
@@ -258,7 +264,7 @@ public class SGDOnlineInferenceTest {
     @Test
     public void testAtomDeleting() {
         BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
-        
+
         commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
         commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}, 1.0f));
         commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
@@ -288,12 +294,13 @@ public class SGDOnlineInferenceTest {
      * There are three ways to effectively change the partition of an atom.
      * 1. Delete and then Add an atom.
      * 2. Add an atom with predicates and arguments that already exists in the model but with a different partition.
-     * 3. Using the Observed or Unobserved actions for random variables and observations respectively. (preferred).
+     * 3. Using the Observe action for random variables and observations respectively. (preferred).
      */
     @Test
     public void testChangeAtomPartition() {
         BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
 
+        // Add existing atom with different partition.
         commands.add(new AddAtom("Read", StandardPredicate.get("Friends"),
                 new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 0.5f));
         commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
@@ -307,6 +314,7 @@ public class SGDOnlineInferenceTest {
         cleanup();
         setup();
 
+        // Delete and then Add an atom.
         commands.add(new DeleteAtom("Write", StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
         commands.add(new AddAtom("Read", StandardPredicate.get("Friends"),
                 new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 0.5f));
@@ -319,6 +327,7 @@ public class SGDOnlineInferenceTest {
         cleanup();
         setup();
 
+        // Observe atom.
         commands.add(new ObserveAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 0.5f));
         commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
         commands.add(new Exit());
