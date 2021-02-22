@@ -520,12 +520,6 @@ public class Options {
         "A comma separated list of indexes to the predicate arguments that identity the target label (as opposed to the identity of the data point)."
     );
 
-    public static final Option ONLINE_HOT_START = new Option(
-            "inference.onlinehotstart",
-            true,
-            "Whether to use the MPE state of the atoms prior to the model updates as a hotstart."
-    );
-
     public static final Option ONLINE_HOST = new Option(
             "inference.onlinehostname",
             "127.0.0.1",

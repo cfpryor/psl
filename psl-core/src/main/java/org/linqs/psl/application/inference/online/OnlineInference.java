@@ -34,7 +34,6 @@ import org.linqs.psl.application.inference.online.messages.actions.template.modi
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineActionException;
-import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.database.atom.PersistedAtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
@@ -55,7 +54,6 @@ public abstract class OnlineInference extends InferenceApplication {
 
     private OnlineServer server;
 
-    private boolean hotStart;
     private boolean modelUpdates;
     private boolean stopped;
     private double objective;
@@ -77,7 +75,6 @@ public abstract class OnlineInference extends InferenceApplication {
         objective = 0.0;
         variableChangeCount = 0;
         variableChange = 0.0;
-        hotStart = Options.ONLINE_HOT_START.getBoolean();
 
         startServer();
 
@@ -310,10 +307,6 @@ public abstract class OnlineInference extends InferenceApplication {
     private void optimize() {
         if (!modelUpdates) {
             return;
-        }
-
-        if (!hotStart) {
-            initializeAtoms();
         }
 
         log.debug("Model updates:  (variable change count): {} unique variables", variableChangeCount);
