@@ -289,7 +289,6 @@ public abstract class OnlineInference extends InferenceApplication {
             atomValue = atomManager.getAtom(action.getPredicate(), action.getArguments()).getValue();
         }
 
-        // TODO(Charles): Combine query response with status.
         server.onActionExecution(action, new QueryAtomResponse(action, atomValue));
 
         if (atomValue == -1.0) {

@@ -38,6 +38,7 @@ public class AddAtom extends OnlineAction {
         this.predicate = predicate;
         this.arguments = arguments;
         this.partition = partition.toUpperCase();
+        // A value of -1 indicates no value was provided.
         this.value = value;
     }
 

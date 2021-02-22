@@ -258,23 +258,20 @@ public class SGDOnlineInferenceTest {
     @Test
     public void testAtomDeleting() {
         BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        
+        commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
+        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}, 1.0f));
+        commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
+        commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
+        commands.add(new Exit());
 
-        // TODO (Charles): This order of commands will catch a behavior where there may be an unexpected outcome.
-        //  The atom will not be deleted if there is an add and then a delete of the same atom before the atoms are
-        //  activated. This behavior is also noted in streaming term store deleteAtom.
-//        commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
-//        commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}, 1.0f));
-//        commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
-//        commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
-//        commands.add(new Exit());
-//
-//        // Reset model.
-//        cleanup();
-//        setup();
-//
-//        double[] values = {-1.0};
-//
-//        OnlineTest.assertAtomValues(commands, values);
+        double[] values = {-1.0};
+
+        OnlineTest.assertAtomValues(commands, values);
+
+        // Reset model.
+        cleanup();
+        setup();
 
         commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
         commands.add(new DeleteAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Alice")}));
@@ -282,7 +279,7 @@ public class SGDOnlineInferenceTest {
         commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
         commands.add(new Exit());
 
-        double[] values = {-1.0, -1.0};
+        values = new double[]{-1.0, -1.0};
 
         OnlineTest.assertAtomValues(commands, values);
     }

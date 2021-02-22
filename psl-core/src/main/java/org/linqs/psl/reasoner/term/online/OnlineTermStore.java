@@ -31,7 +31,6 @@ import org.linqs.psl.reasoner.term.ReasonerTerm;
 import org.linqs.psl.reasoner.term.streaming.StreamingIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.IteratorUtils;
-import org.linqs.psl.util.RandUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +89,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
 
     public GroundAtom addAtom(StandardPredicate predicate, Constant[] arguments, float newValue, boolean readPartition) {
         if (((OnlineAtomManager)atomManager).hasAtom(predicate, arguments)) {
-            // TODO(Charles): Add warning.
             deleteAtom(predicate, arguments);
         }
 
@@ -175,10 +173,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         }
 
         variables.put(atom, totalVariableCount);
-        // TODO(Charles): Hack to randomly initialize online termstore.
-        if (atom instanceof RandomVariableAtom) {
-            ((RandomVariableAtom)atom).setValue(RandUtils.nextFloat());
-        }
         variableValues[totalVariableCount] = atom.getValue();
         variableAtoms[totalVariableCount] = atom;
         totalVariableCount++;
