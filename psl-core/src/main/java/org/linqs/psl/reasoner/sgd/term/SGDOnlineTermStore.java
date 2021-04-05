@@ -32,10 +32,15 @@ public class SGDOnlineTermStore extends OnlineTermStore<SGDObjectiveTerm> {
     }
 
     @Override
-    public StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
+    public StreamingIterator<SGDObjectiveTerm> getGroundingIterator(List<Rule> rules) {
         return new SGDOnlineGroundingIterator(
                 this, rules, atomManager, termGenerator,
                 termCache, termPool, termBuffer, volatileBuffer, pageSize, numPages);
+    }
+
+    @Override
+    public StreamingIterator<SGDObjectiveTerm> getGroundingIterator() {
+        return getGroundingIterator(this.rules);
     }
 
     @Override
