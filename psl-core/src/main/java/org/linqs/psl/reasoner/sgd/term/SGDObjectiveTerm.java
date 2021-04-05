@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ package org.linqs.psl.reasoner.sgd.term;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.reasoner.term.VariableTermStore;
+import org.linqs.psl.model.atom.RandomVariableAtom;
+import org.linqs.psl.model.rule.AbstractRule;
+import org.linqs.psl.model.rule.WeightedRule;
 import org.linqs.psl.reasoner.term.Hyperplane;
 import org.linqs.psl.reasoner.term.ReasonerTerm;
 
@@ -32,7 +35,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     private boolean squared;
     private boolean hinge;
 
-    private float weight;
+    private WeightedRule rule;
     private float constant;
     private float learningRate;
 
@@ -40,12 +43,15 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     private float[] coefficients;
     private int[] variableIndexes;
 
-    public SGDObjectiveTerm(VariableTermStore<SGDObjectiveTerm, GroundAtom> termStore, boolean squared, boolean hinge,
-            Hyperplane<GroundAtom> hyperplane, float weight, float learningRate) {
+    public SGDObjectiveTerm(VariableTermStore<SGDObjectiveTerm, GroundAtom> termStore,
+            WeightedRule rule,
+            boolean squared, boolean hinge,
+            Hyperplane<GroundAtom> hyperplane,
+            float learningRate) {
         this.squared = squared;
         this.hinge = hinge;
 
-        this.weight = weight;
+        this.rule = rule;
         this.learningRate = learningRate;
 
         size = (short)hyperplane.size();
@@ -68,8 +74,14 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         return size;
     }
 
+    @Override
+    public void adjustConstant(float oldValue, float newValue) {
+        constant = constant - oldValue + newValue;
+    }
+
     public float evaluate(float[] variableValues) {
         float dot = dot(variableValues);
+        float weight = rule.getWeight();
 
         if (squared && hinge) {
             // weight * [max(0.0, coeffs^T * x - constant)]^2
@@ -91,6 +103,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
      */
     public float minimize(int iteration, VariableTermStore termStore) {
         float movement = 0.0f;
+        float weight = rule.getWeight();
 
         GroundAtom[] variableAtoms = termStore.getVariableAtoms();
         float[] variableValues = termStore.getVariableValues();
@@ -102,7 +115,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
 
             float dot = dot(variableValues);
             float gradient = computeGradient(i, dot);
-            float gradientStep = gradient * (learningRate / iteration);
+            float gradientStep = weight * gradient * (learningRate / iteration);
 
             float newValue = Math.max(0.0f, Math.min(1.0f, variableValues[variableIndexes[i]] - gradientStep));
             movement += Math.abs(newValue - variableValues[variableIndexes[i]]);
@@ -118,10 +131,10 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         }
 
         if (squared) {
-            return weight * 2.0f * dot * coefficients[varId];
+            return 2.0f * dot * coefficients[varId];
         }
 
-        return weight * coefficients[varId];
+        return coefficients[varId];
     }
 
     private float dot(float[] variableValues) {
@@ -158,7 +171,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     public void writeFixedValues(ByteBuffer fixedBuffer) {
         fixedBuffer.put((byte)(squared ? 1 : 0));
         fixedBuffer.put((byte)(hinge ? 1 : 0));
-        fixedBuffer.putFloat(weight);
+        fixedBuffer.putInt(System.identityHashCode(rule));
         fixedBuffer.putFloat(constant);
         fixedBuffer.putFloat(learningRate);
         fixedBuffer.putShort(size);
@@ -175,7 +188,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
     public void read(ByteBuffer fixedBuffer, ByteBuffer volatileBuffer) {
         squared = (fixedBuffer.get() == 1);
         hinge = (fixedBuffer.get() == 1);
-        weight = fixedBuffer.getFloat();
+        rule = (WeightedRule)AbstractRule.getRule(fixedBuffer.getInt());
         constant = fixedBuffer.getFloat();
         learningRate = fixedBuffer.getFloat();
         size = fixedBuffer.getShort();
@@ -202,7 +215,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append(weight);
+        builder.append(rule.getWeight());
         builder.append(" * ");
 
         if (hinge) {

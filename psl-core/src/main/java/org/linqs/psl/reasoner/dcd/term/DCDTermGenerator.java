@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+
 /**
  * A TermGenerator for DCD objective terms.
  */
@@ -54,28 +56,30 @@ public class DCDTermGenerator extends HyperplaneTermGenerator<DCDObjectiveTerm, 
     }
 
     @Override
-    public DCDObjectiveTerm createLossTerm(TermStore <DCDObjectiveTerm, GroundAtom> baseTermStore,
+    public int createLossTerm(Collection<DCDObjectiveTerm> newTerms, TermStore <DCDObjectiveTerm, GroundAtom> baseTermStore,
             boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<GroundAtom> hyperplane) {
         VariableTermStore<DCDObjectiveTerm, GroundAtom> termStore = (VariableTermStore<DCDObjectiveTerm, GroundAtom>)baseTermStore;
         float weight = (float)((WeightedGroundRule)groundRule).getWeight();
 
         if (isHinge && isSquared) {
-            return new DCDObjectiveTerm(termStore, true, hyperplane, weight, c);
+            newTerms.add(new DCDObjectiveTerm(termStore, true, hyperplane, weight, c));
+            return 1;
         } else if (isHinge && !isSquared) {
-            return new DCDObjectiveTerm(termStore, false, hyperplane, weight, c);
+            newTerms.add(new DCDObjectiveTerm(termStore, false, hyperplane, weight, c));
+            return 1;
         } else if (!isHinge && isSquared) {
             log.warn("DCD does not support squared linear terms: " + groundRule);
-            return null;
+            return 0;
         } else {
             log.warn("DCD does not support linear terms: " + groundRule);
-            return null;
+            return 0;
         }
     }
 
     @Override
-    public DCDObjectiveTerm createLinearConstraintTerm(TermStore<DCDObjectiveTerm, GroundAtom> termStore,
+    public int createLinearConstraintTerm(Collection<DCDObjectiveTerm> newTerms, TermStore<DCDObjectiveTerm, GroundAtom> termStore,
             GroundRule groundRule, Hyperplane<GroundAtom> hyperplane, FunctionComparator comparator) {
         log.warn("DCD does not support hard constraints, i.e. " + groundRule);
-        return null;
+        return 0;
     }
 }

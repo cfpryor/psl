@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Set;
 
 public class FakeGroundRule implements WeightedGroundRule {
-    private double weight;
+    private FakeRule rule;
 
-    public FakeGroundRule(double weight) {
-        this.weight = weight;
+    public FakeGroundRule(FakeRule rule) {
+        this.rule = rule;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class FakeGroundRule implements WeightedGroundRule {
 
     @Override
     public WeightedRule getRule() {
-        return null;
+        return rule;
     }
 
     @Override
@@ -55,13 +55,13 @@ public class FakeGroundRule implements WeightedGroundRule {
     }
 
     @Override
-    public double getWeight() {
-        return weight;
+    public float getWeight() {
+        return rule.getWeight();
     }
 
     @Override
-    public void setWeight(double weight) {
-        this.weight = weight;
+    public void setWeight(float weight) {
+        this.rule.setWeight(weight);
     }
 
     @Override

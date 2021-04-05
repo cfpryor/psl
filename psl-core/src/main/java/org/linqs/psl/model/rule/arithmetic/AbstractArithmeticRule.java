@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -943,7 +943,7 @@ public abstract class AbstractArithmeticRule extends AbstractRule {
     }
 
     /**
-     * Resources that every grounding thread and use and reuse.
+     * Resources that every grounding thread will use and reuse.
      */
     private static class GroundingResources {
         // Because multiple ground rules can be generated from a single rule,

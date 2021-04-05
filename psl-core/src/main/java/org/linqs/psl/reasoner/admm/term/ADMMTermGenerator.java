@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.linqs.psl.reasoner.term.Hyperplane;
 import org.linqs.psl.reasoner.term.HyperplaneTermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
 
+import java.util.Collection;
+
 /**
  * A TermGenerator for ADMM objective terms.
  */
@@ -42,23 +44,25 @@ public class ADMMTermGenerator extends HyperplaneTermGenerator<ADMMObjectiveTerm
     }
 
     @Override
-    public ADMMObjectiveTerm createLossTerm(TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
+    public int createLossTerm(Collection<ADMMObjectiveTerm> newTerms, TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
             boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<LocalVariable> hyperplane) {
         if (isHinge && isSquared) {
-            return new SquaredHingeLossTerm(groundRule, hyperplane);
+            newTerms.add(ADMMObjectiveTerm.createSquaredHingeLossTerm(hyperplane, groundRule.getRule()));
         } else if (isHinge && !isSquared) {
-            return new HingeLossTerm(groundRule, hyperplane);
+            newTerms.add(ADMMObjectiveTerm.createHingeLossTerm(hyperplane, groundRule.getRule()));
         } else if (!isHinge && isSquared) {
-            hyperplane.setConstant(0.0f);
-            return new SquaredLinearLossTerm(groundRule, hyperplane);
+            newTerms.add(ADMMObjectiveTerm.createSquaredLinearLossTerm(hyperplane, groundRule.getRule()));
         } else {
-            return new LinearLossTerm(groundRule, hyperplane);
+            newTerms.add(ADMMObjectiveTerm.createLinearLossTerm(hyperplane, groundRule.getRule()));
         }
+
+        return 1;
     }
 
     @Override
-    public ADMMObjectiveTerm createLinearConstraintTerm(TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
+    public int createLinearConstraintTerm(Collection<ADMMObjectiveTerm> newTerms, TermStore<ADMMObjectiveTerm, LocalVariable> termStore,
             GroundRule groundRule, Hyperplane<LocalVariable> hyperplane, FunctionComparator comparator) {
-        return new LinearConstraintTerm(groundRule, hyperplane, comparator);
+        newTerms.add(ADMMObjectiveTerm.createLinearConstraintTerm(hyperplane, groundRule.getRule(), comparator));
+        return 1;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,10 @@ import org.linqs.psl.util.Parallel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -71,62 +74,114 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
             }
         }
 
-        Parallel.foreach(ruleStore.getGroundRules(), new Parallel.Worker<GroundRule>() {
-            @Override
-            public void work(long index, GroundRule rule) {
-                boolean negativeWeight =
-                        rule instanceof WeightedGroundRule
-                        && ((WeightedGroundRule)rule).getWeight() < 0.0;
-
-                if (negativeWeight) {
-                    // Skip
-                    if (!invertNegativeWeight) {
-                        return;
-                    }
-
-                    // Negate (weight and expression) rules that have a negative weight.
-                    for (GroundRule negatedRule : rule.negate()) {
-                        T term = createTerm(negatedRule, termStore);
-                        if (term != null && term.size() > 0) {
-                            termStore.add(rule, term);
-                        }
-                    }
-                } else {
-                    T term = createTerm(rule, termStore);
-                    if (term != null && term.size() > 0) {
-                        termStore.add(rule, term);
-                    }
-                }
-            }
-        });
+        Parallel.foreach(ruleStore.getGroundRules(), new GeneratorWorker(termStore));
 
         return termStore.size() - initialSize;
     }
 
-    @Override
-    public T createTerm(GroundRule groundRule, TermStore<T, V> termStore) {
+    private class GeneratorWorker extends Parallel.Worker<GroundRule> {
+        private final TermStore<T, V> termStore;
+        private final List<T> newTerms;
+        private final List<Hyperplane> newHyperplane;
+
+        public GeneratorWorker(final TermStore<T, V> termStore) {
+            super();
+
+            this.termStore = termStore;
+            newTerms = new ArrayList<T>(2);
+            newHyperplane = new ArrayList<Hyperplane>(1);
+        }
+
+        @Override
+        public Object clone() {
+            return new GeneratorWorker(termStore);
+        }
+
+        @Override
+        public void work(long index, GroundRule rule) {
+            newTerms.clear();
+            newHyperplane.clear();
+
+            boolean negativeWeight =
+                    rule instanceof WeightedGroundRule
+                    && ((WeightedGroundRule)rule).getWeight() < 0.0;
+
+            if (negativeWeight) {
+                // Skip
+                if (!invertNegativeWeight) {
+                    return;
+                }
+
+                // Negate (weight and expression) rules that have a negative weight.
+                for (GroundRule negatedRule : rule.negate()) {
+                    createTerm(negatedRule, termStore, newTerms, newHyperplane);
+
+                    for (T term : newTerms) {
+                        termStore.add(rule, term, newHyperplane.get(0));
+                    }
+
+                    newTerms.clear();
+                    newHyperplane.clear();
+                }
+            } else {
+                createTerm(rule, termStore, newTerms, newHyperplane);
+
+                for (T term : newTerms) {
+                    termStore.add(rule, term, newHyperplane.get(0));
+                }
+
+                newTerms.clear();
+                newHyperplane.clear();
+            }
+        }
+    }
+
+    /**
+     * Create a terms from the ground rule and add it to supplied collection.
+     * This does not directly add terms to the TermStore.
+     *
+     * The supplied collection will not be cleared before use.
+     * In most cases only one term will be added,
+     * but it is possible for zero or more terms to be added.
+     *
+     * If |newHyperplane| is not null, the Hyperplane used to create the resultant terms will be added to it.
+     * If no terms are added, not Hyperplane will be added.
+     *
+     * @return the number of terms added to the supplied collection.
+     */
+    public int createTerm(GroundRule groundRule, TermStore<T, V> termStore,
+            Collection<T> newTerms, Collection<Hyperplane> newHyperplane) {
+        int count = 0;
+        Hyperplane<V> hyperplane = null;
+
         if (groundRule instanceof WeightedGroundRule) {
             GeneralFunction function = ((WeightedGroundRule)groundRule).getFunctionDefinition(mergeConstants);
-            Hyperplane<V> hyperplane = processHyperplane(function, termStore);
+            hyperplane = processHyperplane(function, termStore);
             if (hyperplane == null) {
-                return null;
+                return 0;
             }
 
             // Non-negative functions have a hinge.
-            return createLossTerm(termStore, function.isNonNegative(), function.isSquared(), groundRule, hyperplane);
+            count = createLossTerm(newTerms, termStore, function.isNonNegative(), function.isSquared(), groundRule, hyperplane);
         } else if (groundRule instanceof UnweightedGroundRule) {
             ConstraintTerm constraint = ((UnweightedGroundRule)groundRule).getConstraintDefinition(mergeConstants);
             GeneralFunction function = constraint.getFunction();
-            Hyperplane<V> hyperplane = processHyperplane(function, termStore);
+            hyperplane = processHyperplane(function, termStore);
             if (hyperplane == null) {
-                return null;
+                return 0;
             }
 
             hyperplane.setConstant((float)(constraint.getValue() + hyperplane.getConstant()));
-            return createLinearConstraintTerm(termStore, groundRule, hyperplane, constraint.getComparator());
+            count = createLinearConstraintTerm(newTerms, termStore, groundRule, hyperplane, constraint.getComparator());
         } else {
             throw new IllegalArgumentException("Unsupported ground rule: " + groundRule);
         }
+
+        if (newHyperplane != null && count > 0) {
+            newHyperplane.add(hyperplane);
+        }
+
+        return count;
     }
 
     /**
@@ -140,11 +195,17 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
             float coefficient = (float)sum.getCoefficient(i);
             FunctionTerm term = sum.getTerm(i);
 
-            if ((term instanceof RandomVariableAtom) || (!mergeConstants && term instanceof ObservedAtom)) {
+            if ((term instanceof RandomVariableAtom) && (((RandomVariableAtom)term).getPredicate().isFixedMirror())) {
+                // These types of RVAs get treated as observations and integrated into the constant.
+
+                // Subtract because hyperplane is stored as coeffs^T * x = constant.
+                hyperplane.setConstant(hyperplane.getConstant() - (float)(coefficient * term.getValue()));
+
+                // Negate the coefficient so that "incorporating" this term would mean adding it,
+                // and "removing" this term would be subtracting.
+                hyperplane.addIntegratedRVA((RandomVariableAtom)term, -coefficient);
+            } else if ((term instanceof RandomVariableAtom) || (!mergeConstants && term instanceof ObservedAtom)) {
                 V localVariable = termStore.createLocalVariable((GroundAtom)term);
-                if (localVariable == null) {
-                    throw new RuntimeException("Could not get local term for summand: " + sum + "[" + i + "] (" + term + ").");
-                }
 
                 // Check to see if we have seen this localVariable before in this hyperplane.
                 // Note that we are checking for existence in a List (O(n)), but there are usually a small number of
@@ -183,20 +244,26 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
     }
 
     /**
-     * Get the class object for the local vairable type.
+     * Get the class object for the local variable type.
      * This is for type safety when creating hyperplanes.
      */
     public abstract Class<V> getLocalVariableType();
 
     /**
-     * Create a term from a ground rule and hyperplane.
+     * Create a term from a ground rule and hyperplane, and add it to the collection of new terms.
      * Non-hinge terms are linear combinations (ala arithmetic rules).
      * Non-squared terms are linear.
+     *
+     * @return the number of terms added to the supplied collection.
      */
-    public abstract T createLossTerm(TermStore<T, V> termStore, boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<V> hyperplane);
+    public abstract int createLossTerm(Collection<T> newTerms, TermStore<T, V> termStore,
+            boolean isHinge, boolean isSquared, GroundRule groundRule, Hyperplane<V> hyperplane);
 
     /**
-     * Create a hard constraint term,
+     * Create a hard constraint term, and add it to the collection of new terms.
+     *
+     * @return the number of terms added to the supplied collection.
      */
-    public abstract T createLinearConstraintTerm(TermStore<T, V> termStore, GroundRule groundRule, Hyperplane<V> hyperplane, FunctionComparator comparator);
+    public abstract int createLinearConstraintTerm(Collection<T> newTerms, TermStore<T, V> termStore,
+            GroundRule groundRule, Hyperplane<V> hyperplane, FunctionComparator comparator);
 }
