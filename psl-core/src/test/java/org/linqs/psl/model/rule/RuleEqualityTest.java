@@ -103,10 +103,8 @@ public class RuleEqualityTest {
         assertEquals(new WeightedLogicalRule(logicalBaseRule, 1.0, false), new WeightedLogicalRule(logicalBaseRule, 1.0, false));
 
         assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 1.0, true), new WeightedLogicalRule(logicalBaseRule, 1.0, false));
-        assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 1.0, true), new WeightedLogicalRule(logicalBaseRule, 0.0, true));
         assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 1.0, true), new WeightedLogicalRule(logicalBaseRule, 0.0, false));
         assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 1.0, false), new WeightedLogicalRule(logicalBaseRule, 1.0, true));
-        assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 0.0, true), new WeightedLogicalRule(logicalBaseRule, 1.0, true));
         assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 0.0, false), new WeightedLogicalRule(logicalBaseRule, 1.0, true));
 
         assertNotEquals(new WeightedLogicalRule(logicalBaseRule, 5.0, true), new WeightedLogicalRule(logicalBaseRule, 1.0, false));
@@ -129,10 +127,8 @@ public class RuleEqualityTest {
         assertEquals(new WeightedArithmeticRule(arithmeticBaseRule, 1.0, false), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, false));
 
         assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, false));
-        assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true), new WeightedArithmeticRule(arithmeticBaseRule, 0.0, true));
         assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true), new WeightedArithmeticRule(arithmeticBaseRule, 0.0, false));
         assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 1.0, false), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true));
-        assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 0.0, true), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true));
         assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 0.0, false), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, true));
 
         assertNotEquals(new WeightedArithmeticRule(arithmeticBaseRule, 5.0, true), new WeightedArithmeticRule(arithmeticBaseRule, 1.0, false));
