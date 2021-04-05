@@ -276,7 +276,7 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
             queryResults = null;
         }
 
-        // All the terms have been iterated over and the volitile buffer has been flushed,
+        // All the terms have been iterated over and the volatile buffer has been flushed,
         // the term cache is now invalid.
         termCache.clear();
 
