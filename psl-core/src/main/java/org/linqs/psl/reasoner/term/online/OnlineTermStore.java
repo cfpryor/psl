@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -221,7 +222,24 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     }
 
     public Rule addRule(Rule rule) {
-        // TODO:
+        // Check if rule already exists.
+        ArrayList<Integer> rulePages = pageMapping.get(rule);
+        if (rulePages != null) {
+            log.warn("Rule: {} already exists in model.", rule.toString());
+            return rule;
+        }
+
+        // Add new rule to rule set.
+        rules.add(rule);
+
+        // Ground new rule.
+        // This is the initial round for the new rule.
+        this.initialRound = true;
+        StreamingIterator<T> groundingIterator = getGroundingIterator(Arrays.asList(rule));
+        while (groundingIterator.hasNext()) {
+            groundingIterator.next();
+        }
+
         return rule;
     }
 
@@ -276,6 +294,8 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     public int getNextTermPageIndex() {
         return nextTermPageIndex;
     }
+
+    public abstract StreamingIterator<T> getGroundingIterator(List<Rule> rules);
 
     public void groundingIterationComplete(long termCount, int numPages, ByteBuffer termBuffer, ByteBuffer volatileBuffer) {
         seenTermCount += termCount;
