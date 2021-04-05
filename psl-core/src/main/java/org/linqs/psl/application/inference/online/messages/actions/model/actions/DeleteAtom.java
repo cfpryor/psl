@@ -15,9 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.model.updates;
+package org.linqs.psl.application.inference.online.messages.actions.model.actions;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.StringUtils;
@@ -26,28 +25,16 @@ import org.linqs.psl.util.StringUtils;
  * Delete an atom from the existing model.
  * String format: UUID DELETE <READ/WRITE> <predicate> <args> ...
  */
-public class DeleteAtom extends OnlineAction {
-    private StandardPredicate predicate;
+public class DeleteAtom extends AtomAction {
     private String partition;
-    private Constant[] arguments;
 
     public DeleteAtom(String partition, StandardPredicate predicate, Constant[] arguments) {
-        super();
-        this.predicate = predicate;
-        this.arguments = arguments;
+        super(predicate, arguments);
         this.partition = partition.toUpperCase();
-    }
-
-    public StandardPredicate getPredicate() {
-        return predicate;
     }
 
     public String getPartitionName() {
         return partition;
-    }
-
-    public Constant[] getArguments() {
-        return arguments;
     }
 
     @Override

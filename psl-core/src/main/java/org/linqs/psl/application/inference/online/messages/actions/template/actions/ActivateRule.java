@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.template.modifications;
+package org.linqs.psl.application.inference.online.messages.actions.template.actions;
 
 import org.linqs.psl.model.rule.Rule;
 
@@ -23,7 +23,7 @@ import org.linqs.psl.model.rule.Rule;
  * Add a new rule to the model.
  * String format: ACTIVATE <predicate> <args> ... [value]
  */
-public class ActivateRule extends TemplateModification {
+public class ActivateRule extends TemplateAction {
     public ActivateRule(Rule rule) {
         super(rule);
     }

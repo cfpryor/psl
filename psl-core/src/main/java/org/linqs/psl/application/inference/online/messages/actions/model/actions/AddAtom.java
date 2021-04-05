@@ -15,9 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.model.updates;
+package org.linqs.psl.application.inference.online.messages.actions.model.actions;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.RandUtils;
@@ -27,27 +26,15 @@ import org.linqs.psl.util.StringUtils;
  * Add a new atom to the model.
  * String format: ADD <READ/WRITE> <predicate> <args> ... [value]
  */
-public class AddAtom extends OnlineAction {
-    private StandardPredicate predicate;
-    private String partition;
-    private Constant[] arguments;
+public class AddAtom extends AtomAction {
     private float value;
+    private String partition;
 
     public AddAtom(String partition, StandardPredicate predicate, Constant[] arguments, float value) {
-        super();
-        this.predicate = predicate;
-        this.arguments = arguments;
+        super(predicate, arguments);
         this.partition = partition.toUpperCase();
         // A value of -1 indicates no value was provided.
         this.value = value;
-    }
-
-    public StandardPredicate getPredicate() {
-        return predicate;
-    }
-
-    public String getPartitionName() {
-        return partition;
     }
 
     public float getValue() {
@@ -59,8 +46,8 @@ public class AddAtom extends OnlineAction {
         }
     }
 
-    public Constant[] getArguments() {
-        return arguments;
+    public String getPartitionName() {
+        return partition;
     }
 
     @Override

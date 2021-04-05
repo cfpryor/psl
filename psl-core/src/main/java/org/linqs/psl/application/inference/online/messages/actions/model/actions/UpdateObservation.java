@@ -15,10 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.model.updates;
+package org.linqs.psl.application.inference.online.messages.actions.model.actions;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
-import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.StringUtils;
@@ -27,28 +25,18 @@ import org.linqs.psl.util.StringUtils;
  * Update an existing observation from the model.
  * String format: UPDATE <predicate> <args> ... [value]
  */
-public class UpdateObservation extends OnlineAction {
+public class UpdateObservation extends AtomAction {
     private StandardPredicate predicate;
     private Constant[] arguments;
     private float value;
 
     public UpdateObservation(StandardPredicate predicate, Constant[] arguments, float value) {
-        super();
-        this.predicate = predicate;
-        this.arguments = arguments;
+        super(predicate, arguments);
         this.value = value;
-    }
-
-    public StandardPredicate getPredicate() {
-        return predicate;
     }
 
     public float getValue() {
         return value;
-    }
-
-    public Constant[] getArguments() {
-        return arguments;
     }
 
     @Override
