@@ -76,4 +76,18 @@ public class OnlineTest {
 
         assertEquals(i, values.length);
     }
+
+    public static void assertServerResponse(BlockingQueue<OnlineAction> commands, OnlineResponse[] responses) {
+        List<OnlineResponse> onlineResponses = null;
+
+        onlineResponses = clientSession(commands);
+
+        int i = 0;
+        for (OnlineResponse onlineResponse : onlineResponses) {
+            assertEquals(responses[i].toString(), onlineResponse.toString());
+            i++;
+        }
+
+        assertEquals(i, responses.length);
+    }
 }

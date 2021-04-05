@@ -31,6 +31,8 @@ import org.linqs.psl.application.inference.online.messages.actions.template.modi
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.AddRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeactivateRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.modifications.DeleteRule;
+import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
+import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.formula.Conjunction;
 import org.linqs.psl.model.formula.Implication;
@@ -175,6 +177,7 @@ public class SGDOnlineInferenceTest {
 
     @Test
     public void testRuleAddition() {
+        // Test basic rule addition.
         BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
         Rule newRule = new WeightedLogicalRule(
                 new Implication(
@@ -190,12 +193,51 @@ public class SGDOnlineInferenceTest {
                 5.0,
                 true);
 
-        commands.add(new AddRule(newRule));
-        commands.add(new Exit());
+        AddRule addRule = new AddRule(newRule);
+        Exit exit = new Exit();
+        commands.add(addRule);
+        commands.add(exit);
 
-        // TODO(Charles): Currently empty test. No asserts are being made.
+        OnlineResponse[] expectedResponses = new OnlineResponse[2];
+        expectedResponses[0] = new ActionStatus(addRule, true,
+                String.format("Added rule: %s", addRule.getRule().toString()));
+        expectedResponses[1] = new ActionStatus(exit, true,"Session Closed.");
 
-        OnlineTest.clientSession(commands);
+        OnlineTest.assertServerResponse(commands, expectedResponses);
+
+        // TODO(Charles): Add test for duplicate adds with same weight and different weight.
+        // Test add duplicate.
+        commands = new LinkedBlockingQueue<OnlineAction>();
+        newRule = new WeightedLogicalRule(
+                new Implication(
+                        new Conjunction(
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("B")),
+                                new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("B"), new Variable("C")),
+                                new org.linqs.psl.model.atom.QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B")),
+                                new org.linqs.psl.model.atom.QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("C")),
+                                new org.linqs.psl.model.atom.QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("B"), new Variable("C"))
+                        ),
+                        new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("C"))
+                ),
+                5.0,
+                true);
+
+        addRule = new AddRule(newRule);
+        exit = new Exit();
+        commands.add(addRule);
+        commands.add(exit);
+
+        expectedResponses = new OnlineResponse[2];
+        expectedResponses[0] = new ActionStatus(addRule, true,
+                String.format("Added rule: %s", addRule.getRule().toString()));
+        expectedResponses[1] = new ActionStatus(exit, true,"Session Closed.");
+
+        OnlineTest.assertServerResponse(commands, expectedResponses);
+
+        // TODO(Charles): Add test for adding rule with same formula but different exponent.
+        // TODO(Charles): Add test for add then delete then optimize.
+        // TODO(Charles): Add test for add atom then add rule.
+        // TODO(Charles): Add test for add rule then add atom.
     }
 
     @Test

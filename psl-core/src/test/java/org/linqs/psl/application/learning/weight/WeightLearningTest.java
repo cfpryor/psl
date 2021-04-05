@@ -24,6 +24,7 @@ import org.linqs.psl.PSLTest;
 import org.linqs.psl.TestModel;
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.config.Config;
+import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.atom.QueryAtom;
 import org.linqs.psl.model.formula.Conjunction;
@@ -155,6 +156,7 @@ public abstract class WeightLearningTest {
      */
     @Test
     public void baseTest() {
+//        Options.WLA_INFERENCE.set("SGDInference");
         WeightLearningApplication weightLearner = getWLA();
         weightLearner.learn();
         weightLearner.close();
@@ -162,6 +164,7 @@ public abstract class WeightLearningTest {
         if (assertBaseTest) {
             assertRank(RULE_PRIOR, RULE_NICE, RULE_SYMMETRY);
         }
+//        Options.WLA_INFERENCE.set(Options.WLA_INFERENCE.defaultValue());
     }
 
     @Test
