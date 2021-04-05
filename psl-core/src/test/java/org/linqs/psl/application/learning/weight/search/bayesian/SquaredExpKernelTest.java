@@ -1,5 +1,7 @@
-package org.linqs.psl.application.learning.weight.bayesian;
+package org.linqs.psl.application.learning.weight.search.bayesian;
 
+import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
+import org.linqs.psl.application.learning.weight.search.bayesian.SquaredExpKernel;
 import org.linqs.psl.config.Options;
 
 import org.junit.Assert;

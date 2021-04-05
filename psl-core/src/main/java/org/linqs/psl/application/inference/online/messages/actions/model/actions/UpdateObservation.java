@@ -26,8 +26,6 @@ import org.linqs.psl.util.StringUtils;
  * String format: UPDATE <predicate> <args> ... [value]
  */
 public class UpdateObservation extends AtomAction {
-    private StandardPredicate predicate;
-    private Constant[] arguments;
     private float value;
 
     public UpdateObservation(StandardPredicate predicate, Constant[] arguments, float value) {

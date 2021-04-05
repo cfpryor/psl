@@ -1,7 +1,10 @@
-package org.linqs.psl.application.learning.weight.bayesian;
+package org.linqs.psl.application.learning.weight.search.bayesian;
 
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.application.learning.weight.WeightLearningTest;
+import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
+import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessPrior;
+import org.linqs.psl.application.learning.weight.search.bayesian.SquaredExpKernel;
 import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.rule.Rule;
@@ -42,13 +45,14 @@ public class GaussianProcessPriorTest extends WeightLearningTest {
             weightConfigs.add(wl.new WeightConfig(null, yPred.get(i), yStd.get(i)));
         }
 
-        Assert.assertEquals(1, wl.getNextPoint(weightConfigs, 1));
+        Assert.assertEquals(1, wl.getNextPoint(weightConfigs));
     }
 
     @Test
     public void testGetConfigs() {
         Options.WLA_GPP_MAX_CONFIGS.set(5);
         Options.WLA_GPP_RANDOM_CONFIGS_ONLY.set(false);
+        Options.WLA_GPP_USE_PROVIDED_WEIGHT.set(false);
 
         GaussianProcessPrior wl = (GaussianProcessPrior)getWLA();
         List<GaussianProcessPrior.WeightConfig> configs = wl.getConfigs();

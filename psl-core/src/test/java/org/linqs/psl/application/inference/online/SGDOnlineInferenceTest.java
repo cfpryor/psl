@@ -190,7 +190,7 @@ public class SGDOnlineInferenceTest {
                         ),
                         new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("C"))
                 ),
-                5.0,
+                5.0f,
                 true);
 
         AddRule addRule = new AddRule(newRule);
@@ -219,7 +219,7 @@ public class SGDOnlineInferenceTest {
                         ),
                         new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("C"))
                 ),
-                5.0,
+                5.0f,
                 true);
 
         addRule = new AddRule(newRule);
@@ -252,7 +252,7 @@ public class SGDOnlineInferenceTest {
                         ),
                         new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("B"))
                 ),
-                0.5,
+                0.5f,
                 true));
 
         commands.add(new DeleteRule(rule));
@@ -276,7 +276,7 @@ public class SGDOnlineInferenceTest {
                         ),
                         new org.linqs.psl.model.atom.QueryAtom(StandardPredicate.get("Friends"), new Variable("A"), new Variable("B"))
                 ),
-                0.5,
+                0.5f,
                 true));
 
         commands.add(new DeactivateRule(rule));

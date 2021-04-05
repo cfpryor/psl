@@ -209,7 +209,7 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
                 return;
             }
 
-            termGenerator.createTerm(groundRule, parentStore);
+            termGenerator.createTerm(groundRule, parentStore, newTerms, null);
         }
     }
 

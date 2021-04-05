@@ -58,13 +58,13 @@ public class InitialWeightGridSearch extends GridSearch {
     protected void postInitGroundModel() {
         // Init the internal WLA.
         internalWLA.initGroundModel(
-            this.inference,
-            this.trainingMap
+                this.inference,
+                this.trainingMap
         );
     }
 
     @Override
-    protected double inspectLocation(double[] weights) {
+    protected double inspectLocation(float[] weights) {
         // Just have the internal WLA learn and then get the loss as the score.
         internalWLA.learn();
 
