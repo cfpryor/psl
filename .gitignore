@@ -18,5 +18,3 @@ classpath.out
 *.swp
 
 .secrets
-.idea/workspace.xml
-*.xml
