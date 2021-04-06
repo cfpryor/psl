@@ -252,7 +252,9 @@ public class ModelLoader extends PSLBaseVisitor<Object> {
         return getParser(new StringReader(input));
     }
 
-    ModelLoader() {}
+    // Non-static
+
+    private ModelLoader() {}
 
     public Model visitProgram(ProgramContext ctx, PSLParser parser) {
         Model model = new Model();
