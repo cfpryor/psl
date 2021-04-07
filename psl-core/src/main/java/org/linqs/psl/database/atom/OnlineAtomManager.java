@@ -65,13 +65,13 @@ public class OnlineAtomManager extends PersistedAtomManager {
     }
 
     public ObservedAtom addObservedAtom(StandardPredicate predicate, float value, Constant... arguments) {
-        ObservedAtom atom = database.getCache().instantiateObservedAtom(predicate, arguments, value);
+        ObservedAtom atom = db.getCache().instantiateObservedAtom(predicate, arguments, value);
         newObservedAtoms.add(atom);
         return atom;
     }
 
     public RandomVariableAtom addRandomVariableAtom(StandardPredicate predicate, float value, Constant... arguments) {
-        RandomVariableAtom atom = database.getCache().instantiateRandomVariableAtom(predicate, arguments, value);
+        RandomVariableAtom atom = db.getCache().instantiateRandomVariableAtom(predicate, arguments, value);
         atom.setValue(initialValue.getVariableValue(atom));
         addToPersistedCache(atom);
         newRandomVariableAtoms.add(atom);
@@ -79,15 +79,15 @@ public class OnlineAtomManager extends PersistedAtomManager {
     }
 
     public boolean hasAtom(StandardPredicate predicate, Constant... arguments) {
-        return database.hasAtom(predicate, arguments);
+        return db.hasAtom(predicate, arguments);
     }
 
     public GroundAtom deleteAtom(StandardPredicate predicate, Constant... arguments) {
         GroundAtom atom = null;
 
-        if (database.hasAtom(predicate, arguments)) {
-            atom = database.getAtom(predicate, arguments);
-            database.deleteAtom(atom);
+        if (db.hasAtom(predicate, arguments)) {
+            atom = db.getAtom(predicate, arguments);
+            db.deleteAtom(atom);
             if (atom instanceof RandomVariableAtom) {
                 persistedAtomCount--;
                 newRandomVariableAtoms.remove(atom);
@@ -105,7 +105,7 @@ public class OnlineAtomManager extends PersistedAtomManager {
 
         // Make sure atom was not deleted due to access exception, if so return null.
         if (atom instanceof RandomVariableAtom) {
-            if (!database.hasAtom(((RandomVariableAtom)atom).getPredicate(), atom.getArguments())) {
+            if (!db.hasAtom(((RandomVariableAtom)atom).getPredicate(), atom.getArguments())) {
                 atom = null;
             }
         }

@@ -69,7 +69,7 @@ public interface WritableDatabase {
      * the write partition.
      * Be careful not to call this while the database is in use.
      */
-    public void moveToPartition(StandardPredicate predicate, int oldPartitionId, int newPartitionID);
+    public void moveToPartition(StandardPredicate predicate, int oldPartitionId, int newPartitionId);
 
     /**
      * Releases the {@link Partition Partitions} used by this Database.

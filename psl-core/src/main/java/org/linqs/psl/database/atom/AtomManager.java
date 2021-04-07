@@ -42,7 +42,7 @@ import org.linqs.psl.model.term.Constant;
  * Atoms.
  */
 public abstract class AtomManager {
-    protected final Database database;
+    protected final Database db;
 
     /**
      * If the specific AtomManager supports access exceptions,
@@ -50,8 +50,8 @@ public abstract class AtomManager {
      */
     protected boolean enableAccessExceptions;
 
-    public AtomManager(Database database) {
-        this.database = database;
+    public AtomManager(Database db) {
+        this.db = db;
         this.enableAccessExceptions = true;
     }
 
@@ -76,7 +76,7 @@ public abstract class AtomManager {
      * @return the query results exactly as returned by the Database
      */
     public ResultList executeQuery(DatabaseQuery query) {
-        return database.executeQuery(query);
+        return db.executeQuery(query);
     }
 
     /**
@@ -84,7 +84,7 @@ public abstract class AtomManager {
      * encapsulated Database.
      */
     public QueryResultIterable executeGroundingQuery(Formula formula) {
-        return database.executeGroundingQuery(formula);
+        return db.executeGroundingQuery(formula);
     }
 
     /**
@@ -95,11 +95,11 @@ public abstract class AtomManager {
      * @return TRUE if predicate is closed in the Database
      */
     public boolean isClosed(StandardPredicate predicate) {
-        return database.isClosed(predicate);
+        return db.isClosed(predicate);
     }
 
     public Database getDatabase() {
-        return database;
+        return db;
     }
 
     /**
@@ -116,14 +116,14 @@ public abstract class AtomManager {
      * Get the number of RandomVariableAtoms cached by the database.
      */
     public int getCachedRVACount() {
-        return database.getCachedRVACount();
+        return db.getCachedRVACount();
     }
 
     /**
      * Get the number of ObservedAtoms cached by the database.
      */
     public int getCachedObsCount() {
-        return database.getCachedObsCount();
+        return db.getCachedObsCount();
     }
 
     /**

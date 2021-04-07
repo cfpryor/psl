@@ -55,10 +55,10 @@ public class LazyAtomManager extends PersistedAtomManager {
     private final Set<RandomVariableAtom> lazyAtoms;
     private final double activation;
 
-    public LazyAtomManager(Database database) {
-        super(database);
+    public LazyAtomManager(Database db) {
+        super(db);
 
-        if (!(database instanceof RDBMSDatabase)) {
+        if (!(db instanceof RDBMSDatabase)) {
             throw new IllegalArgumentException("LazyAtomManagers require RDBMSDatabase.");
         }
 
@@ -68,7 +68,7 @@ public class LazyAtomManager extends PersistedAtomManager {
 
     @Override
     public synchronized GroundAtom getAtom(Predicate predicate, Constant... arguments) {
-        GroundAtom atom = database.getAtom(predicate, arguments);
+        GroundAtom atom = db.getAtom(predicate, arguments);
         if (!(atom instanceof RandomVariableAtom)) {
             return atom;
         }
@@ -154,7 +154,7 @@ public class LazyAtomManager extends PersistedAtomManager {
 
     private void activate(Set<RandomVariableAtom> toActivate, List<Rule> rules, GroundRuleStore groundRuleStore) {
         // First commit the atoms to the database.
-        database.commit(toActivate, Partition.SPECIAL_WRITE_ID);
+        db.commit(toActivate, Partition.SPECIAL_WRITE_ID);
 
         // Also ensure that the activated atoms are now considered "persisted" by the atom manager.
         addToPersistedCache(toActivate);
@@ -175,7 +175,7 @@ public class LazyAtomManager extends PersistedAtomManager {
 
         // Move all the new atoms out of the lazy partition and into the write partition.
         for (StandardPredicate lazyPredicate : lazyPredicates) {
-            database.moveToPartition(lazyPredicate, Partition.SPECIAL_WRITE_ID, database.getWritePartition().getID());
+            db.moveToPartition(lazyPredicate, Partition.SPECIAL_WRITE_ID, db.getWritePartition().getID());
         }
 
         // Since complex aritmetic rules require a full regound, we need to do them

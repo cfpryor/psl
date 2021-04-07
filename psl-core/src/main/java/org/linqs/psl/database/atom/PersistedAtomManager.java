@@ -96,12 +96,12 @@ public class PersistedAtomManager extends AtomManager {
         List<RandomVariableAtom> mirrorAtoms = new LinkedList<RandomVariableAtom>();
 
         // Iterate through all of the registered predicates in this database
-        for (StandardPredicate predicate : database.getDataStore().getRegisteredPredicates()) {
+        for (StandardPredicate predicate : db.getDataStore().getRegisteredPredicates()) {
             // Ignore any closed predicates, they will not return RandomVariableAtoms
-            if (database.isClosed(predicate)) {
+            if (db.isClosed(predicate)) {
                 // Make the database cache all the atoms from the closed predicates,
                 // but don't do anything with them now.
-                database.getAllGroundAtoms(predicate);
+                db.getAllGroundAtoms(predicate);
 
                 continue;
             }
@@ -112,13 +112,13 @@ public class PersistedAtomManager extends AtomManager {
             }
 
             // First pull all the random variable atoms and mark them as persisted.
-            for (RandomVariableAtom atom : database.getAllGroundRandomVariableAtoms(predicate)) {
+            for (RandomVariableAtom atom : db.getAllGroundRandomVariableAtoms(predicate)) {
                 atom.setPersisted(true);
                 persistedAtomCount++;
 
                 // If this predicate has a mirror, ensure that the other half of the mirror pair is created.
                 if (predicate.getMirror() != null) {
-                    RandomVariableAtom mirrorAtom = (RandomVariableAtom)database.getAtom(predicate.getMirror(), true, atom.getArguments());
+                    RandomVariableAtom mirrorAtom = (RandomVariableAtom)db.getAtom(predicate.getMirror(), true, atom.getArguments());
                     mirrorAtoms.add(mirrorAtom);
 
                     atom.setMirror(mirrorAtom);
@@ -131,9 +131,9 @@ public class PersistedAtomManager extends AtomManager {
 
             // Now pull all the observed atoms so they will get cached.
             // This will throw if any observed atoms were previously seen as RVAs.
-            database.getAllGroundObservedAtoms(predicate);
+            db.getAllGroundObservedAtoms(predicate);
             if (mirrorAtoms.size() > 0) {
-                database.commit(mirrorAtoms);
+                db.commit(mirrorAtoms);
                 mirrorAtoms.clear();
             }
         }
@@ -143,7 +143,7 @@ public class PersistedAtomManager extends AtomManager {
     // then they will be responsible for synchronization.
     @Override
     public GroundAtom getAtom(Predicate predicate, Constant... arguments) {
-        GroundAtom atom = database.getAtom(predicate, arguments);
+        GroundAtom atom = db.getAtom(predicate, arguments);
         if (!(atom instanceof RandomVariableAtom)) {
             return atom;
         }
@@ -169,7 +169,7 @@ public class PersistedAtomManager extends AtomManager {
      * Commit all the atoms in this manager's persisted cache.
      */
     public void commitPersistedAtoms() {
-        database.commitCachedAtoms(true);
+        db.commitCachedAtoms(true);
     }
 
     public int getPersistedCount() {
@@ -177,7 +177,7 @@ public class PersistedAtomManager extends AtomManager {
     }
 
     public Iterable<RandomVariableAtom> getPersistedRVAtoms() {
-        return IteratorUtils.filter(database.getAllCachedRandomVariableAtoms(), new IteratorUtils.FilterFunction<RandomVariableAtom>() {
+        return IteratorUtils.filter(db.getAllCachedRandomVariableAtoms(), new IteratorUtils.FilterFunction<RandomVariableAtom>() {
             @Override
             public boolean keep(RandomVariableAtom atom) {
                 return atom.getPersisted();
