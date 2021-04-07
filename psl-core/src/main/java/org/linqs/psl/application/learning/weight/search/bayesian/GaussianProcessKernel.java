@@ -22,10 +22,10 @@ public abstract class GaussianProcessKernel {
     }
 
     /**
-     * Weights are the number of groundings for a rule divided by total number of groundings.
-     * The idea is that rules with lesser grounding will need bigger jumps to make a difference.
-     * Caller loses ownership of the weights.
-     */
+      * Weights are the number of groundings for a rule divided by total number of groundings.
+      * The idea is that rules with lesser grounding will need bigger jumps to make a difference.
+      * Caller loses ownership of the weights.
+      */
     public GaussianProcessKernel(float[] scalingWeights) {
         this(FloatMatrix.columnVector(scalingWeights), true);
     }
@@ -47,12 +47,12 @@ public abstract class GaussianProcessKernel {
     public abstract float kernel(FloatMatrix point1, FloatMatrix point2);
 
     /**
-     * Compute the kernel, but use buffers provided by the caller.
-     * The use of the buffers must be theadsafe and there are no requirements or guarantees on the
-     * contents of the buffers before/after invocation (except that they are sized
-     * the same as the points).
-     * The matrices will be modified.
-     */
+      * Compute the kernel, but use buffers provided by the caller.
+      * The use of the buffers must be theadsafe and there are no requirements or guarantees on the
+      * contents of the buffers before/after invocation (except that they are sized
+      * the same as the points).
+      * The matrices will be modified.
+      */
     public float kernel(float[] point1, float[] point2, float[] buffer1, float[] buffer2, FloatMatrix matrixShell1, FloatMatrix matrixShell2) {
         assert(point1.length == point2.length);
         assert(buffer1.length == buffer2.length);
@@ -70,8 +70,8 @@ public abstract class GaussianProcessKernel {
     }
 
     /**
-     * Compute the kernels, but allocate new buffer for the computation.
-     */
+      * Compute the kernels, but allocate new buffer for the computation.
+      */
     public float kernel(float[] point1, float[] point2) {
         return kernel(point1, point2, new float[point1.length], new float[point2.length], new FloatMatrix(), new FloatMatrix());
     }

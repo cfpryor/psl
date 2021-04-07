@@ -117,8 +117,8 @@ public abstract class InferenceApplication implements ModelApplication {
         completeInitialize();
     }
 
-    protected PersistedAtomManager createAtomManager(Database database) {
-        return new PersistedAtomManager(database, false, initialValue);
+    protected PersistedAtomManager createAtomManager(Database db) {
+        return new PersistedAtomManager(db, false, initialValue);
     }
 
     protected GroundRuleStore createGroundRuleStore() {
@@ -336,7 +336,7 @@ public abstract class InferenceApplication implements ModelApplication {
      * Construct an inference application given the data.
      * Look for a constructor like: (List<Rule>, Database).
      */
-    public static InferenceApplication getInferenceApplication(String className, List<Rule> rules, Database database) {
+    public static InferenceApplication getInferenceApplication(String className, List<Rule> rules, Database db) {
         className = Reflection.resolveClassName(className);
 
         Class<? extends InferenceApplication> classObject = null;
@@ -357,7 +357,7 @@ public abstract class InferenceApplication implements ModelApplication {
 
         InferenceApplication inferenceApplication = null;
         try {
-            inferenceApplication = constructor.newInstance(rules, database);
+            inferenceApplication = constructor.newInstance(rules, db);
         } catch (InstantiationException ex) {
             throw new RuntimeException("Unable to instantiate inference application (" + className + ")", ex);
         } catch (IllegalAccessException ex) {

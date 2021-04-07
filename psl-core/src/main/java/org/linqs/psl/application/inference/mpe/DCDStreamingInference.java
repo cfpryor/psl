@@ -33,8 +33,8 @@ import java.util.List;
  * Use streaming grounding and inference with a DCD reasoner.
  */
 public class DCDStreamingInference extends MPEInference {
-    public DCDStreamingInference(List<Rule> rules, Database database) {
-        super(rules, database, true);
+    public DCDStreamingInference(List<Rule> rules, Database db) {
+        super(rules, db, true);
     }
 
     @Override

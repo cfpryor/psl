@@ -34,8 +34,8 @@ import java.util.List;
  * Use an SGD reasoner to perform MPE inference.
  */
 public class SGDInference extends MPEInference {
-    public SGDInference(List<Rule> rules, Database database) {
-        super(rules, database, true);
+    public SGDInference(List<Rule> rules, Database db) {
+        super(rules, db, true);
     }
 
     @Override

@@ -33,8 +33,8 @@ import java.util.List;
  * Use streaming grounding and inference with an SGD reasoner.
  */
 public class SGDStreamingInference extends MPEInference {
-    public SGDStreamingInference(List<Rule> rules, Database database) {
-        super(rules, database, true);
+    public SGDStreamingInference(List<Rule> rules, Database db) {
+        super(rules, db, true);
     }
 
     @Override
