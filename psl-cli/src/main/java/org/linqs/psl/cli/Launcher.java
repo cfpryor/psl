@@ -454,8 +454,7 @@ public class Launcher {
             return false;
         }
 
-        if (!givenOptions.hasOption(CommandLineLoader.OPERATION_INFER) &&
-                !givenOptions.hasOption(CommandLineLoader.OPERATION_LEARN)) {
+        if (!givenOptions.hasOption(CommandLineLoader.OPERATION_INFER) && !givenOptions.hasOption(CommandLineLoader.OPERATION_LEARN)) {
             System.out.println(String.format("Missing required option: --%s/-%s.", CommandLineLoader.OPERATION_INFER_LONG, CommandLineLoader.OPERATION_INFER));
             helpFormatter.printHelp("psl", CommandLineLoader.getOptions(), true);
             return false;

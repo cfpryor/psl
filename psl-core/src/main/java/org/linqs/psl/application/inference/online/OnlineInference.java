@@ -269,11 +269,11 @@ public abstract class OnlineInference extends InferenceApplication {
 
         if (action.getOutputDirectoryPath() != null) {
             log.info("Writing inferred predicates to file: " + action.getOutputDirectoryPath());
-            database.outputRandomVariableAtoms(action.getOutputDirectoryPath());
+            db.outputRandomVariableAtoms(action.getOutputDirectoryPath());
             response = "Wrote inferred predicates to file: " + action.getOutputDirectoryPath();
         } else {
             log.info("Writing inferred predicates to output stream.");
-            database.outputRandomVariableAtoms();
+            db.outputRandomVariableAtoms();
             response = "Wrote inferred predicates to output stream.";
         }
 

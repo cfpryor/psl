@@ -54,7 +54,7 @@ public abstract class InferenceApplication implements ModelApplication {
     private static final Logger log = LoggerFactory.getLogger(InferenceApplication.class);
 
     protected List<Rule> rules;
-    protected Database database;
+    protected Database db;
     protected Reasoner reasoner;
     protected InitialValue initialValue;
 
@@ -70,13 +70,13 @@ public abstract class InferenceApplication implements ModelApplication {
 
     private boolean atomsCommitted;
 
-    protected InferenceApplication(List<Rule> rules, Database database) {
-        this(rules, database, Options.INFERENCE_RELAX.getBoolean());
+    protected InferenceApplication(List<Rule> rules, Database db) {
+        this(rules, db, Options.INFERENCE_RELAX.getBoolean());
     }
 
-    protected InferenceApplication(List<Rule> rules, Database database, boolean relaxHardConstraints) {
+    protected InferenceApplication(List<Rule> rules, Database db, boolean relaxHardConstraints) {
         this.rules = new ArrayList<Rule>(rules);
-        this.database = database;
+        this.db = db;
         this.atomsCommitted = false;
 
         this.initialValue = InitialValue.valueOf(Options.INFERENCE_INITIAL_VARIABLE_VALUE.getString());
@@ -94,7 +94,7 @@ public abstract class InferenceApplication implements ModelApplication {
      */
     protected void initialize() {
         log.debug("Creating persisted atom manager.");
-        atomManager = createAtomManager(database);
+        atomManager = createAtomManager(db);
         log.debug("Atom manager initialization complete.");
 
         initializeAtoms();
@@ -265,7 +265,7 @@ public abstract class InferenceApplication implements ModelApplication {
         }
 
         rules = null;
-        database = null;
+        db = null;
     }
 
     /**

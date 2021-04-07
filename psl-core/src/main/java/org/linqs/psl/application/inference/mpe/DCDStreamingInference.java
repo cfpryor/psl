@@ -66,7 +66,7 @@ public class DCDStreamingInference extends MPEInference {
         reasoner = null;
 
         rules = null;
-        database = null;
+        db = null;
     }
 
     @Override
