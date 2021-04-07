@@ -223,7 +223,7 @@ public class PersistedAtomManager extends AtomManager {
         public RandomVariableAtom atom;
 
         public PersistedAccessException(RandomVariableAtom atom) {
-            super("Can only call getVariable() on persisted RandomVariableAtoms (RVAs)" +
+            super("Can only call getAtom() on persisted RandomVariableAtoms (RVAs)" +
                     " using a PersistedAtomManager." +
                     " Cannot access " + atom + "." +
                     " This typically means that provided data is insufficient." +
