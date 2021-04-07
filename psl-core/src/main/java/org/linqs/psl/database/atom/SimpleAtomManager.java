@@ -27,8 +27,8 @@ import org.linqs.psl.model.term.Constant;
  * to underlying components.
  */
 public class SimpleAtomManager extends AtomManager {
-    public SimpleAtomManager(Database database) {
-        super(database);
+    public SimpleAtomManager(Database db) {
+        super(db);
     }
 
     @Override

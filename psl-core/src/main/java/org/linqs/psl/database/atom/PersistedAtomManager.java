@@ -61,12 +61,12 @@ public class PersistedAtomManager extends AtomManager {
 
     protected int persistedAtomCount;
 
-    public PersistedAtomManager(Database database) {
-        this(database, false);
+    public PersistedAtomManager(Database db) {
+        this(db, false);
     }
 
-    public PersistedAtomManager(Database database, boolean prebuiltCache) {
-        this(database, prebuiltCache, InitialValue.ATOM);
+    public PersistedAtomManager(Database db, boolean prebuiltCache) {
+        this(db, prebuiltCache, InitialValue.ATOM);
     }
 
     /**
@@ -74,8 +74,8 @@ public class PersistedAtomManager extends AtomManager {
      * @param prebuiltCache the database already has a populated atom cache, no need to build it again.
      * @param initialValueOnIllegalAccess the initial value to give an atom accessed illegally.
      */
-    public PersistedAtomManager(Database database, boolean prebuiltCache, InitialValue initialValueOnIllegalAccess) {
-        super(database);
+    public PersistedAtomManager(Database db, boolean prebuiltCache, InitialValue initialValueOnIllegalAccess) {
+        super(db);
 
         throwOnIllegalAccess = Options.PAM_THROW_ACCESS_EXCEPTION.getBoolean();
         warnOnIllegalAccess = !throwOnIllegalAccess;
@@ -83,7 +83,7 @@ public class PersistedAtomManager extends AtomManager {
         this.initialValueOnIllegalAccess = initialValueOnIllegalAccess;
 
         if (prebuiltCache) {
-            persistedAtomCount = database.getCachedRVACount();
+            persistedAtomCount = db.getCachedRVACount();
         } else {
             buildPersistedAtomCache();
         }
@@ -132,6 +132,7 @@ public class PersistedAtomManager extends AtomManager {
             // Now pull all the observed atoms so they will get cached.
             // This will throw if any observed atoms were previously seen as RVAs.
             db.getAllGroundObservedAtoms(predicate);
+
             if (mirrorAtoms.size() > 0) {
                 db.commit(mirrorAtoms);
                 mirrorAtoms.clear();
