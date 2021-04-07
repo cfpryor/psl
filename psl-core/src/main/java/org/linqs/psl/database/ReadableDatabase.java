@@ -81,7 +81,7 @@ public interface ReadableDatabase {
     /**
      * Check to see if a ground atom exists in the database.
      * This looks for a real ground atom and ignores the closed-world assumption.
-     * If found, the atom will be cached for subsequent requests to this or getVariable().
+     * If found, the atom will be cached for subsequent requests to this or getAtom().
      */
     public boolean hasAtom(StandardPredicate predicate, Constant... arguments);
 
