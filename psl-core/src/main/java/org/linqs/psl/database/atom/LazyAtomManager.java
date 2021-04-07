@@ -175,7 +175,7 @@ public class LazyAtomManager extends PersistedAtomManager {
 
         // Move all the new atoms out of the lazy partition and into the write partition.
         for (StandardPredicate lazyPredicate : lazyPredicates) {
-            db.moveToPartition(lazyPredicate, Partition.SPECIAL_WRITE_ID, db.getWritePartition().getID());
+            db.moveToWritePartition(lazyPredicate, Partition.SPECIAL_WRITE_ID);
         }
 
         // Since complex aritmetic rules require a full regound, we need to do them

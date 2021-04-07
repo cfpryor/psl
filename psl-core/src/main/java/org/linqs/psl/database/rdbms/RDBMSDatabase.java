@@ -220,6 +220,11 @@ public class RDBMSDatabase extends Database {
     }
 
     @Override
+    public void moveToWritePartition(StandardPredicate predicate, int oldPartitionId) {
+        moveToPartition(predicate, oldPartitionId, writeID);
+    }
+
+    @Override
     public void moveToPartition(StandardPredicate predicate, int oldPartitionId, int newPartitionId) {
         PredicateInfo predicateInfo = ((RDBMSDataStore)parentDataStore).getPredicateInfo(predicate);
 
