@@ -187,14 +187,6 @@ public abstract class Database implements ReadableDatabase, WritableDatabase {
         return cache.getCachedRandomVariableAtoms();
     }
 
-    public int getCachedRVACount() {
-        return cache.getRVACount();
-    }
-
-    public int getCachedObsCount() {
-        return cache.getObsCount();
-    }
-
     public List<GroundAtom> getAllGroundAtoms(StandardPredicate predicate) {
         return getAllGroundAtoms(predicate, allPartitionIDs);
     }
@@ -349,5 +341,13 @@ public abstract class Database implements ReadableDatabase, WritableDatabase {
                 throw new RuntimeException("Error writing predicate " + predicate + ".", ex);
             }
         }
+    }
+
+    public int getCachedRVACount() {
+        return cache.getRVACount();
+    }
+
+    public int getCachedObsCount() {
+        return cache.getObsCount();
     }
 }
