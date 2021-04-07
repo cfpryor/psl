@@ -48,7 +48,7 @@ public class AtomCache {
 
     protected final Map<QueryAtom, GroundAtom> cache;
 
-    // The number of random variable atoms that have been instantiated.
+    // The number of random variable and observed atoms that have been instantiated.
     private int rvaCount;
     private int obsCount;
 
