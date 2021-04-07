@@ -40,12 +40,6 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
     private static final Logger log = LoggerFactory.getLogger(BaseGridSearch.class);
 
     /**
-     * The current location we are investigating.
-     * The exact representation is up to the implementing child class.
-     */
-    protected String currentLocation;
-
-    /**
      * The number of actual possible locations.
      * Initially set to 0 and should be set by child constructors.
      */
@@ -63,6 +57,12 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
      */
     protected Map<String, Double> objectives;
 
+    /**
+     * The current location we are investigating.
+     * The exact representation is up to the implementing child class.
+     */
+    protected String currentLocation;
+
     public BaseGridSearch(Model model, Database rvDB, Database observedDB) {
         this(model.getRules(), rvDB, observedDB);
     }
@@ -70,12 +70,12 @@ public abstract class BaseGridSearch extends WeightLearningApplication {
     public BaseGridSearch(List<Rule> rules, Database rvDB, Database observedDB) {
         super(rules, rvDB, observedDB);
 
-        currentLocation = null;
-
         maxNumLocations = 0;
         numLocations = maxNumLocations;
 
         objectives = new HashMap<String, Double>();
+
+        currentLocation = null;
     }
 
     @Override

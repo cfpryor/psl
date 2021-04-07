@@ -325,8 +325,8 @@ public class GaussianProcessPrior extends WeightLearningApplication {
      *  Will get modified.
      */
     protected ValueAndStd predictFnValAndStd(float[] x, List<WeightConfig> xKnown, float[] xyStdData,
-                                             float[] kernelBuffer1, float[] kernelBuffer2, FloatMatrix kernelMatrixShell1, FloatMatrix kernelMatrixShell2,
-                                             FloatMatrix xyStdMatrixShell, FloatMatrix mulBuffer) {
+            float[] kernelBuffer1, float[] kernelBuffer2, FloatMatrix kernelMatrixShell1, FloatMatrix kernelMatrixShell2,
+            FloatMatrix xyStdMatrixShell, FloatMatrix mulBuffer) {
         ValueAndStd fnAndStd = new ValueAndStd();
 
         for (int i = 0; i < xyStdData.length; i++) {

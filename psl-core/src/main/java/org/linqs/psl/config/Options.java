@@ -18,8 +18,8 @@
 package org.linqs.psl.config;
 
 import org.linqs.psl.application.inference.mpe.ADMMInference;
-import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
 import org.linqs.psl.application.learning.weight.maxlikelihood.MaxLikelihoodMPE;
+import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
 import org.linqs.psl.database.rdbms.QueryRewriter;
 import org.linqs.psl.grounding.MemoryGroundRuleStore;
 import org.linqs.psl.evaluation.statistics.ContinuousEvaluator;
@@ -265,10 +265,10 @@ public class Options {
     );
 
     public static final Option WLA_GPP_USE_PROVIDED_WEIGHT = new Option(
-            "gpp.useProvidedWeight",
-            true,
-            "Whether the weight configuration in the user provided model file should be used as the initial"
-                    + " sample point in GPP."
+        "gpp.useProvidedWeight",
+        true,
+        "Whether the weight configuration in the user provided model file should be used as the initial"
+        + " sample point in GPP."
     );
 
     public static final Option WLA_GPP_KERNEL_REL_DEP = new Option(
@@ -671,8 +671,8 @@ public class Options {
 
     public static final Option REASONER_TOLERANCE = new Option(
         "reasoner.tolerance",
-        1e-8f,
-        "How close two objective values need to be to be considered the same.",
+        1e-5f,
+        "How close towo objective values need to be to be considered the same.",
         Option.FLAG_NON_NEGATIVE
     );
 
@@ -689,21 +689,21 @@ public class Options {
     );
 
     public static final Option WLA_SEARCH_DIRICHLET = new Option(
-            "search.dirichlet",
-            true,
-            "Whether or not to perform search based weight learning using Dirichlet distributed weights."
-                    + " Note that setting this option to false will increase the likelihood of repeated weight configuration samples."
+        "search.dirichlet",
+        true,
+        "Whether or not to perform search based weight learning using Dirichlet distributed weights."
+        + " Note that setting this option to false will increase the likelihood of repeated weight configuration samples."
     );
 
     public static final Option WLA_SEARCH_DIRICHLET_ALPHA = new Option(
-            "search.dirichletalpha",
-            0.05,
-            "The alpha parameter for the dirichlet distribution of the weight sampler."
+        "search.dirichletalpha",
+        0.05,
+        "The alpha parameter for the dirichlet distribution of the weight sampler."
     );
 
     public static final Option SGD_LEARNING_RATE = new Option(
         "sgd.learningrate",
-        10.0f,
+        1.0f,
         null,
         Option.FLAG_POSITIVE
     );
@@ -715,12 +715,6 @@ public class Options {
         Option.FLAG_POSITIVE
     );
 
-    public static final Option SGD_MIN_ITER = new Option(
-            "sgd.miniterations",
-            5,
-            "The minimum number of iterations of SGD to perform in a round of inference.",
-            Option.FLAG_POSITIVE
-    );
 
     public static final Option SGD_MOVEMENT = new Option(
         "sgd.movement",

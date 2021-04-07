@@ -58,8 +58,8 @@ public class InitialWeightGridSearch extends GridSearch {
     protected void postInitGroundModel() {
         // Init the internal WLA.
         internalWLA.initGroundModel(
-                this.inference,
-                this.trainingMap
+            this.inference,
+            this.trainingMap
         );
     }
 

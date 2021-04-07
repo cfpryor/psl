@@ -33,6 +33,7 @@ import org.linqs.psl.application.inference.online.messages.actions.template.acti
 import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeleteRule;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
+import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.formula.Conjunction;
 import org.linqs.psl.model.formula.Implication;
@@ -66,6 +67,8 @@ public class SGDOnlineInferenceTest {
     @Before
     public void setup() {
         cleanup();
+
+        Options.SGD_LEARNING_RATE.set(10.0);
 
         modelInfo = TestModel.getModel(true);
 
