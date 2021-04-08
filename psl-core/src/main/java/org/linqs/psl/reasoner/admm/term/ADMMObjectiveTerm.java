@@ -248,6 +248,9 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
         }
     }
 
+    /**
+     * Evaluate this potential using the given consensus values.
+     */
     public float evaluate(float[] consensusValues) {
         float weight = Float.POSITIVE_INFINITY;
         if (rule != null && rule.isWeighted()) {
@@ -637,7 +640,7 @@ public class ADMMObjectiveTerm implements ReasonerTerm {
     }
 
     /**
-     * Get the number of variables in this term.
+     * Get the lower triangle if it already exists, compute and cache it otherwise.
      */
     private FloatMatrix fetchLowerTriangle(float stepSize, float weight) {
         int hash = HashCode.build(weight);

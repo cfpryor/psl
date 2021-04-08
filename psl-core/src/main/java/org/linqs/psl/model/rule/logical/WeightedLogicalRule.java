@@ -41,8 +41,7 @@ public class WeightedLogicalRule extends AbstractLogicalRule implements Weighted
     }
 
     @Override
-    protected WeightedGroundLogicalRule makeGroundRule(List<GroundAtom> posLiterals, List<GroundAtom> negLiterals,
-            short rvaCount) {
+    protected WeightedGroundLogicalRule groundFormulaInstance(List<GroundAtom> posLiterals, List<GroundAtom> negLiterals, short rvaCount) {
         return new WeightedGroundLogicalRule(this, posLiterals, negLiterals, rvaCount);
     }
 

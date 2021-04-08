@@ -39,8 +39,7 @@ public class UnweightedLogicalRule extends AbstractLogicalRule implements Unweig
     }
 
     @Override
-    protected AbstractGroundLogicalRule makeGroundRule(List<GroundAtom> posLiterals, List<GroundAtom> negLiterals,
-            short rvaCount) {
+    protected AbstractGroundLogicalRule groundFormulaInstance(List<GroundAtom> posLiterals, List<GroundAtom> negLiterals, short rvaCount) {
         return new UnweightedGroundLogicalRule(this, posLiterals, negLiterals, rvaCount);
     }
 
