@@ -2,9 +2,6 @@ package org.linqs.psl.application.learning.weight.search.bayesian;
 
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.application.learning.weight.WeightLearningTest;
-import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
-import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessPrior;
-import org.linqs.psl.application.learning.weight.search.bayesian.SquaredExpKernel;
 import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.rule.Rule;
