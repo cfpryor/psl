@@ -21,7 +21,16 @@ import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.term.Constant;
 
 /**
- * A GroundAtom with a fixed truth value.
+ * A {@link GroundAtom} with a fixed truth value.
+ * <p>
+ * Circumstances that cause a GroundAtom to be instantiated as an ObservedAtom include
+ * <ul>
+ *  <li>its Predicate is a StandardPredicate and closed in the Atom's Database</li>
+ *  <li>its Predicate is a FunctionalPredicate</li>
+ *  <li>its Predicate is a StandardPredicate and it is persisted in one of its
+ *  Database's read-only Partitions</li>
+ * </ul>
+ * Other reasons may exist for specific Database implementations.
  */
 public class ObservedAtom extends GroundAtom {
     /**

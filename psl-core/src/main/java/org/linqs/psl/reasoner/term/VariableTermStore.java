@@ -20,7 +20,7 @@ package org.linqs.psl.reasoner.term;
 import org.linqs.psl.model.atom.GroundAtom;
 
 /**
- * An interface for term stores that can handle some variable-level operations.
+ * An interface for term stores that can handle some variable operations.
  */
 public interface VariableTermStore<T extends ReasonerTerm, V extends ReasonerLocalVariable> extends TermStore<T, V> {
     /**
@@ -47,7 +47,7 @@ public interface VariableTermStore<T extends ReasonerTerm, V extends ReasonerLoc
     public boolean isLoaded();
 
     /**
-     * Get the values for variable atoms.
+     * Get the values for the variable atoms.
      * Changing a value in this array and calling syncAtoms() will change the actual atom's value.
      */
     public float[] getVariableValues();
@@ -68,7 +68,7 @@ public interface VariableTermStore<T extends ReasonerTerm, V extends ReasonerLoc
     public double syncAtoms();
 
     /**
-     * Get all the vairables tracked by this term store.
+     * Get all the variables tracked by this term store.
      * Note that variables are allowed to be null if they have been deleted.
      */
     public GroundAtom[] getVariableAtoms();

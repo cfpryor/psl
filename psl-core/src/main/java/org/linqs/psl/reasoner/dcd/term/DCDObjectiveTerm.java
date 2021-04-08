@@ -19,9 +19,9 @@ package org.linqs.psl.reasoner.dcd.term;
 
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
-import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.reasoner.term.Hyperplane;
 import org.linqs.psl.reasoner.term.ReasonerTerm;
+import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.util.MathUtils;
 
 import java.nio.ByteBuffer;

@@ -21,7 +21,6 @@ import org.linqs.psl.config.Options;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.sgd.term.SGDObjectiveTerm;
-import org.linqs.psl.reasoner.sgd.term.SGDOnlineTermStore;
 import org.linqs.psl.reasoner.term.VariableTermStore;
 import org.linqs.psl.reasoner.term.TermStore;
 import org.linqs.psl.util.IteratorUtils;
@@ -32,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Uses an SGD optimization method to optimize its GroundRules.

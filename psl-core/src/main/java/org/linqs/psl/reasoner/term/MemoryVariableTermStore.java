@@ -26,8 +26,8 @@ import org.linqs.psl.model.rule.GroundRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -94,11 +94,6 @@ public abstract class MemoryVariableTermStore<T extends ReasonerTerm, V extends 
     }
 
     @Override
-    public GroundAtom[] getVariableAtoms() {
-        return variableAtoms;
-    }
-
-    @Override
     public double syncAtoms() {
         double movement = 0.0;
 
@@ -108,6 +103,11 @@ public abstract class MemoryVariableTermStore<T extends ReasonerTerm, V extends 
         }
 
         return movement;
+    }
+
+    @Override
+    public GroundAtom[] getVariableAtoms() {
+        return variableAtoms;
     }
 
     @Override
@@ -143,6 +143,7 @@ public abstract class MemoryVariableTermStore<T extends ReasonerTerm, V extends 
         }
 
         // Got a new variable.
+
         if (variables.size() >= variableAtoms.length) {
             ensureVariableCapacity(variables.size() * 2);
         }

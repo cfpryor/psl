@@ -24,7 +24,7 @@ import org.linqs.psl.reasoner.function.FunctionTerm;
 import org.linqs.psl.reasoner.term.ReasonerLocalVariable;
 
 /**
- * An Atom with only constants for arguments (no variables).
+ * An Atom with only {@link Constant GroundTerms} for arguments.
  *
  * A GroundAtom has a truth value.
  */
@@ -41,6 +41,9 @@ public abstract class GroundAtom extends Atom implements Comparable<GroundAtom>,
         return (Constant[])arguments;
     }
 
+    /**
+     * @return the truth value of this Atom
+     */
     @Override
     public float getValue() {
         return value;
