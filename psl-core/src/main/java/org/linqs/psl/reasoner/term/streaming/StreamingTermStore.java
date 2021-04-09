@@ -543,15 +543,15 @@ public abstract class StreamingTermStore<T extends ReasonerTerm> implements Vari
      * By default, this is only called for the initial round of iteration,
      * but children may override call this in different situations (like online inference).
      */
-    public abstract StreamingIterator<T> getGroundingIterator();
+    protected abstract StreamingIterator<T> getGroundingIterator();
 
     /**
      * Get an iterator that will read and write from disk.
      */
-    public abstract StreamingIterator<T> getCacheIterator();
+    protected abstract StreamingIterator<T> getCacheIterator();
 
     /**
      * Get an iterator that will not write to disk.
      */
-    public abstract StreamingIterator<T> getNoWriteIterator();
+    protected abstract StreamingIterator<T> getNoWriteIterator();
 }

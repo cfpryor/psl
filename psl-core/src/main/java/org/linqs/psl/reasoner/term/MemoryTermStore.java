@@ -96,9 +96,6 @@ public class MemoryTermStore<T extends ReasonerTerm> implements TermStore<T, Gro
     }
 
     @Override
-    public void ensureVariableCapacity(int capacity) { }
-
-    @Override
     public Iterator<T> iterator() {
         return store.iterator();
     }
@@ -111,6 +108,10 @@ public class MemoryTermStore<T extends ReasonerTerm> implements TermStore<T, Gro
     @Override
     public GroundAtom createLocalVariable(GroundAtom atom) {
         return atom;
+    }
+
+    @Override
+    public void ensureVariableCapacity(int capacity) {
     }
 
     @Override

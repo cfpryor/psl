@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * Uses an SGD optimization method to optimize its GroundRules.
+ * Uses a DCD optimization method to optimize its GroundRules.
  */
 public class DCDReasoner extends Reasoner {
     private static final Logger log = LoggerFactory.getLogger(DCDReasoner.class);
