@@ -27,17 +27,17 @@ public interface VariableTermStore<T extends ReasonerTerm, V extends ReasonerLoc
      * Get the total number of variables (dead or alive) tracked by this term store.
      * The number here must coincide with the size (not length) of the array returned by getVariableValues().
      */
-    int getNumVariables();
+    public int getNumVariables();
 
     /**
      * Get the total number of random variables tracked by this term store.
      */
-    int getNumRandomVariables();
+    public int getNumRandomVariables();
 
     /**
      * Get the total number of observed variables tracked by this term store.
      */
-    int getNumObservedVariables();
+    public int getNumObservedVariables();
 
     public Iterable<V> getVariables();
 

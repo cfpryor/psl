@@ -20,7 +20,6 @@ package org.linqs.psl.reasoner.sgd.term;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.reasoner.term.VariableTermStore;
-import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.AbstractRule;
 import org.linqs.psl.model.rule.WeightedRule;
 import org.linqs.psl.reasoner.term.Hyperplane;
@@ -155,7 +154,7 @@ public class SGDObjectiveTerm implements ReasonerTerm  {
         int bitSize =
             Byte.SIZE  // squared
             + Byte.SIZE  // hinge
-            + Float.SIZE  // weight
+            + Integer.SIZE  // rule hash
             + Float.SIZE  // constant
             + Float.SIZE  // learningRate
             + Short.SIZE  // size
