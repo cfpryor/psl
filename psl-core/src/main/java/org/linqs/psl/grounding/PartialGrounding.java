@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,14 +51,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A common interface for performing partial grounding.
- * The general process for partial grounding is:
- * 1) Identify new/updated atoms (referred to as "partial atoms") that all new groundings must contain at least one of.
- * 2) Ensure these atoms are in the database.
- * 3) Move these atoms to a "special" partition (see org.linqs.psl.database.Partition).
- * 4) For each rule, form a union that where each query contains an instance of an atom that is forecd to come from the special partition.
- * 5) Ground normally with that query.
- * 6) Swap the partial atoms back to their normal partition.
+ * Static utilities for performing partial grounding.
  */
 public class PartialGrounding {
     private static final Logger log = LoggerFactory.getLogger(PartialGrounding.class);
@@ -71,16 +64,16 @@ public class PartialGrounding {
      */
     public static Set<StandardPredicate> getPartialPredicates(Set<? extends GroundAtom> atoms) {
         Set<StandardPredicate> partialPredicates = new HashSet<StandardPredicate>();
-        for (Atom atom : atoms) {
+        for (GroundAtom atom : atoms) {
             if (atom.getPredicate() instanceof StandardPredicate) {
-                partialPredicates.add((StandardPredicate) atom.getPredicate());
+                partialPredicates.add((StandardPredicate)atom.getPredicate());
             }
         }
 
         return partialPredicates;
     }
 
-    public static Set<Rule> getPartialRules(List<Rule> rules, Set<? extends Predicate> partialPredicates) {
+    public static Set<Rule> getPartialRules(List<Rule> rules, Set<StandardPredicate> partialPredicates) {
         Set<Rule> partialRules = new HashSet<Rule>();
 
         for (Rule rule : rules) {
@@ -115,7 +108,7 @@ public class PartialGrounding {
      * Will drop all the ground rules originating from this rule and reground.
      */
     public static void partialComplexGround(AbstractArithmeticRule rule, GroundRuleStore groundRuleStore,
-            AtomManager atomManager) {
+                                            AtomManager atomManager) {
         log.trace(String.format("Complex partial grounding on rule [%s]", rule));
 
         // Remove all existing ground rules.
@@ -126,7 +119,7 @@ public class PartialGrounding {
     }
 
     public static void partialSimpleGround(Rule rule, Set<StandardPredicate> partialPredicates,
-            GroundRuleStore groundRuleStore, AtomManager atomManager) {
+                                           GroundRuleStore groundRuleStore, AtomManager atomManager) {
         Database db = atomManager.getDatabase();
         if (!rule.supportsGroundingQueryRewriting()) {
             throw new UnsupportedOperationException("Rule requires full regrounding: " + rule);
@@ -154,6 +147,20 @@ public class PartialGrounding {
         }
     }
 
+    private static List<Atom> getPartialTargetAtoms(Formula formula, Set<StandardPredicate> partialPredicates) {
+        List<Atom> partialTargetAtoms = new ArrayList<Atom>();
+
+        // For every mention of a partial predicate in this rule, we will need to get the grounding query
+        // with that specific predicate mention being the partial atom.
+        for (Atom atom : formula.getAtoms(new HashSet<Atom>())) {
+            if (partialPredicates.contains(atom.getPredicate())) {
+                partialTargetAtoms.add(atom);
+            }
+        }
+
+        return partialTargetAtoms;
+    }
+
     public static QueryResultIterable getPartialGroundingResults(Rule rule, Set<StandardPredicate> partialPredicates, Database db) {
         if (!rule.supportsGroundingQueryRewriting()) {
             throw new UnsupportedOperationException("Rule requires full regrounding: " + rule);
@@ -163,24 +170,8 @@ public class PartialGrounding {
         return getPartialGroundingResults(formula, partialPredicates, db);
     }
 
-    private static List<Atom> getPartialTargetAtoms(Formula formula, Set<StandardPredicate> partialPredicates) {
-        List<Atom> partialTargetAtoms = new ArrayList<Atom>();
-
-        // For every mention of a partial predicate in this rule, we will need to get the grounding query
-        // with that specific predicate mention being the partial target.
-        for (Atom atom : formula.getAtoms(new HashSet<Atom>())) {
-            if (!partialPredicates.contains(atom.getPredicate())) {
-                continue;
-            }
-
-            partialTargetAtoms.add(atom);
-        }
-
-        return partialTargetAtoms;
-    }
-
     private static QueryResultIterable getPartialGroundingResults(Formula formula, Set<StandardPredicate> partialPredicates,
-            Database db) {
+                                                                  Database db) {
         List<Atom> partialTargetAtoms = getPartialTargetAtoms(formula, partialPredicates);
 
         if (partialTargetAtoms.size() == 0) {
@@ -197,15 +188,13 @@ public class PartialGrounding {
         }
 
         RDBMSDatabase relationalDB = ((RDBMSDatabase)db);
-
         List<SelectQuery> queries = new ArrayList<SelectQuery>();
-
         VariableTypeMap varTypes = formula.collectVariables(new VariableTypeMap());
         Map<Variable, Integer> projectionMap = null;
         List<Atom> partialTargetAtoms = new ArrayList<Atom>();
         Iterable<boolean[]> subsetIterable = null;
         int partialTargetIndex = 0;
-        int num_partial_targets = 0;
+        int numPartialTargets = 0;
 
         if (Options.PARTIAL_GROUNDING_POWERSET.getBoolean()) {
             subsetIterable = IteratorUtils.powerset(allPartialTargetAtoms.size());
@@ -215,26 +204,25 @@ public class PartialGrounding {
             for (int i = 0; i < allPartialTargetAtoms.size(); i++) {
                 boolean[] subset = new boolean[allPartialTargetAtoms.size()];
                 subset[i] = true;
-                ((List<boolean[]>) subsetIterable).add(subset);
+                ((List<boolean[]>)subsetIterable).add(subset);
             }
         }
 
         for (boolean[] partialTargetAtomSubset : subsetIterable) {
             partialTargetAtoms.clear();
             partialTargetIndex = 0;
-            num_partial_targets = 0;
+            numPartialTargets = 0;
 
             // Build partialTargetAtoms atom array.
             for (boolean bool : partialTargetAtomSubset) {
                 if (bool) {
                     partialTargetAtoms.add(allPartialTargetAtoms.get(partialTargetIndex));
-                    num_partial_targets++;
+                    numPartialTargets++;
                 }
-
                 partialTargetIndex++;
             }
             // Skip empty-set subset of allPartialTargetAtoms.
-            if (num_partial_targets == 0) {
+            if (numPartialTargets == 0) {
                 continue;
             }
 
@@ -255,4 +243,3 @@ public class PartialGrounding {
         return relationalDB.executeQueryIterator(projectionMap, varTypes, union.validate().toString());
     }
 }
-

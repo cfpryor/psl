@@ -98,7 +98,6 @@ public class Formula2SQL {
 
     /**
      * See above description.
-
      * @param partialTargets if this is non-null, then this formula will be treated as a partial grounding query.
      * This means that we will treat special partitions (with a negative id) as valid partitions,
      * and these atoms will be exclusively drawn from the special partitions.
@@ -268,7 +267,7 @@ public class Formula2SQL {
         }
 
         // Make sure to limit the partitions.
-        // Most atoms get to choose from anywhere, partial atoms can only come from the special partitions.
+        // Most atoms get to choose from anywhere, partial target atoms can only come from a special partition.
         CustomSql partitionColumn = new CustomSql(tableAlias + "." + PredicateInfo.PARTITION_COLUMN_NAME);
         if ((partialTargets != null) && (partialTargets.contains(atom))) {
             query.addCondition(BinaryCondition.lessThan(partitionColumn, 0));
