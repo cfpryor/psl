@@ -29,10 +29,7 @@ import org.linqs.psl.model.atom.GroundAtom;
 public class GeneralFunction implements FunctionTerm {
     private final float[] coefficients;
     private final FunctionTerm[] terms;
-
-    /**
-     * Whether to merge fixed values (like observed atoms) into the single constant.
-     */
+    // Whether to merge fixed values (like observed atoms) into the single constant.
     private final boolean mergeConstants;
 
     private short size;
@@ -57,7 +54,6 @@ public class GeneralFunction implements FunctionTerm {
         this.nonNegative = nonNegative;
         this.squared = squared;
         this.mergeConstants = mergeConstants;
-
         constantTerms = true;
         linearTerms = true;
     }

@@ -87,8 +87,8 @@ public abstract class AbstractGroundLogicalRule implements GroundRule {
         // This means that the potential function being constructed here is actually the
         // ground rule's dissatisfaction.
 
-        for (int i = 0; i < this.posLiterals.size(); i++) {
-            function.add(1.0f, this.posLiterals.get(i));
+        for (int i = 0; i < posLiterals.size(); i++) {
+            function.add(1.0f, posLiterals.get(i));
         }
 
         for (int i = 0; i < this.negLiterals.size(); i++) {
