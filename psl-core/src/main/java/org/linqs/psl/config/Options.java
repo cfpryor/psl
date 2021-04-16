@@ -537,12 +537,6 @@ public class Options {
         + " If false an approximation will be made such that only one atom in a ground rule can come from a special partition."
     );
 
-    public static final Option PARTIAL_GROUNDING_INVERSE_NON_POWERSET = new Option(
-        "partialgrounding.inverse_non_powerset",
-        false,
-        ""
-    );
-
     public static final Option PAM_THROW_ACCESS_EXCEPTION = new Option(
         "persistedatommanager.throwaccessexception",
         true,
