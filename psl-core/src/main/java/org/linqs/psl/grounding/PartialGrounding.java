@@ -80,7 +80,7 @@ public class PartialGrounding {
         return partialPredicates;
     }
 
-    public static Set<? extends Rule> getPartialRules(List<? extends Rule> rules, Set<? extends Predicate> partialPredicates) {
+    public static Set<Rule> getPartialRules(List<Rule> rules, Set<? extends Predicate> partialPredicates) {
         Set<Rule> partialRules = new HashSet<Rule>();
 
         for (Rule rule : rules) {

@@ -706,7 +706,6 @@ public class Options {
         Option.FLAG_POSITIVE
     );
 
-
     public static final Option SGD_MOVEMENT = new Option(
         "sgd.movement",
         true,

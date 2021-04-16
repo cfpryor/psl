@@ -31,9 +31,6 @@ import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.model.rule.arithmetic.AbstractArithmeticRule;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,8 +44,6 @@ import java.util.Set;
  * (Options.LAM_ACTIVATION_THRESHOLD) will be instantiated as real atoms.
  */
 public class LazyAtomManager extends PersistedAtomManager {
-    private static final Logger log = LoggerFactory.getLogger(LazyAtomManager.class);
-
     /**
      * All the ground atoms that have been seen, but not instantiated.
      */
@@ -164,7 +159,7 @@ public class LazyAtomManager extends PersistedAtomManager {
         // Collect the specific predicates that are targets in this lazy batch
         // and the rules associated with those predicates.
         Set<StandardPredicate> lazyPredicates = PartialGrounding.getPartialPredicates(toActivate);
-        Set<? extends Rule> lazyRules = PartialGrounding.getPartialRules(rules, lazyPredicates);
+        Set<Rule> lazyRules = PartialGrounding.getPartialRules(rules, lazyPredicates);
 
         for (Rule lazyRule : lazyRules) {
             // We will deal with these rules after we move the lazy atoms to the write partition.
