@@ -41,8 +41,8 @@ public class DCDStreamingGroundingIterator extends StreamingGroundingIterator<DC
             List<DCDObjectiveTerm> termCache, List<DCDObjectiveTerm> termPool,
             ByteBuffer termBuffer, ByteBuffer volatileBuffer,
             int pageSize, int numPages) {
-        super(parentStore, rules, atomManager, termGenerator, termCache, termPool, termBuffer, volatileBuffer, pageSize,
-                numPages);
+        super(parentStore, rules, atomManager, termGenerator, termCache, termPool, termBuffer, volatileBuffer,
+                pageSize, numPages);
     }
 
     @Override

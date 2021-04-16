@@ -100,13 +100,6 @@ public abstract class Predicate implements Serializable {
         return types[position];
     }
 
-    /**
-     * Returns the ArgumentTypes which a {@link Term} must have to be a valid.
-     */
-    public ConstantType[] getArgumentTypes() {
-        return types;
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

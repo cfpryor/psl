@@ -205,27 +205,27 @@ public abstract class HyperplaneTermGenerator<T extends ReasonerTerm, V extends 
                 // and "removing" this term would be subtracting.
                 hyperplane.addIntegratedRVA((RandomVariableAtom)term, -coefficient);
             } else if ((term instanceof RandomVariableAtom) || (!mergeConstants && term instanceof ObservedAtom)) {
-                V localVariable = termStore.createLocalVariable((GroundAtom)term);
+                V variable = termStore.createLocalVariable((GroundAtom)term);
 
-                // Check to see if we have seen this localVariable before in this hyperplane.
+                // Check to see if we have seen this variable before in this hyperplane.
                 // Note that we are checking for existence in a List (O(n)), but there are usually a small number of
                 // variables per hyperplane.
-                int localIndex = hyperplane.indexOfVariable(localVariable);
+                int localIndex = hyperplane.indexOfVariable(variable);
                 if (localIndex != -1) {
                     // If this function came from a logical rule
-                    // and the sign of the current coefficient and the coefficient of this localVariable do not match,
+                    // and the sign of the current coefficient and the coefficient of this variable do not match,
                     // then this term is trivial.
                     // Recall that all logical rules are disjunctions with only +1 and -1 as coefficients.
-                    // A mismatch in signs for the same localVariable means that a ground atom appeared twice,
+                    // A mismatch in signs for the same variable means that a ground atom appeared twice,
                     // once as a positive atom and once as a negative atom: Foo('a') || !Foo('a').
                     if (sum.isNonNegative() && !MathUtils.signsMatch(hyperplane.getCoefficient(localIndex), coefficient)) {
                         return null;
                     }
 
-                    // If the local localVariable already exists, just add to its coefficient.
+                    // If the local variable already exists, just add to its coefficient.
                     hyperplane.appendCoefficient(localIndex, coefficient);
                 } else {
-                    hyperplane.addTerm(localVariable, coefficient);
+                    hyperplane.addTerm(variable, coefficient);
                 }
             } else if (term.isConstant()) {
                 // Subtract because hyperplane is stored as coeffs^T * x = constant.
