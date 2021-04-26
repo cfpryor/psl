@@ -60,10 +60,7 @@ public interface TermStore<T extends ReasonerTerm, V extends ReasonerLocalVariab
      * TermStores may use this as a chance to finalize data structures.
      */
     public void initForOptimization();
-
-    /**
-    * Getter for terms
-    */
+    
     public T get(long index);
 
     public long size();

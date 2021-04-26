@@ -18,7 +18,6 @@
 package org.linqs.psl.reasoner.term;
 
 import org.linqs.psl.grounding.GroundRuleStore;
-import org.linqs.psl.model.rule.GroundRule;
 
 public interface TermGenerator<T extends ReasonerTerm, V extends ReasonerLocalVariable> {
     /**

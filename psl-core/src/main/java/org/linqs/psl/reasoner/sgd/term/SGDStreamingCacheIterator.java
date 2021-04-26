@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.reasoner.sgd.term;
 
-import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.reasoner.term.streaming.StreamingCacheIterator;
 import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.RuntimeStats;
@@ -26,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Map;
 
 public class SGDStreamingCacheIterator extends StreamingCacheIterator<SGDObjectiveTerm> {
     public SGDStreamingCacheIterator(
@@ -37,18 +35,6 @@ public class SGDStreamingCacheIterator extends StreamingCacheIterator<SGDObjecti
             int numPages) {
         super(parentStore, readonly, termCache, termPool, termBuffer,
                 volatileBuffer, shufflePage, shuffleMap, randomizePageAccess, numPages);
-    }
-
-    @Override
-    public SGDObjectiveTerm next() {
-        if (nextTerm == null) {
-            throw new IllegalStateException("Called next() when hasNext() == false (or before the first hasNext() call).");
-        }
-
-        SGDObjectiveTerm term = nextTerm;
-        nextTerm = null;
-
-        return term;
     }
 
     @Override

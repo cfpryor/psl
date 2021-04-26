@@ -298,7 +298,7 @@ public class PredicateInfo {
     }
 
     private synchronized String buildCountAllStatement(List<Integer> partitions) {
-        String key = "countAll_" + ListUtils.join(",", partitions);
+        String key = "countAll_" + partitions.toString();
         if (cachedSQL.containsKey(key)) {
             return cachedSQL.get(key);
         }
@@ -324,7 +324,7 @@ public class PredicateInfo {
     }
 
     private synchronized String buildQueryAllStatement(List<Integer> partitions) {
-        String key = "queryAll_" + ListUtils.join(",", partitions);
+        String key = "queryAll_" + partitions.toString();
         if (cachedSQL.containsKey(key)) {
             return cachedSQL.get(key);
         }
@@ -356,7 +356,7 @@ public class PredicateInfo {
     }
 
     private synchronized String buildQueryStatement(List<Integer> readPartitions) {
-        String key = "query_" + ListUtils.join(",", readPartitions);
+        String key = "query_" + readPartitions.toString();
         if (cachedSQL.containsKey(key)) {
             return cachedSQL.get(key);
         }
@@ -408,7 +408,7 @@ public class PredicateInfo {
     }
 
     private synchronized String buildDeleteStatement(List<Integer> partitions) {
-        String key = "delete_" + ListUtils.join(",", partitions);
+        String key = "delete_" + partitions.toString();
         if (cachedSQL.containsKey(key)) {
             return cachedSQL.get(key);
         }
