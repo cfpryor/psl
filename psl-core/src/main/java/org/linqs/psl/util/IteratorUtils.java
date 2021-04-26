@@ -96,7 +96,7 @@ public final class IteratorUtils {
     }
 
     /**
-     * Get an iterable over all the given iterables in whatever iteration order each provides.
+     * Get an iterator over all the given iterators in whatever iteration order each provides.
      * It is up to the caller to make sure the underlying iterables are not changed during iteration.
      * The benefit of using this is that is does not perform variable allocations.
      */
