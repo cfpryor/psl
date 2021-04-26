@@ -240,10 +240,6 @@ public abstract class StreamingCacheIterator<T extends ReasonerTerm> implements 
 
         flushCache();
 
-        // All the terms have been iterated over and the volitile buffer has been flushed,
-        // the term cache is now invalid.
-        termCache.clear();
-
         parentStore.cacheIterationComplete();
     }
 

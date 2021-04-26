@@ -100,6 +100,8 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
         pendingGroundRules = new ArrayList<GroundRule>();
 
         this.termCache = termCache;
+        this.termCache.clear();
+
         this.termPool = termPool;
 
         newTerms = new ArrayList<T>();
