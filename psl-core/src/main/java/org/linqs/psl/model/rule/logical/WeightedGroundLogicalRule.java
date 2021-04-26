@@ -57,8 +57,7 @@ public class WeightedGroundLogicalRule extends AbstractGroundLogicalRule impleme
 
     @Override
     public GeneralFunction getFunctionDefinition(boolean mergeConstants) {
-        // We have already built the function for this ground rule by merging constants.
-        // If we want that one, return it right away.
+        // We have already built the function for this ground rule with merged constants.
         if (mergeConstants) {
             return dissatisfaction;
         }

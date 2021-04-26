@@ -46,7 +46,6 @@ public class SGDTermGenerator extends HyperplaneTermGenerator<SGDObjectiveTerm, 
 
     public SGDTermGenerator(boolean mergeConstants) {
         super(mergeConstants);
-
         learningRate = Options.SGD_LEARNING_RATE.getFloat();
     }
 

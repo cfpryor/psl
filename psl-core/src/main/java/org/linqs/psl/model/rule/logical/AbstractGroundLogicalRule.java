@@ -96,7 +96,7 @@ public abstract class AbstractGroundLogicalRule implements GroundRule {
         }
 
         // Adding a constant 1.0 overall and subtracting 1.0 for each positive term (in the negated DNF)
-        // will make this potential function the same as the function of the original (non-negated) ground rule.
+        // will make this potential function the same as the dissatisfaction of the original (non-negated) ground rule.
         function.add(1.0f - this.posLiterals.size());
 
         return function;
