@@ -20,7 +20,6 @@ package org.linqs.psl.model.predicate;
 import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.term.ConstantType;
 import org.linqs.psl.model.term.Term;
-import org.linqs.psl.util.HashCode;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -60,13 +59,11 @@ public abstract class Predicate implements Serializable {
 
         this.name = name.toUpperCase();
         this.types = types;
+        hashcode = this.name.hashCode();
 
         if (predicates.containsKey(this.name)) {
             throw new RuntimeException("Predicate with name '" + name + "' already exists.");
         }
-
-        hashcode = HashCode.build(this.name);
-
         predicates.put(this.name, this);
     }
 
