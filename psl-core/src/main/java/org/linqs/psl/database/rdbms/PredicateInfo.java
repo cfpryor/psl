@@ -167,7 +167,7 @@ public class PredicateInfo {
 
     /**
      * Create a prepared statement that deletes ground atoms that match all the arguments.
-     * Note that we will only delete from the write partition.
+     * Note that we will only delete from the provided partitions.
      */
     public PreparedStatement createDeleteStatement(Connection connection, List<Integer> partitions) {
         return prepareSQL(connection, buildDeleteStatement(partitions));
@@ -416,7 +416,7 @@ public class PredicateInfo {
         DeleteQuery delete = new DeleteQuery(tableName);
         QueryPreparer.MultiPlaceHolder placeHolder = (new QueryPreparer()).getNewMultiPlaceHolder();
 
-        // Delete from any partition in this database.
+        // Delete from all provided partitions.
         delete.addCondition(new InCondition(new CustomSql(PARTITION_COLUMN_NAME), partitions));
 
         // Set placeholders for the arguments.
