@@ -187,16 +187,15 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return atom;
     }
 
-    public synchronized GroundAtom updateAtom(StandardPredicate predicate, Constant[] arguments, float newValue) {
-        QueryAtom atom = new QueryAtom(predicate, arguments);
+    public synchronized GroundAtom updateAtom(ObservedAtom atom, StandardPredicate predicate, Constant[] arguments, float newValue) {
         if (!variables.containsKey(atom)) {
             return null;
         }
 
-        GroundAtom groundAtom = atomManager.getAtom(predicate, arguments);
-        variableValues[getVariableIndex(groundAtom)] = newValue;
+        variableValues[getVariableIndex(atom)] = newValue;
+        atom._assumeValue(newValue);
 
-        return groundAtom;
+        return atom;
     }
 
     public Rule activateRule(Rule rule) {

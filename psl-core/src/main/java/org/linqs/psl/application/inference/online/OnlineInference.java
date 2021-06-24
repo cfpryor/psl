@@ -242,12 +242,12 @@ public abstract class OnlineInference extends InferenceApplication {
 
             if (atom instanceof ObservedAtom) {
                 float oldAtomValue = atom.getValue();
-                GroundAtom updatedAtom = ((OnlineTermStore) termStore).updateAtom(action.getPredicate(), action.getArguments(), action.getValue());
+                GroundAtom updatedAtom = ((OnlineTermStore)termStore).updateAtom((ObservedAtom)atom, action.getPredicate(), action.getArguments(), action.getValue());
                 if (updatedAtom != null) {
                     modelUpdates = true;
                     variableChangeCount ++;
                     variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
-                    return String.format("Updated atom: %s => %s", atom.toStringWithValue(), updatedAtom.toStringWithValue());
+                    return String.format("Updated atom: %s: %f => %f", atom, oldAtomValue, updatedAtom.getValue());
                 } else {
                     return String.format("Atom: %s(%s) did not exist in ground model.",
                             action.getPredicate(), StringUtils.join(", ", action.getArguments()));
@@ -308,7 +308,7 @@ public abstract class OnlineInference extends InferenceApplication {
             return;
         }
 
-        log.debug("Model updates:  (variable change count): {} unique variables", variableChangeCount);
+        log.debug("Model updates: (variable change count): {} unique variables", variableChangeCount);
         log.debug("Model updates: (variable delta): {}", Math.sqrt(variableChange));
         variableChangeCount = 0;
         variableChange = 0.0;
