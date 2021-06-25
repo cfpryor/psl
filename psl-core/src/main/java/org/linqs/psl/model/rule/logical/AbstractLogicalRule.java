@@ -302,7 +302,6 @@ public abstract class AbstractLogicalRule extends AbstractRule {
 
             atom = ((QueryAtom)literals.get(i)).ground(atomManager, row, variableMap, argumentBuffer[i]);
             if (atom == null) {
-                // The atom manager decided that this atom is invalid (but should not throw an access exception).
                 return -1;
             }
 
