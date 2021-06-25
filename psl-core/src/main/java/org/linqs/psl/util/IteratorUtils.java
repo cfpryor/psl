@@ -70,7 +70,7 @@ public final class IteratorUtils {
     }
 
     /**
-     * Make an Iterable from an Interator.
+     * Make an Iterable from an Iterator.
      * Note that the exact same iterator will be returned on each call to iterator().
      * This may be unexpected for callers that want to restart iteration from the beginning.
      */
@@ -97,8 +97,6 @@ public final class IteratorUtils {
 
     /**
      * Get an iterator over all the given iterators in whatever iteration order each provides.
-     * It is up to the caller to make sure the underlying iterables are not changed during iteration.
-     * The benefit of using this is that is does not perform variable allocations.
      */
     @SafeVarargs
     public static <T> Iterator<T> join(Iterator<? extends T>... iterators) {
