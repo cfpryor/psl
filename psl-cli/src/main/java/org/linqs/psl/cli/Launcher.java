@@ -380,7 +380,7 @@ public class Launcher {
     }
 
     private void runPSL(Model model, DataStore dataStore, Set<StandardPredicate> closedPredicates) {
-        // Run inference.
+        // Inference.
         Database evalDB = null;
         if (parsedOptions.hasOption(CommandLineLoader.OPERATION_INFER)) {
             evalDB = runInference(model, dataStore, closedPredicates, parsedOptions.getOptionValue(CommandLineLoader.OPERATION_INFER, CommandLineLoader.DEFAULT_IA));
@@ -390,7 +390,7 @@ public class Launcher {
             throw new IllegalArgumentException("No valid operation provided.");
         }
 
-        // Run evaluation.
+        // Evaluation.
         if (parsedOptions.hasOption(CommandLineLoader.OPTION_EVAL)) {
             for (String evaluator : parsedOptions.getOptionValues(CommandLineLoader.OPTION_EVAL)) {
                 evaluation(dataStore, evalDB, closedPredicates, evaluator);
