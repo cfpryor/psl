@@ -81,66 +81,22 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return atomManager.getCachedRVACount() + atomManager.getCachedObsCount();
     }
 
-    // Note(Charles): This number is unreliable once any online actions are processed.
-    //  Because of the nature of streaming storage, we will not know what terms are deleted until we iterate over them.
-    @Override
-    public long size() {
-        return seenTermCount;
-    }
-
-    public GroundAtom addAtom(StandardPredicate predicate, Constant[] arguments, float newValue, boolean readPartition) {
-        if (((OnlineAtomManager)atomManager).hasAtom(predicate, arguments)) {
-            deleteAtom(predicate, arguments);
-        }
-
-        GroundAtom atom = null;
-        if (readPartition) {
-            atom = ((OnlineAtomManager)atomManager).addObservedAtom(predicate, newValue, arguments);
-        } else {
-            atom = ((OnlineAtomManager)atomManager).addRandomVariableAtom((StandardPredicate) predicate, newValue, arguments);
-        }
-
-        createLocalVariable(atom);
-
-        return atom;
-    }
-
-    public ObservedAtom observeAtom(StandardPredicate predicate, Constant[] arguments, float newValue) {
-        QueryAtom atom = new QueryAtom(predicate, arguments);
+    public synchronized ObservedAtom updateLocalVariable(ObservedAtom atom, float newValue) {
         if (!variables.containsKey(atom)) {
             // Atom does not exist in current model.
             return null;
+        } else if (variableAtoms[getVariableIndex(atom)] instanceof RandomVariableAtom) {
+            numRandomVariableAtoms--;
+            numObservedAtoms++;
         }
 
-        GroundAtom groundAtom = atomManager.getAtom(predicate, arguments);
+        variableAtoms[getVariableIndex(atom)] = atom;
+        variableValues[getVariableIndex(atom)] = newValue;
 
-        if (!(groundAtom instanceof RandomVariableAtom)) {
-            // Atom does not exist in current model as random variable.
-            return null;
-        }
-
-        // Delete the random variable atom from the atom manager.
-        ((OnlineAtomManager)atomManager).deleteAtom(predicate, arguments);
-
-        // Create observed atom with same predicates and arguments as the existing random variable atom.
-        ObservedAtom observedAtom = ((OnlineAtomManager)atomManager).addObservedAtom(predicate, newValue, arguments);
-        variableAtoms[getVariableIndex(observedAtom)] = observedAtom;
-        variableValues[getVariableIndex(observedAtom)] = newValue;
-
-        numRandomVariableAtoms--;
-        numObservedAtoms++;
-
-        return observedAtom;
+        return (ObservedAtom)variableAtoms[getVariableIndex(atom)];
     }
 
-    public GroundAtom deleteAtom(StandardPredicate predicate, Constant[] arguments) {
-        GroundAtom atom = ((OnlineAtomManager)atomManager).deleteAtom(predicate, arguments);
-
-        if (atom == null) {
-            // Atom never existed.
-            return null;
-        }
-
+    public synchronized GroundAtom deleteLocalVariable(GroundAtom atom) {
         int index = getVariableIndex(atom);
         if (index == -1) {
             // Atom never used in any terms.
@@ -161,43 +117,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
         return atom;
     }
 
-    @Override
-    public synchronized GroundAtom createLocalVariable(GroundAtom atom) {
-        if (variables.containsKey(atom)) {
-            return atom;
-        }
-
-        // Got a new variable.
-
-        if (totalVariableCount >= variableAtoms.length) {
-            ensureVariableCapacity(totalVariableCount * 2);
-        }
-
-        variables.put(atom, totalVariableCount);
-        variableValues[totalVariableCount] = atom.getValue();
-        variableAtoms[totalVariableCount] = atom;
-        totalVariableCount++;
-
-        if (atom instanceof RandomVariableAtom) {
-            numRandomVariableAtoms++;
-        } else {
-            numObservedAtoms++;
-        }
-
-        return atom;
-    }
-
-    public synchronized GroundAtom updateAtom(ObservedAtom atom, StandardPredicate predicate, Constant[] arguments, float newValue) {
-        if (!variables.containsKey(atom)) {
-            return null;
-        }
-
-        variableValues[getVariableIndex(atom)] = newValue;
-        atom._assumeValue(newValue);
-
-        return atom;
-    }
-
     public Rule activateRule(Rule rule) {
         ArrayList<Integer> rulePages = pageMapping.get(rule);
         if (rulePages == null) {
@@ -205,6 +124,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
             return null;
         }
 
+        log.trace("Activating Pages: {}", rulePages);
         int activePageIndex = 0;
         for (Integer i : rulePages) {
             activePageIndex = activeTermPages.indexOf(i);
@@ -216,7 +136,32 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
                 log.warn("Page: {} already activated for rule: {}", i, rule.toString());
             }
         }
+        log.trace("Activated Pages: {}", activeTermPages);
         rules.add(rule);
+        return rule;
+    }
+
+    public Rule deactivateRule(Rule rule) {
+        ArrayList<Integer> rulePages = pageMapping.get(rule);
+        if (rulePages == null) {
+            // No pages with rule.
+            return null;
+        }
+
+        log.trace("Deactivating Pages: {} from Active Term Pages: {}", rulePages, activeTermPages);
+        int activePageIndex = 0;
+        for (Integer i : rulePages) {
+            activePageIndex = activeTermPages.indexOf(i);
+            if (activePageIndex != -1) {
+                activeTermPages.remove(activePageIndex);
+                // This represents the number of active pages.
+                numPages--;
+            } else {
+                log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
+            }
+        }
+        log.trace("Activated Pages: {}", activeTermPages);
+        rules.remove(rule);
         return rule;
     }
 
@@ -239,29 +184,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
             groundingIterator.next();
         }
 
-        return rule;
-    }
-
-    public Rule deactivateRule(Rule rule) {
-        ArrayList<Integer> rulePages = pageMapping.get(rule);
-        if (rulePages == null) {
-            // No pages with rule.
-            return null;
-        }
-
-        log.trace("ONLINE TERM STORE Deactivating Pages: {} from Active Term Pages: {}", rulePages, activeTermPages);
-        int activePageIndex = 0;
-        for (Integer i : rulePages) {
-            activePageIndex = activeTermPages.indexOf(i);
-            if (activePageIndex != -1) {
-                activeTermPages.remove(activePageIndex);
-                // This represents the number of active pages.
-                numPages--;
-            } else {
-                log.warn("Page: {} already deactivated for rule: {}", i, rule.toString());
-            }
-        }
-        rules.remove(rule);
         return rule;
     }
 
@@ -296,17 +218,6 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
 
     public abstract StreamingIterator<T> getGroundingIterator(List<Rule> rules);
 
-    public void groundingIterationComplete(long termCount, int numPages, ByteBuffer termBuffer, ByteBuffer volatileBuffer) {
-        seenTermCount += termCount;
-
-        this.numPages = numPages;
-        this.termBuffer = termBuffer;
-        this.volatileBuffer = volatileBuffer;
-
-        initialRound = false;
-        activeIterator = null;
-    }
-
     /**
      * In addition to the typical behavior of setting values for random variable atoms,
      * also set the values for observed atoms.
@@ -334,7 +245,7 @@ public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingT
     @Override
     public String getTermPagePath(int index) {
         // Make sure the path is built.
-        // This implementation gets the index active term page.
+        // This implementation gets the index of the next active term page.
         for (int i = activeTermPages.size(); i <= index; i++) {
             termPagePaths.add(Paths.get(pageDir, String.format("%08d_term.page", nextTermPageIndex)).toString());
             activeTermPages.add(nextTermPageIndex);
