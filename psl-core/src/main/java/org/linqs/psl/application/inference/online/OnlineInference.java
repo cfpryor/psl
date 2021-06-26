@@ -34,7 +34,11 @@ import org.linqs.psl.application.inference.online.messages.actions.template.acti
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineActionException;
+import org.linqs.psl.application.learning.weight.TrainingMap;
+import org.linqs.psl.application.learning.weight.WeightLearningApplication;
+import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
+import org.linqs.psl.database.Partition;
 import org.linqs.psl.database.atom.PersistedAtomManager;
 import org.linqs.psl.database.atom.OnlineAtomManager;
 import org.linqs.psl.model.atom.GroundAtom;
@@ -53,6 +57,10 @@ public abstract class OnlineInference extends InferenceApplication {
     private static final Logger log = LoggerFactory.getLogger(OnlineInference.class);
 
     private OnlineServer server;
+
+    private Database observedTruthDatabase;
+    private TrainingMap trainingMap;
+    private WeightLearningApplication weightLearningApplication;
 
     private boolean modelUpdates;
     private boolean stopped;
@@ -79,6 +87,14 @@ public abstract class OnlineInference extends InferenceApplication {
         startServer();
 
         super.initialize();
+
+        Partition truthPartition = db.getDataStore().getPartition(Partition.PARTITION_NAME_LABELS);
+        observedTruthDatabase = db.getDataStore().getDatabase(truthPartition,
+                db.getDataStore().getRegisteredPredicates());
+        trainingMap = new TrainingMap(atomManager, observedTruthDatabase);
+        weightLearningApplication = WeightLearningApplication.getWLA(Options.ONLINE_WEIGHT_LEARNING_APPLICATION.getString(),
+                rules, db, observedTruthDatabase);
+        weightLearningApplication.initGroundModel(this, trainingMap);
 
         if (!(termStore instanceof OnlineTermStore)) {
             throw new RuntimeException("Online inference requires an OnlineTermStore. Found " + termStore.getClass() + ".");

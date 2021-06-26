@@ -65,11 +65,6 @@ import java.util.Set;
 public class Launcher {
     public static final String MODEL_FILE_EXTENSION = ".psl";
 
-    // Reserved partition names.
-    public static final String PARTITION_NAME_OBSERVATIONS = "observations";
-    public static final String PARTITION_NAME_TARGET = "targets";
-    public static final String PARTITION_NAME_LABELS = "truth";
-
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
     private CommandLine parsedOptions;
 
@@ -181,8 +176,8 @@ public class Launcher {
         log.info("Starting inference with class: {}", inferenceName);
 
         // Create database.
-        Partition targetPartition = dataStore.getPartition(PARTITION_NAME_TARGET);
-        Partition observationsPartition = dataStore.getPartition(PARTITION_NAME_OBSERVATIONS);
+        Partition targetPartition = dataStore.getPartition(Partition.PARTITION_NAME_TARGET);
+        Partition observationsPartition = dataStore.getPartition(Partition.PARTITION_NAME_OBSERVATIONS);
         Database database = dataStore.getDatabase(targetPartition, closedPredicates, observationsPartition);
 
         InferenceApplication inferenceApplication =
@@ -221,9 +216,9 @@ public class Launcher {
     private void learnWeights(Model model, DataStore dataStore, Set<StandardPredicate> closedPredicates, String wlaName) {
         log.info("Starting weight learning with learner: " + wlaName);
 
-        Partition targetPartition = dataStore.getPartition(PARTITION_NAME_TARGET);
-        Partition observationsPartition = dataStore.getPartition(PARTITION_NAME_OBSERVATIONS);
-        Partition truthPartition = dataStore.getPartition(PARTITION_NAME_LABELS);
+        Partition targetPartition = dataStore.getPartition(Partition.PARTITION_NAME_TARGET);
+        Partition observationsPartition = dataStore.getPartition(Partition.PARTITION_NAME_OBSERVATIONS);
+        Partition truthPartition = dataStore.getPartition(Partition.PARTITION_NAME_LABELS);
 
         Database randomVariableDatabase = dataStore.getDatabase(targetPartition, closedPredicates, observationsPartition);
         Database observedTruthDatabase = dataStore.getDatabase(truthPartition, dataStore.getRegisteredPredicates());
@@ -285,9 +280,9 @@ public class Launcher {
         openPredicates.removeAll(closedPredicates);
 
         // Create database.
-        Partition targetPartition = dataStore.getPartition(PARTITION_NAME_TARGET);
-        Partition observationsPartition = dataStore.getPartition(PARTITION_NAME_OBSERVATIONS);
-        Partition truthPartition = dataStore.getPartition(PARTITION_NAME_LABELS);
+        Partition targetPartition = dataStore.getPartition(Partition.PARTITION_NAME_TARGET);
+        Partition observationsPartition = dataStore.getPartition(Partition.PARTITION_NAME_OBSERVATIONS);
+        Partition truthPartition = dataStore.getPartition(Partition.PARTITION_NAME_LABELS);
 
         boolean closePredictionDB = false;
         if (predictionDatabase == null) {

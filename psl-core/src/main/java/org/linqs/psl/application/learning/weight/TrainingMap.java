@@ -53,7 +53,7 @@ import java.util.Set;
  *   (observed, not existent) - Missing Labels
  *   (not existent, observed) - Missing Targets
  *   (not existent, not existent) - Ignored
- * Missing targts will always log a warning.
+ * Missing targets will always log a warning.
  */
 public class TrainingMap {
     private static final Logger log = LoggerFactory.getLogger(TrainingMap.class);

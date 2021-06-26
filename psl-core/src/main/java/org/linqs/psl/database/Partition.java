@@ -18,6 +18,11 @@
 package org.linqs.psl.database;
 
 public class Partition {
+    // Reserved partition names.
+    public static final String PARTITION_NAME_OBSERVATIONS = "observations";
+    public static final String PARTITION_NAME_TARGET = "targets";
+    public static final String PARTITION_NAME_LABELS = "truth";
+
     /**
      * When grounding with lazy atoms, we will initially set their partition
      * value to this so that we can tell them apart.

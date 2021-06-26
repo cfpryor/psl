@@ -508,6 +508,12 @@ public class Options {
                     + " If negative, the first read partition in the database will be used."
     );
 
+    public static final Option ONLINE_WEIGHT_LEARNING_APPLICATION = new Option(
+            "inference.onlineweightlearningapplication",
+            MaxLikelihoodMPE.class.getName(),
+            "The default weight learning application of online PSL."
+    );
+
     public static final Option WLA_PDL_ADMM_STEPS = new Option(
         "pairedduallearner.admmsteps",
         1,
@@ -531,7 +537,7 @@ public class Options {
 
     public static final Option PARTIAL_GROUNDING_POWERSET = new Option(
         "partialgrounding.powerset",
-        false,
+        true,
         "Whether or not to iterate over the powerset of partial targets during a partial grounding."
         + " If true the partial grounding will result in no regret in the inference. "
         + " If false an approximation will be made such that only one atom in a ground rule can come from a special partition."
