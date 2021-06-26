@@ -167,9 +167,9 @@ public abstract class OnlineInference extends InferenceApplication {
         if (rule != null ) {
             modelUpdates = true;
             return String.format("Activated rule: %s", rule.toString());
-        } else {
-            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
         }
+
+        return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
     }
 
     protected String doAddRule(AddRule action) {
@@ -185,9 +185,9 @@ public abstract class OnlineInference extends InferenceApplication {
         if (rule != null ) {
             modelUpdates = true;
             return String.format("Deactivated rule: %s", rule.toString());
-        } else {
-            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
         }
+
+        return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
     }
 
     protected String doDeleteRule(DeleteRule action) {
@@ -196,48 +196,45 @@ public abstract class OnlineInference extends InferenceApplication {
         if (rule != null ) {
             modelUpdates = true;
             return String.format("Deleted rule: %s", rule.toString());
-        } else {
-            return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
         }
+
+        return String.format("Rule: %s did not have any associated term pages.", action.getRule().toString());
     }
 
     protected String doObserveAtom(ObserveAtom action) {
-        if (atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
-            GroundAtom atom = atomManager.getAtom(action.getPredicate(), action.getArguments());
-
-            if (atom instanceof RandomVariableAtom) {
-                float oldAtomValue = atom.getValue();
-
-                // Delete then create atom with same predicates and arguments as the random variable atom.
-                ((OnlineAtomManager)atomManager).deleteAtom(action.getPredicate(), action.getArguments());
-                ObservedAtom observedAtom = ((OnlineAtomManager)atomManager).addObservedAtom(action.getPredicate(), action.getValue(), action.getArguments());
-
-                ObservedAtom newAtom = ((OnlineTermStore)termStore).updateLocalVariable(observedAtom, action.getValue());
-                if (newAtom == null) {
-                    return String.format("Atom: %s(%s) did not exist in ground model.",
-                            action.getPredicate(), StringUtils.join(", ", action.getArguments()));
-                }
-
-                modelUpdates = true;
-                variableChangeCount ++;
-                variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
-
-                return String.format("Observed atom: %s => %s", atom.toStringWithValue(), newAtom.toStringWithValue());
-            } else {
-                return String.format("Atom: %s(%s) already observed.",
-                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
-            }
-        } else {
+        if (!atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
             return String.format("Atom: %s(%s) did not exist in model.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
+
+        GroundAtom atom = atomManager.getAtom(action.getPredicate(), action.getArguments());
+        if (!(atom instanceof RandomVariableAtom)) {
+            return String.format("Atom: %s(%s) already observed.",
+                    action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+        }
+
+        float oldAtomValue = atom.getValue();
+
+        // Delete then create atom with same predicates and arguments as the random variable atom.
+        ((OnlineAtomManager)atomManager).deleteAtom(action.getPredicate(), action.getArguments());
+        ObservedAtom observedAtom = ((OnlineAtomManager)atomManager).addObservedAtom(action.getPredicate(), action.getValue(), action.getArguments());
+        ObservedAtom newAtom = ((OnlineTermStore)termStore).updateLocalVariable(observedAtom, action.getValue());
+        if (newAtom == null) {
+            return String.format("Atom: %s(%s) did not exist in ground model.",
+                    action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+        }
+
+        modelUpdates = true;
+        variableChangeCount++;
+        variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
+
+        return String.format("Observed atom: %s => %s", atom.toStringWithValue(), newAtom.toStringWithValue());
     }
 
     protected String doDeleteAtom(DeleteAtom action) {
         GroundAtom atom = ((OnlineAtomManager)atomManager).deleteAtom(action.getPredicate(), action.getArguments());
 
         if (atom == null) {
-            // Atom never existed.
             return String.format("Atom: %s(%s) did not exist in atom manager.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
@@ -264,32 +261,30 @@ public abstract class OnlineInference extends InferenceApplication {
     }
 
     protected String doUpdateObservation(UpdateObservation action) {
-        if (atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
-            GroundAtom atom = atomManager.getAtom(action.getPredicate(), action.getArguments());
-
-            if (atom instanceof ObservedAtom) {
-                float oldAtomValue = atom.getValue();
-
-                ObservedAtom updatedAtom = ((OnlineTermStore)termStore).updateLocalVariable((ObservedAtom)atom, action.getValue());
-                if (updatedAtom == null) {
-                    return String.format("Atom: %s(%s) did not exist in ground model.",
-                            action.getPredicate(), StringUtils.join(", ", action.getArguments()));
-                }
-
-                updatedAtom._assumeValue(action.getValue());
-                modelUpdates = true;
-                variableChangeCount ++;
-                variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
-
-                return String.format("Updated atom: %s: %f => %f", atom, oldAtomValue, updatedAtom.getValue());
-            } else {
-                return String.format("Atom: %s(%s) is not an observation.",
-                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
-            }
-        } else {
+        if (!atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
             return String.format("Atom: %s(%s) did not exist in model.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
+
+        GroundAtom atom = atomManager.getAtom(action.getPredicate(), action.getArguments());
+        if (!(atom instanceof ObservedAtom)) {
+            return String.format("Atom: %s(%s) is not an observation.",
+                    action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+        }
+
+        float oldAtomValue = atom.getValue();
+        ObservedAtom updatedAtom = ((OnlineTermStore)termStore).updateLocalVariable((ObservedAtom)atom, action.getValue());
+        if (updatedAtom == null) {
+            return String.format("Atom: %s(%s) did not exist in ground model.",
+                    action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+        }
+
+        updatedAtom._assumeValue(action.getValue());
+        modelUpdates = true;
+        variableChangeCount ++;
+        variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
+
+        return String.format("Updated atom: %s: %f => %f", atom, oldAtomValue, updatedAtom.getValue());
     }
 
     protected String doWriteInferredPredicates(WriteInferredPredicates action) {
@@ -324,10 +319,10 @@ public abstract class OnlineInference extends InferenceApplication {
         if (atomValue == -1.0) {
             return String.format("Atom: %s(%s) not found.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
-        } else {
-            return String.format("Atom: %s(%s) found. Returned to client.",
-                    action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
+
+        return String.format("Atom: %s(%s) found. Returned to client.",
+                action.getPredicate(), StringUtils.join(", ", action.getArguments()));
     }
 
     /**
@@ -365,10 +360,10 @@ public abstract class OnlineInference extends InferenceApplication {
                 executeAction(action);
             } catch (OnlineActionException ex) {
                 server.onActionExecution(action, new ActionStatus(action, false, ex.getMessage()));
-                log.warn("Exception when executing action: " + action.toString(), ex);
+                log.warn("Exception when executing action: " + action, ex);
             } catch (RuntimeException ex) {
                 server.onActionExecution(action, new ActionStatus(action, false, ex.getMessage()));
-                throw new RuntimeException("Critically failed to run command. Last seen command: " + action.toString(), ex);
+                throw new RuntimeException("Critically failed to run command. Last seen command: " + action, ex);
             }
         }
 
