@@ -36,9 +36,17 @@ import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.predicate.GroundingOnlyPredicate;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
+import org.linqs.psl.model.rule.arithmetic.AbstractArithmeticRule;
+import org.linqs.psl.model.rule.arithmetic.UnweightedArithmeticRule;
+import org.linqs.psl.model.rule.arithmetic.WeightedArithmeticRule;
+import org.linqs.psl.model.rule.arithmetic.expression.ArithmeticRuleExpression;
+import org.linqs.psl.model.rule.arithmetic.expression.SummationAtomOrAtom;
+import org.linqs.psl.model.rule.arithmetic.expression.coefficient.Coefficient;
+import org.linqs.psl.model.rule.arithmetic.expression.coefficient.ConstantNumber;
 import org.linqs.psl.model.rule.logical.WeightedLogicalRule;
 import org.linqs.psl.model.term.ConstantType;
 import org.linqs.psl.model.term.Variable;
+import org.linqs.psl.reasoner.function.FunctionComparator;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -70,17 +78,20 @@ public class TestModel {
      * The caller owns everything that is returned and should make sure to close the datastore.
      * Predicates:
      *     Nice(UniqueStringID)
+     *     LocalPredictor(UniqueStringID, UniqueStringID)
      *     Person(UniqueStringID)
      *     Friends(UniqueStringID, UniqueStringID)
      *
      * Rules:
      *     5: Nice(A) & Nice(B) & (A - B) -> Friends(A, B) ^2
+     *     5: LocalPredictor(A, B) & (A - B) -> Friends(A, B) ^2
+     *     5: Friends(A, B) & (A - B) -> LocalPredictor(A, B) ^2
      *     10: Person(A) & Person(B) & Friends(A, B) & (A - B) -> Friends(B, A) ^2
      *     1: ~Friends(A, B) ^2
      *
      * Data:
      *     - There are 5 people.
-     *     - Every person has a Nice value. Alice starts at 0.8 then is decreases by 0.2 alphabetically (Eugue is 0.0).
+     *     - Every person has a Nice value. Alice starts at 0.8 then is decreases by 0.2 alphabetically (Eugene is 0.0).
      *     - All Friendships are in the target partition.
      *     - All Friendships have a binary truth value in the truth partition.
      *
@@ -103,6 +114,7 @@ public class TestModel {
         predicatesInfo.put("Nice", new ConstantType[]{ConstantType.UniqueStringID});
         predicatesInfo.put("Person", new ConstantType[]{ConstantType.UniqueStringID});
         predicatesInfo.put("Friends", new ConstantType[]{ConstantType.UniqueStringID, ConstantType.UniqueStringID});
+//        predicatesInfo.put("LocalPredictor", new ConstantType[]{ConstantType.UniqueStringID, ConstantType.UniqueStringID});
 
         Map<String, StandardPredicate> predicates = new HashMap<String, StandardPredicate>();
         for (Map.Entry<String, ConstantType[]> predicateEntry : predicatesInfo.entrySet()) {
@@ -123,6 +135,46 @@ public class TestModel {
                 ),
                 5.0f,
                 true));
+
+//        rules.add(new WeightedLogicalRule(
+//                new Implication(
+//                        new Conjunction(
+//                                new QueryAtom(predicates.get("LocalPredictor"), new Variable("A"), new Variable("B")),
+//                                new QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B"))
+//                        ),
+//                        new QueryAtom(predicates.get("Friends"), new Variable("A"), new Variable("B"))
+//                ),
+//                5.0f,
+//                true));
+//
+//        rules.add(new WeightedLogicalRule(
+//                new Implication(
+//                        new Conjunction(
+//                                new QueryAtom(predicates.get("Friends"), new Variable("A"), new Variable("B")),
+//                                new QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B"))
+//                        ),
+//                        new QueryAtom(predicates.get("LocalPredictor"), new Variable("A"), new Variable("B"))
+//                ),
+//                5.0f,
+//                true));
+
+//        List<Coefficient> coefficients = Arrays.asList(
+//                (Coefficient)(new ConstantNumber(1)),
+//                (Coefficient)(new ConstantNumber(1)),
+//                (Coefficient)(new ConstantNumber(-1))
+//        );
+//
+//        List<SummationAtomOrAtom> atoms = Arrays.asList(
+//                (SummationAtomOrAtom)(new QueryAtom(predicates.get("LocalPredictor"), new Variable("A"), new Variable("B"))),
+//                (SummationAtomOrAtom)(new QueryAtom(GroundingOnlyPredicate.NotEqual, new Variable("A"), new Variable("B"))),
+//                (SummationAtomOrAtom)(new QueryAtom(predicates.get("Friends"), new Variable("A"), new Variable("B")))
+//        );
+//
+//        rules.add(new WeightedArithmeticRule(new ArithmeticRuleExpression(
+//                coefficients, atoms, FunctionComparator.LTE, new ConstantNumber(0)), 5.0f, true));
+//
+//        rules.add(new WeightedArithmeticRule(new ArithmeticRuleExpression(
+//                coefficients, atoms, FunctionComparator.GTE, new ConstantNumber(0)), 5.0f, true));
 
         rules.add(new WeightedLogicalRule(
                 new Implication(
@@ -176,6 +228,30 @@ public class TestModel {
                 new PredicateData(0.0, new Object[]{"Eugene"})
             )));
         }
+
+//        // Local Predictor
+//        observations.put(predicates.get("LocalPredictor"), new ArrayList<PredicateData>(Arrays.asList(
+//                new PredicateData(0.5, new Object[]{"Alice", "Bob"}),
+//                new PredicateData(0.5, new Object[]{"Bob", "Alice"}),
+//                new PredicateData(0.5, new Object[]{"Alice", "Charlie"}),
+//                new PredicateData(0.5, new Object[]{"Charlie", "Alice"}),
+//                new PredicateData(0.5, new Object[]{"Alice", "Derek"}),
+//                new PredicateData(0.5, new Object[]{"Derek", "Alice"}),
+//                new PredicateData(0.5, new Object[]{"Alice", "Eugene"}),
+//                new PredicateData(0.5, new Object[]{"Eugene", "Alice"}),
+//                new PredicateData(0.5, new Object[]{"Bob", "Charlie"}),
+//                new PredicateData(0.5, new Object[]{"Charlie", "Bob"}),
+//                new PredicateData(0.5, new Object[]{"Bob", "Derek"}),
+//                new PredicateData(0.5, new Object[]{"Derek", "Bob"}),
+//                new PredicateData(0.5, new Object[]{"Bob", "Eugene"}),
+//                new PredicateData(0.5, new Object[]{"Eugene", "Bob"}),
+//                new PredicateData(0.5, new Object[]{"Charlie", "Derek"}),
+//                new PredicateData(0.5, new Object[]{"Derek", "Charlie"}),
+//                new PredicateData(0.5, new Object[]{"Charlie", "Eugene"}),
+//                new PredicateData(0.5, new Object[]{"Eugene", "Charlie"}),
+//                new PredicateData(0.5, new Object[]{"Derek", "Eugene"}),
+//                new PredicateData(0.5, new Object[]{"Eugene", "Derek"})
+//        )));
 
         // Friends
         targets.put(predicates.get("Friends"), new ArrayList<PredicateData>(Arrays.asList(

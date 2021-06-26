@@ -135,6 +135,26 @@ public class SGDOnlineInferenceTest {
         commands.add(new Exit());
 
         OnlineTest.assertAtomValues(commands, new double[] {0.0});
+
+//        commands.add(new AddAtom("Read", StandardPredicate.get("LocalPredictor"),
+//                new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 0.0f));
+//        commands.add(new QueryAtom(StandardPredicate.get("LocalPredictor"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+//        commands.add(new Exit());
+//
+//        OnlineTest.assertAtomValues(commands, new double[] {0.0, 0.0});
+//
+//        // Reset model.
+//        cleanup();
+//        setup();
+//
+//        commands.add(new UpdateObservation(StandardPredicate.get("LocalPredictor"),
+//                new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 1.0f));
+//        commands.add(new QueryAtom(StandardPredicate.get("LocalPredictor"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+//        commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}));
+//        commands.add(new Exit());
+//
+//        OnlineTest.assertAtomValues(commands, new double[] {1.0, 1.0});
     }
 
     /**
