@@ -20,48 +20,21 @@ package org.linqs.psl;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.parser.OnlineActionLoader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * Utilities for testing PSL.
+ * Utilities for testing Online PSL.
  */
 public class OnlinePSLTest {
-    /**
-     * Assert that two strings are equal, possibly forcing alphabetization on the strings first.
-     */
-    public static void assertStringEquals(String expected, String actual, boolean alphabetize, String message) {
-        if (alphabetize) {
-            assertEquals(
-                String.format("%s. (Before alphabetize) expected: [%s], found [%s].", message, expected, actual),
-                sort(expected),
-                sort(actual)
-            );
-        } else {
-            assertEquals(
-                String.format("%s. Expected: [%s], found [%s].", message, expected, actual),
-                expected,
-                actual
-            );
-        }
-    }
-
     public static void assertActions(String input, String[] expectedActions) {
         List<OnlineAction> onlineActions = OnlineActionLoader.load(input);
 
         assertEquals("Size mismatch.", expectedActions.length, onlineActions.size());
 
         for (int i = 0; i < expectedActions.length; i++) {
-            assertStringEquals(expectedActions[i], onlineActions.get(i).toString(), true, String.format("Rule %d mismatch", i));
+            PSLTest.assertStringEquals(expectedActions[i], onlineActions.get(i).toString(), true, String.format("Rule %d mismatch", i));
         }
-    }
-
-    private static String sort(String string) {
-        char[] chars = string.toCharArray();
-        Arrays.sort(chars);
-        return new String(chars);
     }
 }
