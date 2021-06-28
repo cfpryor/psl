@@ -45,9 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A term store that does not hold all the terms in memory, but instead keeps most terms on disk.
- * Variables are kept in memory, but terms are kept on disk.
- * Note: numpages represents the number of active pages, not total.
+ * A term store that supports online operations.
  */
 public abstract class OnlineTermStore<T extends ReasonerTerm> extends StreamingTermStore<T> {
     private static final Logger log = LoggerFactory.getLogger(OnlineTermStore.class);

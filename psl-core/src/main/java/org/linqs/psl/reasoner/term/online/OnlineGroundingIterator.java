@@ -99,6 +99,17 @@ public abstract class OnlineGroundingIterator<T extends ReasonerTerm> extends St
     }
 
     @Override
+    protected boolean primeNextRuleIndex() {
+        // Flush remaining terms from current rule.
+        // This flush ensures all terms found in the same page where instantiated by the same rule.
+        if (termCache.size() > 0) {
+            flushCache();
+        }
+
+        return super.primeNextRuleIndex();
+    }
+
+    @Override
     public void close() {
         if (closed) {
             return;

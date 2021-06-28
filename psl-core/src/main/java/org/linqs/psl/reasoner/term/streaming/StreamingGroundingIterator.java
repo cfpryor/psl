@@ -235,15 +235,8 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
             }
         }
 
-        // Template specific grounding
-        if (termCache.size() > 0) {
-            flushCache();
-        }
-
-        currentRule++;
-        if (currentRule >= rules.size()) {
+        if (!primeNextRuleIndex()) {
             // There are no more rules, we are done.
-            currentRule--;
             return null;
         }
 
@@ -251,6 +244,16 @@ public abstract class StreamingGroundingIterator<T extends ReasonerTerm> impleme
         startGroundingQuery();
 
         return fetchNextGroundRule();
+    }
+
+    protected boolean primeNextRuleIndex() {
+        if (currentRule + 1 >= rules.size()) {
+            // There are no more rules, we are done.
+            return false;
+        }
+
+        currentRule++;
+        return true;
     }
 
     /**
