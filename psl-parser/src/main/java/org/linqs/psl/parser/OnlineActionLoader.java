@@ -182,12 +182,11 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
             constants[i] = (Constant)atom.getArguments()[i];
         }
         String partition = ctx.PARTITION().getText();
-        float value = -1.0f;
-        if (ctx.number() != null) {
-            value = visitNumber(ctx.number());
+        if (ctx.number() == null) {
+            return new AddAtom(partition, (StandardPredicate)atom.getPredicate(), constants);
         }
 
-        return new AddAtom(partition, (StandardPredicate)atom.getPredicate(), constants, value);
+        return new AddAtom(partition, (StandardPredicate)atom.getPredicate(), constants, visitNumber(ctx.number()));
     }
 
     @Override
