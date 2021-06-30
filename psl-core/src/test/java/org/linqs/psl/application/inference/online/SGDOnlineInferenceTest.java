@@ -23,6 +23,7 @@ import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
 import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
+import org.linqs.psl.application.inference.online.messages.actions.controls.WeightLearn;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.ObserveAtom;
@@ -35,6 +36,7 @@ import org.linqs.psl.application.inference.online.messages.responses.ActionStatu
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
+import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.formula.Conjunction;
 import org.linqs.psl.model.formula.Implication;
 import org.linqs.psl.model.predicate.GroundingOnlyPredicate;
@@ -295,6 +297,42 @@ public class SGDOnlineInferenceTest {
         // TODO(Charles): Currently empty test. No asserts are being made.
 
         OnlineTest.clientSession(commands);
+    }
+
+    @Test
+    public void testWeightLearning() {
+        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+
+        WeightLearn weightLearn = new WeightLearn();
+        Exit exit = new Exit();
+        commands.add(weightLearn);
+        commands.add(exit);
+
+        OnlineResponse[] expectedResponses = new OnlineResponse[2];
+        expectedResponses[0] = new ActionStatus(weightLearn, true, "Weight Learning Performed on updated model.");
+        expectedResponses[1] = new ActionStatus(exit, true,"Session Closed.");
+
+        OnlineTest.assertServerResponse(commands, expectedResponses);
+
+        // Reset model.
+        cleanup();
+        setup();
+
+        ObservedAtom observedAtom = new ObservedAtom(StandardPredicate.get("Friends"),
+                new Constant[]{new UniqueStringID("Alice"), new UniqueStringID("Bob")}, 0.5f);
+        ObserveAtom observeAtom = new ObserveAtom((StandardPredicate)observedAtom.getPredicate(),
+                observedAtom.getArguments(), 0.5f);
+        commands.add(observeAtom);
+        commands.add(weightLearn);
+        commands.add(exit);
+
+        expectedResponses = new OnlineResponse[3];
+        expectedResponses[0] = new ActionStatus(observeAtom, true,
+                String.format("Observed atom: %s", observedAtom.toStringWithValue()));
+        expectedResponses[1] = new ActionStatus(weightLearn, true, "Weight Learning Performed on updated model.");
+        expectedResponses[2] = new ActionStatus(exit, true,"Session Closed.");
+
+        OnlineTest.assertServerResponse(commands, expectedResponses);
     }
 
     /**

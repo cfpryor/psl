@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,11 +89,11 @@ public class TrainingMap {
      * @param truthDatabase the database containing matching ObservedAtoms
      */
     public TrainingMap(PersistedAtomManager targets, Database truthDatabase) {
-        Map<RandomVariableAtom, ObservedAtom> tempLabelMap = new HashMap<RandomVariableAtom, ObservedAtom>(targets.getPersistedCount());
-        Map<ObservedAtom, ObservedAtom> tempObservedMap = new HashMap<ObservedAtom, ObservedAtom>();
-        List<RandomVariableAtom> tempLatentVariables = new ArrayList<RandomVariableAtom>();
-        List<ObservedAtom> tempMissingLabels = new ArrayList<ObservedAtom>();
-        List<ObservedAtom> tempMissingTargets = new ArrayList<ObservedAtom>();
+        labelMap = new HashMap<RandomVariableAtom, ObservedAtom>(targets.getPersistedCount());
+        observedMap = new HashMap<ObservedAtom, ObservedAtom>();
+        latentVariables = new ArrayList<RandomVariableAtom>();
+        missingLabels = new ArrayList<ObservedAtom>();
+        missingTargets = new ArrayList<ObservedAtom>();
 
         Set<GroundAtom> seenTruthAtoms = new HashSet<GroundAtom>();
 
@@ -114,17 +113,17 @@ public class TrainingMap {
 
             if (targetAtom instanceof RandomVariableAtom) {
                 if (truthAtom == null) {
-                    tempLatentVariables.add((RandomVariableAtom)targetAtom);
+                    latentVariables.add((RandomVariableAtom)targetAtom);
                 } else {
                     seenTruthAtoms.add((ObservedAtom)truthAtom);
-                    tempLabelMap.put((RandomVariableAtom)targetAtom, (ObservedAtom)truthAtom);
+                    labelMap.put((RandomVariableAtom)targetAtom, (ObservedAtom)truthAtom);
                 }
             } else {
                 if (truthAtom == null) {
-                    tempMissingLabels.add((ObservedAtom)targetAtom);
+                    missingLabels.add((ObservedAtom)targetAtom);
                 } else {
                     seenTruthAtoms.add((ObservedAtom)truthAtom);
-                    tempObservedMap.put((ObservedAtom)targetAtom, (ObservedAtom)truthAtom);
+                    observedMap.put((ObservedAtom)targetAtom, (ObservedAtom)truthAtom);
                 }
             }
         }
@@ -141,20 +140,27 @@ public class TrainingMap {
                 throw new IllegalStateException("Un-persisted target atom: " + truthAtom);
             }
 
-            tempMissingTargets.add((ObservedAtom)truthAtom);
+            missingTargets.add((ObservedAtom)truthAtom);
         }
-
-        // Finalize the structures.
-        labelMap = Collections.unmodifiableMap(tempLabelMap);
-        observedMap = Collections.unmodifiableMap(tempObservedMap);
-        latentVariables = Collections.unmodifiableList(tempLatentVariables);
-        missingLabels = Collections.unmodifiableList(tempMissingLabels);
-        missingTargets = Collections.unmodifiableList(tempMissingTargets);
 
         if (missingTargets.size() > 0) {
             log.warn("Found {} missing targets (truth atoms without a matching target). Example: {}.",
                     missingTargets.size(), missingTargets.get(0));
         }
+    }
+
+    /**
+     * Add or update a mapping from target to truths
+     */
+    public void addLabel(RandomVariableAtom rv, ObservedAtom obs) {
+        labelMap.put(rv, obs);
+    }
+
+    /**
+     * Delete a mapping from target to truths
+     */
+    public void deleteLabel(RandomVariableAtom rv) {
+        labelMap.remove(rv);
     }
 
     /**

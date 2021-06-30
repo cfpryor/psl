@@ -5,6 +5,7 @@ import org.linqs.psl.application.inference.online.messages.actions.controls.Exit
 import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Sync;
+import org.linqs.psl.application.inference.online.messages.actions.controls.WeightLearn;
 import org.linqs.psl.application.inference.online.messages.actions.controls.WriteInferredPredicates;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
@@ -36,6 +37,7 @@ import org.linqs.psl.parser.antlr.OnlinePSLParser.UpdateObservationContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.QueryAtomContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.StopContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.SyncContext;
+import org.linqs.psl.parser.antlr.OnlinePSLParser.WeightLearnContext;
 import org.linqs.psl.parser.antlr.OnlinePSLParser.WriteInferredPredicatesContext;
 
 import org.antlr.v4.runtime.BailErrorStrategy;
@@ -167,6 +169,8 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
             return visitSync(ctx.sync());
         } else if (ctx.updateObservation() != null) {
             return visitUpdateObservation(ctx.updateObservation());
+        } else if (ctx.weightLearn() != null) {
+            return visitWeightLearn(ctx.weightLearn());
         } else if (ctx.writeInferredPredicates() != null) {
             return visitWriteInferredPredicates(ctx.writeInferredPredicates());
         } else {
@@ -278,6 +282,11 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
     @Override
     public Sync visitSync(SyncContext ctx) {
         return new Sync();
+    }
+
+    @Override
+    public WeightLearn visitWeightLearn(WeightLearnContext ctx) {
+        return new WeightLearn();
     }
 
     @Override

@@ -144,12 +144,16 @@ public abstract class WeightLearningApplication implements ModelApplication {
         initGroundModel(inference, trainingMap);
     }
 
+    public void initGroundModel(InferenceApplication inference, TrainingMap trainingMap) {
+        initGroundModel(inference, trainingMap, Options.WLA_RANDOM_WEIGHTS.getBoolean());
+    }
+
     /**
      * Pass in all the ground model infrastructure.
      * The caller should be careful calling this method instead of the other variants.
      * Children should favor overriding postInitGroundModel() instead of this.
      */
-    public void initGroundModel(InferenceApplication inference, TrainingMap trainingMap) {
+    public void initGroundModel(InferenceApplication inference, TrainingMap trainingMap, Boolean initRandomWeights) {
         if (groundModelInit) {
             return;
         }
@@ -157,7 +161,7 @@ public abstract class WeightLearningApplication implements ModelApplication {
         this.inference = inference;
         this.trainingMap = trainingMap;
 
-        if (Options.WLA_RANDOM_WEIGHTS.getBoolean()) {
+        if (initRandomWeights) {
             initRandomWeights();
         }
 

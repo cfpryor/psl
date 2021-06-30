@@ -17,6 +17,7 @@
  */
 package org.linqs.psl.application.learning.weight;
 
+import org.linqs.psl.application.inference.InferenceApplication;
 import org.linqs.psl.config.Options;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.atom.ObservedAtom;
@@ -25,6 +26,8 @@ import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.Rule;
 import org.linqs.psl.model.rule.WeightedRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
+import org.linqs.psl.reasoner.term.online.OnlineTermStore;
+import org.linqs.psl.reasoner.term.streaming.StreamingTermStore;
 import org.linqs.psl.util.MathUtils;
 
 import org.linqs.psl.util.StringUtils;
@@ -115,6 +118,10 @@ public abstract class VotedPerceptron extends WeightLearningApplication {
     }
 
     protected void postInitGroundModel() {
+        if (inference.getGroundRuleStore() == null) {
+            throw new RuntimeException("VotedPerceptron requires a ground rule store.");
+        }
+
         if (trainingMap.getLatentVariables().size() > 0) {
             log.warn("Latent variable(s) found when using a VotedPerceptron-based weight learning method ({})."
                     + " VotedPerceptron uses gradients to update weights, but latent variables may make the gradients less accurate."

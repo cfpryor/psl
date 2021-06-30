@@ -20,6 +20,7 @@ package org.linqs.psl.config;
 import org.linqs.psl.application.inference.mpe.ADMMInference;
 import org.linqs.psl.application.learning.weight.maxlikelihood.MaxLikelihoodMPE;
 import org.linqs.psl.application.learning.weight.search.bayesian.GaussianProcessKernel;
+import org.linqs.psl.application.learning.weight.search.grid.ContinuousRandomGridSearch;
 import org.linqs.psl.database.rdbms.QueryRewriter;
 import org.linqs.psl.grounding.MemoryGroundRuleStore;
 import org.linqs.psl.evaluation.statistics.ContinuousEvaluator;
@@ -510,7 +511,7 @@ public class Options {
 
     public static final Option ONLINE_WEIGHT_LEARNING_APPLICATION = new Option(
             "inference.onlineweightlearningapplication",
-            MaxLikelihoodMPE.class.getName(),
+            ContinuousRandomGridSearch.class.getName(),
             "The default weight learning application of online PSL."
     );
 

@@ -41,6 +41,7 @@ action
     |   stop
     |   sync
     |   updateObservation
+    |   weightLearn
     |   writeInferredPredicates
     ;
 
@@ -91,6 +92,10 @@ sync
 // TODO(Charles): updateObservation and updateRV
 updateObservation
     :   UPDATE_OBSERVATION atom number
+    ;
+
+weightLearn
+    :   WEIGHT_LEARN
     ;
 
 writeInferredPredicates
@@ -156,6 +161,10 @@ SYNC
 
 UPDATE_OBSERVATION
     :   U P D A T E A T O M
+    ;
+
+WEIGHT_LEARN
+    :   W E I G H T L E A R N
     ;
 
 WRITE_INFERRED_PREDICATES

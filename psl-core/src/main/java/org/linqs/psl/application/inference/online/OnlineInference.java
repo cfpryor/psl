@@ -18,14 +18,11 @@
 package org.linqs.psl.application.inference.online;
 
 import org.linqs.psl.application.inference.InferenceApplication;
+import org.linqs.psl.application.inference.online.messages.actions.controls.*;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.ObserveAtom;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
-import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
-import org.linqs.psl.application.inference.online.messages.actions.controls.Sync;
 import org.linqs.psl.application.inference.online.messages.actions.model.actions.UpdateObservation;
-import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
-import org.linqs.psl.application.inference.online.messages.actions.controls.WriteInferredPredicates;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.application.inference.online.messages.actions.template.actions.ActivateRule;
 import org.linqs.psl.application.inference.online.messages.actions.template.actions.AddRule;
@@ -60,10 +57,10 @@ public abstract class OnlineInference extends InferenceApplication {
 
     private Database observedTruthDatabase;
     private TrainingMap trainingMap;
-    private WeightLearningApplication weightLearningApplication;
 
     private boolean modelUpdates;
     private boolean stopped;
+    private boolean weightLearning;
     private double objective;
     private int variableChangeCount;
     private double variableChange;
@@ -79,6 +76,7 @@ public abstract class OnlineInference extends InferenceApplication {
     @Override
     protected void initialize() {
         stopped = false;
+        weightLearning = false;
         modelUpdates = true;
         objective = 0.0;
         variableChangeCount = 0;
@@ -92,9 +90,6 @@ public abstract class OnlineInference extends InferenceApplication {
         observedTruthDatabase = db.getDataStore().getDatabase(truthPartition,
                 db.getDataStore().getRegisteredPredicates());
         trainingMap = new TrainingMap(atomManager, observedTruthDatabase);
-        weightLearningApplication = WeightLearningApplication.getWLA(Options.ONLINE_WEIGHT_LEARNING_APPLICATION.getString(),
-                rules, db, observedTruthDatabase);
-        weightLearningApplication.initGroundModel(this, trainingMap);
 
         if (!(termStore instanceof OnlineTermStore)) {
             throw new RuntimeException("Online inference requires an OnlineTermStore. Found " + termStore.getClass() + ".");
@@ -147,6 +142,8 @@ public abstract class OnlineInference extends InferenceApplication {
             response = doUpdateObservation((UpdateObservation)action);
         } else if (action.getClass() == QueryAtom.class) {
             response = doQueryAtom((QueryAtom)action);
+        } else if (action.getClass() == WeightLearn.class) {
+            response = doWeightLearn((WeightLearn)action);
         } else if (action.getClass() == WriteInferredPredicates.class) {
             response = doWriteInferredPredicates((WriteInferredPredicates)action);
         } else {
@@ -158,27 +155,51 @@ public abstract class OnlineInference extends InferenceApplication {
 
     protected String doAddAtom(AddAtom action) {
         boolean readPartition = (action.getPartitionName().equalsIgnoreCase("READ"));
+        boolean writePartition = (action.getPartitionName().equalsIgnoreCase("WRITE"));
+        boolean truthPartition = (action.getPartitionName().equalsIgnoreCase("TRUTH"));
         GroundAtom atom = null;
 
-        if (atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
+        if (atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments()) && !truthPartition) {
             atom = ((OnlineAtomManager)atomManager).deleteAtom(action.getPredicate(), action.getArguments());
-            atom = ((OnlineTermStore)termStore).deleteLocalVariable(atom);
+            ((OnlineTermStore)termStore).deleteLocalVariable(atom);
         }
 
         if (readPartition) {
             atom = ((OnlineAtomManager)atomManager).addObservedAtom(action.getPredicate(), action.getValue(), action.getArguments());
-        } else {
+            atom = ((OnlineTermStore)termStore).createLocalVariable(atom);
+
+            modelUpdates = true;
+        } else if (writePartition) {
             atom = ((OnlineAtomManager)atomManager).addRandomVariableAtom(action.getPredicate(), action.getValue(), action.getArguments());
+            atom = ((OnlineTermStore)termStore).createLocalVariable(atom);
+
+            modelUpdates = true;
+        } else if (truthPartition) {
+            GroundAtom modelAtom = null;
+            if (atomManager.getDatabase().hasAtom(action.getPredicate(), action.getArguments())) {
+                modelAtom = atomManager.getAtom(action.getPredicate(), action.getArguments());
+            } else {
+                return String.format("Atom: %s(%s) does not exist in model.",
+                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+            }
+
+            if (!(modelAtom instanceof RandomVariableAtom)) {
+                return String.format("Atom: %s(%s) is observed in the current model.",
+                        action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+            }
+
+            atom = new ObservedAtom(action.getPredicate(), action.getArguments(), action.getValue());
+            trainingMap.addLabel((RandomVariableAtom)modelAtom, (ObservedAtom)atom);
+        } else {
+            return String.format("Unknown partition: %s", action.getPartitionName());
         }
 
-        atom = ((OnlineTermStore)termStore).createLocalVariable(atom);
-
-        modelUpdates = true;
         return String.format("Added atom: %s", atom.toStringWithValue());
     }
 
     protected String doActivateRule(ActivateRule action) {
         Rule rule = ((OnlineTermStore)termStore).activateRule(action.getRule());
+        rules.add(rule);
 
         if (rule != null ) {
             modelUpdates = true;
@@ -190,6 +211,7 @@ public abstract class OnlineInference extends InferenceApplication {
 
     protected String doAddRule(AddRule action) {
         Rule rule = ((OnlineTermStore)termStore).addRule(action.getRule());
+        rules.add(rule);
 
         modelUpdates = true;
         return String.format("Added rule: %s", rule.toString());
@@ -197,6 +219,7 @@ public abstract class OnlineInference extends InferenceApplication {
 
     protected String doDeactivateRule(DeactivateRule action) {
         Rule rule = ((OnlineTermStore)termStore).deactivateRule(action.getRule());
+        rules.remove(rule);
 
         if (rule != null ) {
             modelUpdates = true;
@@ -208,6 +231,7 @@ public abstract class OnlineInference extends InferenceApplication {
 
     protected String doDeleteRule(DeleteRule action) {
         Rule rule = ((OnlineTermStore)termStore).deleteRule(action.getRule());
+        rules.remove(rule);
 
         if (rule != null ) {
             modelUpdates = true;
@@ -240,11 +264,13 @@ public abstract class OnlineInference extends InferenceApplication {
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
         }
 
+        trainingMap.deleteLabel((RandomVariableAtom)atom);
+
         modelUpdates = true;
         variableChangeCount++;
         variableChange += Math.pow(oldAtomValue - newAtom.getValue(), 2);
 
-        return String.format("Observed atom: %s => %s", atom.toStringWithValue(), newAtom.toStringWithValue());
+        return String.format("Observed atom: %s", newAtom.toStringWithValue());
     }
 
     protected String doDeleteAtom(DeleteAtom action) {
@@ -260,6 +286,10 @@ public abstract class OnlineInference extends InferenceApplication {
         if (atom == null) {
             return String.format("Atom: %s(%s) did not exist in any terms of the model.",
                     action.getPredicate(), StringUtils.join(", ", action.getArguments()));
+        }
+
+        if (atom instanceof RandomVariableAtom) {
+            trainingMap.deleteLabel((RandomVariableAtom)atom);
         }
 
         modelUpdates = true;
@@ -301,6 +331,27 @@ public abstract class OnlineInference extends InferenceApplication {
         variableChange += Math.pow(oldAtomValue - updatedAtom.getValue(), 2);
 
         return String.format("Updated atom: %s: %f => %f", atom, oldAtomValue, updatedAtom.getValue());
+    }
+
+    protected String doWeightLearn(WeightLearn action) {
+        WeightLearningApplication weightLearningApplication = WeightLearningApplication.getWLA(
+                Options.ONLINE_WEIGHT_LEARNING_APPLICATION.getString(),
+                rules, db, observedTruthDatabase);
+        weightLearningApplication.initGroundModel((InferenceApplication)this, trainingMap, false);
+
+        log.debug("Model updates: (variable change count): {} unique variables", variableChangeCount);
+        log.debug("Model updates: (variable delta): {}", Math.sqrt(variableChange));
+        variableChangeCount = 0;
+        variableChange = 0.0;
+
+        weightLearning = true;
+        log.trace("Weight Learning Start");
+        weightLearningApplication.learn();
+        log.trace("Weight Learning End");
+        weightLearning = false;
+
+        modelUpdates = false;
+        return "Weight Learning Performed on updated model.";
     }
 
     protected String doWriteInferredPredicates(WriteInferredPredicates action) {
@@ -366,7 +417,7 @@ public abstract class OnlineInference extends InferenceApplication {
         // Initial round of inference.
         optimize();
 
-        while (!stopped) {
+        while (!stopped & !weightLearning) {
             OnlineAction action = server.getAction();
             if (action == null) {
                 continue;
