@@ -17,7 +17,7 @@
  */
 package org.linqs.psl;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.parser.OnlineActionLoader;
 
 import java.util.List;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class OnlinePSLTest {
     public static void assertActions(String input, String[] expectedActions) {
-        List<OnlineAction> onlineActions = OnlineActionLoader.load(input);
+        List<OnlineMessage> onlineActions = OnlineActionLoader.load(input);
 
         assertEquals("Size mismatch.", expectedActions.length, onlineActions.size());
 

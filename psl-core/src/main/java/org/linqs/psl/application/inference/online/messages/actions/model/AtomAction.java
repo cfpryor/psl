@@ -1,10 +1,10 @@
-package org.linqs.psl.application.inference.online.messages.actions.model.actions;
+package org.linqs.psl.application.inference.online.messages.actions.model;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 
-public class AtomAction extends OnlineAction {
+public class AtomAction extends OnlineMessage {
     protected StandardPredicate predicate;
     protected Constant[] arguments;
 
@@ -20,6 +20,4 @@ public class AtomAction extends OnlineAction {
     public Constant[] getArguments() {
         return arguments;
     }
-
-
 }

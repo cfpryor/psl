@@ -19,18 +19,18 @@ package org.linqs.psl.application.inference.online;
 
 import org.linqs.psl.OnlineTest;
 import org.linqs.psl.TestModel;
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
-import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.ObserveAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.UpdateObservation;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.ActivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.AddRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeactivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeleteRule;
+import org.linqs.psl.application.inference.online.messages.actions.model.AddAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.DeleteAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.ObserveAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.UpdateObservation;
+import org.linqs.psl.application.inference.online.messages.actions.template.ActivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeleteRule;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
@@ -114,7 +114,7 @@ public class SGDOnlineInferenceTest {
      */
     @Test
     public void testBadQuery() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
         commands.add(new QueryAtom(StandardPredicate.get("Friends"), new Constant[]{new UniqueStringID("Bob"), new UniqueStringID("Bob")}));
         commands.add(new Exit());
@@ -128,7 +128,7 @@ public class SGDOnlineInferenceTest {
      */
     @Test
     public void testUpdateObservation() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
         commands.add(new UpdateObservation(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}, 0.0f));
         commands.add(new QueryAtom(StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
@@ -163,7 +163,7 @@ public class SGDOnlineInferenceTest {
      */
     @Test
     public void testAddAtoms() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
         // Check that adding atoms will not create new random variable atoms.
         commands.add(new AddAtom("Read", StandardPredicate.get("Person"), new Constant[]{new UniqueStringID("Connor")}, 1.0f));
@@ -201,7 +201,7 @@ public class SGDOnlineInferenceTest {
     @Test
     public void testRuleAddition() {
         // Test basic rule addition.
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
         Rule newRule = new WeightedLogicalRule(
                 new Implication(
                         new Conjunction(
@@ -230,7 +230,7 @@ public class SGDOnlineInferenceTest {
 
         // TODO(Charles): Add test for duplicate adds with same weight and different weight.
         // Test add duplicate.
-        commands = new LinkedBlockingQueue<OnlineAction>();
+        commands = new LinkedBlockingQueue<OnlineMessage>();
         newRule = new WeightedLogicalRule(
                 new Implication(
                         new Conjunction(
@@ -265,7 +265,7 @@ public class SGDOnlineInferenceTest {
 
     @Test
     public void testRuleDeletion() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
         Rule rule = (new WeightedLogicalRule(
                 new Implication(
                         new Conjunction(
@@ -289,7 +289,7 @@ public class SGDOnlineInferenceTest {
 
     @Test
     public void testRuleDeactivateActivate() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
         Rule rule = (new WeightedLogicalRule(
                 new Implication(
                         new Conjunction(
@@ -328,7 +328,7 @@ public class SGDOnlineInferenceTest {
 
     @Test
     public void testAtomDeleting() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
         commands.add(new DeleteAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}));
         commands.add(new AddAtom("Read", StandardPredicate.get("Nice"), new Constant[]{new UniqueStringID("Alice")}, 1.0f));
@@ -363,7 +363,7 @@ public class SGDOnlineInferenceTest {
      */
     @Test
     public void testChangeAtomPartition() {
-        BlockingQueue<OnlineAction> commands = new LinkedBlockingQueue<OnlineAction>();
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
         // Add existing atom with different partition.
         commands.add(new AddAtom("Read", StandardPredicate.get("Friends"),

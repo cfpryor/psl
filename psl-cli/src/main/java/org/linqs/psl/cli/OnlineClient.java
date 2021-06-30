@@ -18,8 +18,8 @@
 package org.linqs.psl.cli;
 
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.parser.OnlineActionLoader;
 import org.slf4j.Logger;
@@ -51,8 +51,8 @@ public class OnlineClient {
 
         try (BufferedReader commandReader = new BufferedReader(new InputStreamReader(in))) {
             String userInput = null;
-            OnlineAction onlineAction = null;
-            BlockingQueue<OnlineAction> onlineActions = new LinkedBlockingQueue<OnlineAction>();
+            OnlineMessage onlineAction = null;
+            BlockingQueue<OnlineMessage> onlineActions = new LinkedBlockingQueue<OnlineMessage>();
 
             // Initialize onlineClient with shared data structures.
             org.linqs.psl.application.inference.online.OnlineClient onlineClient =

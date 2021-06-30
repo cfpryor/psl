@@ -15,41 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.controls;
+package org.linqs.psl.application.inference.online.messages.actions.model;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
-import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.StringUtils;
 
 /**
- * Query an existing observation from the model.
- * String format: Query <predicate> <args> ...
+ * Add a new atom to the model.
+ * String format: Observe <predicate> <args> ... [value]
  */
-public class QueryAtom extends OnlineAction {
-    private StandardPredicate predicate;
-    private Constant[] arguments;
+public class ObserveAtom extends AtomAction {
+    private float value;
 
-    public QueryAtom(StandardPredicate predicate, Constant[] arguments) {
-        super();
-        this.predicate = predicate;
-        this.arguments = arguments;
+    public ObserveAtom(StandardPredicate predicate, Constant[] arguments, float value) {
+        super(predicate, arguments);
+        this.value = value;
     }
 
-    public StandardPredicate getPredicate() {
-        return predicate;
-    }
-
-    public Constant[] getArguments() {
-        return arguments;
+    public float getValue() {
+        return value;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "QUERY\t%s\t%s",
+                "OBSERVE\t%s\t%s\t%.2f",
                 predicate.getName(),
-                StringUtils.join("\t", arguments).replace("'", ""));
+                StringUtils.join("\t", arguments),
+                value);
     }
 }

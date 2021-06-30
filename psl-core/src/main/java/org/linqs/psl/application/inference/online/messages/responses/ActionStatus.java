@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.application.inference.online.messages.responses;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ public class ActionStatus extends OnlineResponse {
     private boolean success;
     private String statusMessage;
 
-    public ActionStatus(OnlineAction onlineAction, boolean success, String statusMessage) {
+    public ActionStatus(OnlineMessage onlineAction, boolean success, String statusMessage) {
         super(UUID.randomUUID());
         this.onlineActionID = onlineAction.getIdentifier();
         this.success = success;
@@ -37,7 +37,7 @@ public class ActionStatus extends OnlineResponse {
         return String.format(
                 "ActionStatus\t%s\t%s\t%s",
                 onlineActionID,
-                Boolean.toString(success),
+                success,
                 statusMessage);
     }
 }

@@ -49,8 +49,8 @@ public class OnlineActionLoaderTest {
             "AddAtom Read SINGLE('A') 1.0\n" +
             "AddAtom Write DOUBLE('A', 'B')";
         String[] expected = new String[]{
-            "ADD\tREAD\tSINGLE\tA\t1.00",
-            "ADD\tWRITE\tDOUBLE\tA\tB"
+            "ADD\tREAD\tSINGLE\t'A'\t1.00",
+            "ADD\tWRITE\tDOUBLE\t'A'\t'B'"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -62,8 +62,8 @@ public class OnlineActionLoaderTest {
                 "DeleteAtom Read SINGLE('A')\n" +
                 "DeleteAtom Write DOUBLE('A', 'B')";
         String[] expected = new String[]{
-                "DELETE\tREAD\tSINGLE\tA",
-                "DELETE\tWRITE\tDOUBLE\tA\tB"
+                "DELETE\tREAD\tSINGLE\t'A'",
+                "DELETE\tWRITE\tDOUBLE\t'A'\t'B'"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -75,8 +75,8 @@ public class OnlineActionLoaderTest {
                 "ObserveAtom SINGLE('A') 0.5\n" +
                 "ObserveAtom DOUBLE('A', 'B') 1";
         String[] expected = new String[]{
-                "OBSERVE\tSINGLE\tA\t0.50",
-                "OBSERVE\tDOUBLE\tA\tB\t1.00"
+                "OBSERVE\tSINGLE\t'A'\t0.50",
+                "OBSERVE\tDOUBLE\t'A'\t'B'\t1.00"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -88,8 +88,8 @@ public class OnlineActionLoaderTest {
                 "UpdateAtom SINGLE('A') 0.5\n" +
                 "UpdateAtom DOUBLE('A', 'B') 1";
         String[] expected = new String[]{
-                "UPDATE\tSINGLE\tA\t0.50",
-                "UPDATE\tDOUBLE\tA\tB\t1.00"
+                "UPDATE\tSINGLE\t'A'\t0.50",
+                "UPDATE\tDOUBLE\t'A'\t'B'\t1.00"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -112,8 +112,8 @@ public class OnlineActionLoaderTest {
                 "QueryAtom SINGLE('A')\n" +
                 "QueryAtom DOUBLE('A', 'B')";
         String[] expected = new String[]{
-                "QUERY\tSINGLE\tA",
-                "QUERY\tDOUBLE\tA\tB"
+                "QUERYATOM\tSINGLE\t'A'",
+                "QUERYATOM\tDOUBLE\t'A'\t'B'"
         };
 
         OnlinePSLTest.assertActions(input, expected);

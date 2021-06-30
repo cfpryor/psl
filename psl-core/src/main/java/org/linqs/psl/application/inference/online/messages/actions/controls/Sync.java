@@ -17,9 +17,9 @@
  */
 package org.linqs.psl.application.inference.online.messages.actions.controls;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 
-public class Sync extends OnlineAction {
+public class Sync extends OnlineMessage {
     public Sync() {
         super();
     }

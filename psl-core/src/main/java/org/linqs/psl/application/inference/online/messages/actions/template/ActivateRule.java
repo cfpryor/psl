@@ -15,24 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions;
+package org.linqs.psl.application.inference.online.messages.actions.template;
 
-import org.linqs.psl.application.inference.online.messages.OnlineMessage;
+import org.linqs.psl.model.rule.Rule;
 
-import java.util.UUID;
-
-//TODO(Charles): AddPredicate action.
 /**
- * Base class for online actions.
- * All actions should be able to freely convert to and from strings.
+ * Add a new rule to the model.
+ * String format: ACTIVATE <predicate> <args> ... [value]
  */
-public abstract class OnlineAction extends OnlineMessage {
-
-    public OnlineAction(UUID identifier) {
-        super(identifier);
+public class ActivateRule extends TemplateAction {
+    public ActivateRule(Rule rule) {
+        super(rule);
     }
 
-    public OnlineAction() {
-        super();
+    @Override
+    public String toString() {
+        return String.format(
+                "ACTIVATERULE\t%s",
+                rule.toString());
     }
 }

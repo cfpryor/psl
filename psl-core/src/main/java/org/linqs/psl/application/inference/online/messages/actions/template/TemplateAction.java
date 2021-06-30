@@ -1,13 +1,13 @@
-package org.linqs.psl.application.inference.online.messages.actions.template.actions;
+package org.linqs.psl.application.inference.online.messages.actions.template;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.predicate.ExternalFunctionalPredicate;
 import org.linqs.psl.model.rule.Rule;
 
 import java.util.HashSet;
 
-public abstract class TemplateAction extends OnlineAction {
+public abstract class TemplateAction extends OnlineMessage {
     protected Rule rule;
 
     public TemplateAction(Rule rule) {
@@ -29,8 +29,7 @@ public abstract class TemplateAction extends OnlineAction {
         return rule;
     }
 
-    public Rule setRule(Rule rule) {
+    public void setRule(Rule rule) {
         this.rule = rule;
-        return rule;
     }
 }

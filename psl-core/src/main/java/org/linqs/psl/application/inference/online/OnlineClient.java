@@ -17,16 +17,14 @@
  */
 package org.linqs.psl.application.inference.online;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.responses.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
-import org.linqs.psl.model.Model;
 import org.linqs.psl.model.predicate.Predicate;
-import org.linqs.psl.model.predicate.StandardPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +46,12 @@ public class OnlineClient implements Runnable {
 
     private PrintStream out;
     private List<OnlineResponse> serverResponses;
-    private BlockingQueue<OnlineAction> actionQueue;
+    private BlockingQueue<OnlineMessage> actionQueue;
     private CountDownLatch modelRegistrationLatch;
     private String hostname;
     private int port;
 
-    public OnlineClient(PrintStream out, BlockingQueue<OnlineAction> actionQueue, List<OnlineResponse> serverResponses,
+    public OnlineClient(PrintStream out, BlockingQueue<OnlineMessage> actionQueue, List<OnlineResponse> serverResponses,
                         CountDownLatch modelRegistrationLatch) {
         this.out = out;
         this.serverResponses = serverResponses;
@@ -68,7 +66,7 @@ public class OnlineClient implements Runnable {
                 Socket server = new Socket(hostname, port);
                 ObjectOutputStream socketOutputStream = new ObjectOutputStream(server.getOutputStream());
                 ObjectInputStream socketInputStream = new ObjectInputStream(server.getInputStream())) {
-            OnlineAction onlineAction = null;
+            OnlineMessage onlineAction = null;
 
             // Read and register serverModel.
             registerServerModel(socketInputStream);

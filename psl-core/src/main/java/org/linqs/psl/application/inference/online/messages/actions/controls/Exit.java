@@ -17,9 +17,9 @@
  */
 package org.linqs.psl.application.inference.online.messages.actions.controls;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 
-public class Exit extends OnlineAction {
+public class Exit extends OnlineMessage {
     public Exit() {
         super();
     }

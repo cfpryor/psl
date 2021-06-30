@@ -27,8 +27,4 @@ public abstract class OnlineResponse extends OnlineMessage {
     public OnlineResponse(UUID identifier) {
         super(identifier);
     }
-
-    public UUID getOnlineActionID() {
-        return onlineActionID;
-    }
 }

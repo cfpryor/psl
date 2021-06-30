@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.actions.model.actions;
+package org.linqs.psl.application.inference.online.messages.actions.model;
 
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
@@ -65,13 +65,13 @@ public class AddAtom extends AtomAction {
                     "ADD\t%s\t%s\t%s",
                     partition,
                     predicate.getName(),
-                    StringUtils.join("\t", arguments).replace("'", ""));
+                    StringUtils.join("\t", arguments));
         } else {
             return String.format(
                     "ADD\t%s\t%s\t%s\t%.2f",
                     partition,
                     predicate.getName(),
-                    StringUtils.join("\t", arguments).replace("'", ""),
+                    StringUtils.join("\t", arguments),
                     value);
         }
     }

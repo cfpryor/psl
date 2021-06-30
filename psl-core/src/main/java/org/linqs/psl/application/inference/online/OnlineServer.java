@@ -17,17 +17,15 @@
  */
 package org.linqs.psl.application.inference.online;
 
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
-import org.linqs.psl.model.predicate.ExternalFunctionalPredicate;
 import org.linqs.psl.model.predicate.FunctionalPredicate;
-import org.linqs.psl.model.predicate.GroundingOnlyPredicate;
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.rule.Rule;
 import org.slf4j.Logger;
@@ -53,14 +51,14 @@ public class OnlineServer implements Closeable {
     private static final Logger log = LoggerFactory.getLogger(OnlineServer.class);
 
     private ServerConnectionThread serverThread;
-    private BlockingQueue<OnlineAction> queue;
+    private BlockingQueue<OnlineMessage> queue;
     private List<Rule> rules;
 
     private ConcurrentHashMap<UUID, ClientConnectionThread> messageIDConnectionMap;
 
     public OnlineServer(List<Rule> rules) {
         serverThread = new ServerConnectionThread(this);
-        queue = new LinkedBlockingQueue<OnlineAction>();
+        queue = new LinkedBlockingQueue<OnlineMessage>();
         messageIDConnectionMap = new ConcurrentHashMap<UUID, ClientConnectionThread>();
         this.rules = rules;
     }
@@ -77,8 +75,8 @@ public class OnlineServer implements Closeable {
      * Get the next action from the client.
      * If no action is already enqueued, this method will block indefinitely until an action is available.
      */
-    public OnlineAction getAction() {
-        OnlineAction nextAction = null;
+    public OnlineMessage getAction() {
+        OnlineMessage nextAction = null;
 
         while (nextAction == null) {
             try {
@@ -97,7 +95,7 @@ public class OnlineServer implements Closeable {
         return nextAction;
     }
 
-    public void onActionExecution(OnlineAction action, OnlineResponse onlineResponse) {
+    public void onActionExecution(OnlineMessage action, OnlineResponse onlineResponse) {
         ClientConnectionThread clientConnectionThread = messageIDConnectionMap.get(action.getIdentifier());
         ObjectOutputStream outputStream = clientConnectionThread.outputStream;
 
@@ -258,10 +256,10 @@ public class OnlineServer implements Closeable {
 
         @Override
         public void run() {
-            OnlineAction newAction = null;
+            OnlineMessage newAction = null;
             while (socket.isConnected() && !isInterrupted()) {
                 try {
-                    newAction = (OnlineAction)inputStream.readObject();
+                    newAction = (OnlineMessage)inputStream.readObject();
                 } catch (IOException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }

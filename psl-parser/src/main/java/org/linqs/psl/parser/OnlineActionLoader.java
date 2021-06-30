@@ -1,19 +1,19 @@
 package org.linqs.psl.parser;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
-import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Sync;
 import org.linqs.psl.application.inference.online.messages.actions.controls.WriteInferredPredicates;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.ObserveAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.UpdateObservation;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.ActivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.AddRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeactivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeleteRule;
+import org.linqs.psl.application.inference.online.messages.actions.model.AddAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.DeleteAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.ObserveAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.UpdateObservation;
+import org.linqs.psl.application.inference.online.messages.actions.template.ActivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeleteRule;
 import org.linqs.psl.model.atom.Atom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.rule.Rule;
@@ -58,8 +58,8 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
      * Parse and return a single OnlineAction.
      * If exactly one action is not specified, an exception is thrown.
      */
-    public static OnlineAction loadAction(String input) {
-        List<OnlineAction> actions = load(new StringReader(input));
+    public static OnlineMessage loadAction(String input) {
+        List<OnlineMessage> actions = load(new StringReader(input));
 
         if (actions.size() != 1) {
             throw new IllegalArgumentException(String.format("Expected 1 action, found %d.", actions.size()));
@@ -71,7 +71,7 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
     /**
      * Convenience interface to load().
      */
-    public static List<OnlineAction> load(String input) {
+    public static List<OnlineMessage> load(String input) {
         return load(new StringReader(input));
     }
 
@@ -79,7 +79,7 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
      * Parse and return a list of onlineActions.
      * If exactly one rule is not specified, an exception is thrown.
      */
-    public static List<OnlineAction> load(Reader input) {
+    public static List<OnlineMessage> load(Reader input) {
         OnlinePSLParser parser = null;
         try {
             parser = getParser(input);
@@ -129,11 +129,11 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
 
     OnlineActionLoader() {}
 
-    public List<OnlineAction> visitOnlineProgram(OnlinePSLParser.OnlineProgramContext ctx, OnlinePSLParser parser) {
-        LinkedList<OnlineAction> actions = new LinkedList<OnlineAction>();
+    public List<OnlineMessage> visitOnlineProgram(OnlinePSLParser.OnlineProgramContext ctx, OnlinePSLParser parser) {
+        LinkedList<OnlineMessage> actions = new LinkedList<OnlineMessage>();
         for (ActionContext actionCtx : ctx.action()) {
             try {
-                actions.add((OnlineAction)visit(actionCtx));
+                actions.add((OnlineMessage)visit(actionCtx));
             } catch (RuntimeException ex) {
                 throw new RuntimeException("Failed to compile online action: [" + parser.getTokenStream().getText(actionCtx) + "]", ex);
             }
@@ -142,7 +142,7 @@ public class OnlineActionLoader extends OnlinePSLBaseVisitor<Object> {
     }
 
     @Override
-    public OnlineAction visitAction(ActionContext ctx) {
+    public OnlineMessage visitAction(ActionContext ctx) {
         if (ctx.addAtom() != null) {
             return visitAddAtom(ctx.addAtom());
         } else if (ctx.addRule() != null) {

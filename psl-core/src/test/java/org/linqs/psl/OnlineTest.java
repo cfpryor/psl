@@ -18,7 +18,7 @@
 package org.linqs.psl;
 
 import org.linqs.psl.application.inference.online.OnlineClient;
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 
@@ -36,14 +36,14 @@ import static org.junit.Assert.assertEquals;
  * Utilities for Online PSL Inference Tests.
  */
 public class OnlineTest {
-    public static List<OnlineResponse> clientSession(OnlineAction onlineAction) {
-        BlockingQueue<OnlineAction> onlineActions = new LinkedBlockingQueue<OnlineAction>();
+    public static List<OnlineResponse> clientSession(OnlineMessage onlineAction) {
+        BlockingQueue<OnlineMessage> onlineActions = new LinkedBlockingQueue<OnlineMessage>();
         onlineActions.add(onlineAction);
 
         return clientSession(onlineActions);
     }
 
-    public static List<OnlineResponse> clientSession(BlockingQueue<OnlineAction> onlineActions) {
+    public static List<OnlineResponse> clientSession(BlockingQueue<OnlineMessage> onlineActions) {
         OnlineClient onlineClient = null;
         List<OnlineResponse> sessionOutput = new ArrayList<OnlineResponse>();
 
@@ -61,7 +61,7 @@ public class OnlineTest {
         return sessionOutput;
     }
 
-    public static void assertAtomValues(BlockingQueue<OnlineAction> commands, double[] values) {
+    public static void assertAtomValues(BlockingQueue<OnlineMessage> commands, double[] values) {
         List<OnlineResponse> onlineResponses = null;
 
         onlineResponses = clientSession(commands);
@@ -77,7 +77,7 @@ public class OnlineTest {
         assertEquals(i, values.length);
     }
 
-    public static void assertServerResponse(BlockingQueue<OnlineAction> commands, OnlineResponse[] responses) {
+    public static void assertServerResponse(BlockingQueue<OnlineMessage> commands, OnlineResponse[] responses) {
         List<OnlineResponse> onlineResponses = null;
 
         onlineResponses = clientSession(commands);

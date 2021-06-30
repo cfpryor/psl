@@ -18,19 +18,19 @@
 package org.linqs.psl.application.inference.online;
 
 import org.linqs.psl.application.inference.InferenceApplication;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.AddAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.ObserveAtom;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.DeleteAtom;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
+import org.linqs.psl.application.inference.online.messages.actions.model.AddAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.ObserveAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.DeleteAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Sync;
-import org.linqs.psl.application.inference.online.messages.actions.model.actions.UpdateObservation;
-import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.UpdateObservation;
+import org.linqs.psl.application.inference.online.messages.actions.model.QueryAtom;
 import org.linqs.psl.application.inference.online.messages.actions.controls.WriteInferredPredicates;
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.ActivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.AddRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeactivateRule;
-import org.linqs.psl.application.inference.online.messages.actions.template.actions.DeleteRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.ActivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.AddRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeactivateRule;
+import org.linqs.psl.application.inference.online.messages.actions.template.DeleteRule;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
 import org.linqs.psl.application.inference.online.messages.responses.QueryAtomResponse;
 import org.linqs.psl.application.inference.online.messages.actions.OnlineActionException;
@@ -106,7 +106,7 @@ public abstract class OnlineInference extends InferenceApplication {
         server.start();
     }
 
-    protected void executeAction(OnlineAction action) {
+    protected void executeAction(OnlineMessage action) {
         String response = null;
 
         if (action.getClass() == ActivateRule.class) {
@@ -351,7 +351,7 @@ public abstract class OnlineInference extends InferenceApplication {
         optimize();
 
         while (!stopped) {
-            OnlineAction action = server.getAction();
+            OnlineMessage action = server.getAction();
             if (action == null) {
                 continue;
             }

@@ -17,13 +17,13 @@
  */
 package org.linqs.psl.application.inference.online.messages.actions.controls;
 
-import org.linqs.psl.application.inference.online.messages.actions.OnlineAction;
+import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 
 /**
  * Write out targets on the server side.
  * String format: WRITE [path]
  */
-public class WriteInferredPredicates extends OnlineAction {
+public class WriteInferredPredicates extends OnlineMessage {
     private String outputDirectoryPath;
 
     public WriteInferredPredicates(String outputDirectoryPath) {

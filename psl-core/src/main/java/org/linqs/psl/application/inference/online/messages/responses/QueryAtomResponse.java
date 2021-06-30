@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.application.inference.online.messages.responses;
 
-import org.linqs.psl.application.inference.online.messages.actions.controls.QueryAtom;
+import org.linqs.psl.application.inference.online.messages.actions.model.QueryAtom;
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.StringUtils;
