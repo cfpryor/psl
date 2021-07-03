@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ package org.linqs.psl.application.inference.online.messages.actions.model;
 
 import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
+import org.linqs.psl.util.MathUtils;
 import org.linqs.psl.util.RandUtils;
 import org.linqs.psl.util.StringUtils;
 
 /**
  * Add a new atom to the model.
- * String format: ADD <READ/WRITE> <predicate> <args> ... [value]
+ * Note that a value must be provided for atoms being added to the READ partition.
+ * String format: AddAtom <READ/WRITE> <predicate> <arg>... [value]
  */
 public class AddAtom extends AtomAction {
     private float value;
@@ -46,7 +48,7 @@ public class AddAtom extends AtomAction {
     }
 
     public float getValue() {
-        if (value == -1.0f) {
+        if (MathUtils.equals(value, -1.0f)) {
             // Default value when a value is not provided.
             return RandUtils.nextFloat();
         } else {
@@ -62,13 +64,13 @@ public class AddAtom extends AtomAction {
     public String toString() {
         if (value == -1.0f) {
             return String.format(
-                    "ADD\t%s\t%s\t%s",
+                    "ADDATOM\t%s\t%s\t%s",
                     partition,
                     predicate.getName(),
                     StringUtils.join("\t", arguments));
         } else {
             return String.format(
-                    "ADD\t%s\t%s\t%s\t%.2f",
+                    "ADDATOM\t%s\t%s\t%s\t%.2f",
                     partition,
                     predicate.getName(),
                     StringUtils.join("\t", arguments),

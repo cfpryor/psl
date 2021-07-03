@@ -23,7 +23,7 @@ import org.linqs.psl.util.StringUtils;
 
 /**
  * Query the value of an existing atom.
- * String format: QueryAtom <predicate> <args>...
+ * String format: QueryAtom <predicate> <arg>...
  */
 public class QueryAtom extends AtomAction {
     public QueryAtom(StandardPredicate predicate, Constant[] arguments) {

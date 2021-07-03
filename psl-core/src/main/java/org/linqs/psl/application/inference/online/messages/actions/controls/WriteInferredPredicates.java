@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ package org.linqs.psl.application.inference.online.messages.actions.controls;
 import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 
 /**
- * Write out targets on the server side.
- * String format: WRITE [path]
+ * Write inferred predicates at a location on the server.
+ * If no path is specified then inferred predicates are written to stdout.
+ * String format: WriteInferredPredicates [path]
  */
 public class WriteInferredPredicates extends OnlineMessage {
     private String outputDirectoryPath;
@@ -38,9 +39,9 @@ public class WriteInferredPredicates extends OnlineMessage {
     @Override
     public String toString() {
         if (outputDirectoryPath == null) {
-            return String.format("WRITE");
+            return String.format("WRITEINFERREDPREDICATES");
         } else {
-            return String.format("WRITE\t%s", outputDirectoryPath);
+            return String.format("WRITEINFERREDPREDICATES\t%s", outputDirectoryPath);
         }
     }
 }

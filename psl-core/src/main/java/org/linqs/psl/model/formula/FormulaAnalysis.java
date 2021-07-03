@@ -36,7 +36,7 @@ import java.util.Set;
  * Converts a {@link Formula} to a simplified Disjunctive Normal Form view
  * and makes the clauses available.
  */
-public class FormulaAnalysis implements Serializable{
+public class FormulaAnalysis implements Serializable {
     private final Formula f;
     private final List<DNFClause> clauses;
 

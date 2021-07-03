@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.linqs.psl.util.StringUtils;
 
 /**
  * Update an existing observation from the model.
- * String format: UPDATE <predicate> <args> ... [value]
+ * String format: UpdateAtom <predicate> <arg>... <value>
  */
 public class UpdateObservation extends AtomAction {
     private float value;
@@ -40,7 +40,7 @@ public class UpdateObservation extends AtomAction {
     @Override
     public String toString() {
         return String.format(
-                "UPDATE\t%s\t%s\t%.2f",
+                "UPDATEATOM\t%s\t%s\t%.2f",
                 predicate.getName(), StringUtils.join("\t", arguments),
                 value);
     }
