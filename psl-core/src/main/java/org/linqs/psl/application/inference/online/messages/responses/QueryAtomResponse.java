@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,13 @@ import org.linqs.psl.model.predicate.StandardPredicate;
 import org.linqs.psl.model.term.Constant;
 import org.linqs.psl.util.StringUtils;
 
-import java.util.UUID;
-
 public class QueryAtomResponse extends OnlineResponse {
     private double atomValue;
     private StandardPredicate predicate;
     private Constant[] arguments;
 
     public QueryAtomResponse(QueryAtom onlineAction, double atomValue) {
-        super(UUID.randomUUID());
+        super(onlineAction.getIdentifier());
         this.atomValue = atomValue;
         this.predicate = onlineAction.getPredicate();
         this.arguments = onlineAction.getArguments();
@@ -54,7 +52,7 @@ public class QueryAtomResponse extends OnlineResponse {
                 "Query\t%s\t%s\t%s\t%f",
                 onlineActionID,
                 predicate.getName(),
-                StringUtils.join("\t", arguments).replace("'", ""),
+                StringUtils.join("\t", arguments),
                 atomValue);
     }
 }

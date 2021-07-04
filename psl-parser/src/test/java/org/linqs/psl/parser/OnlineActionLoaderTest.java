@@ -49,8 +49,8 @@ public class OnlineActionLoaderTest {
             "AddAtom Read SINGLE('A') 1.0\n" +
             "AddAtom Write DOUBLE('A', 'B')";
         String[] expected = new String[]{
-            "ADD\tREAD\tSINGLE\t'A'\t1.00",
-            "ADD\tWRITE\tDOUBLE\t'A'\t'B'"
+            "ADDATOM\tREAD\tSINGLE\t'A'\t1.00",
+            "ADDATOM\tWRITE\tDOUBLE\t'A'\t'B'"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -62,8 +62,8 @@ public class OnlineActionLoaderTest {
                 "DeleteAtom Read SINGLE('A')\n" +
                 "DeleteAtom Write DOUBLE('A', 'B')";
         String[] expected = new String[]{
-                "DELETE\tREAD\tSINGLE\t'A'",
-                "DELETE\tWRITE\tDOUBLE\t'A'\t'B'"
+                "DELETEATOM\tREAD\tSINGLE\t'A'",
+                "DELETEATOM\tWRITE\tDOUBLE\t'A'\t'B'"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -75,8 +75,8 @@ public class OnlineActionLoaderTest {
                 "ObserveAtom SINGLE('A') 0.5\n" +
                 "ObserveAtom DOUBLE('A', 'B') 1";
         String[] expected = new String[]{
-                "OBSERVE\tSINGLE\t'A'\t0.50",
-                "OBSERVE\tDOUBLE\t'A'\t'B'\t1.00"
+                "OBSERVEATOM\tSINGLE\t'A'\t0.50",
+                "OBSERVEATOM\tDOUBLE\t'A'\t'B'\t1.00"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -88,8 +88,8 @@ public class OnlineActionLoaderTest {
                 "UpdateAtom SINGLE('A') 0.5\n" +
                 "UpdateAtom DOUBLE('A', 'B') 1";
         String[] expected = new String[]{
-                "UPDATE\tSINGLE\t'A'\t0.50",
-                "UPDATE\tDOUBLE\t'A'\t'B'\t1.00"
+                "UPDATEATOM\tSINGLE\t'A'\t0.50",
+                "UPDATEATOM\tDOUBLE\t'A'\t'B'\t1.00"
         };
 
         OnlinePSLTest.assertActions(input, expected);
@@ -146,7 +146,7 @@ public class OnlineActionLoaderTest {
         String input =
                 "WriteInferredPredicates 'file/path'";
         String[] expected = new String[]{
-                "WRITE\tfile/path"
+                "WRITEINFERREDPREDICATES\tfile/path"
         };
 
         OnlinePSLTest.assertActions(input, expected);

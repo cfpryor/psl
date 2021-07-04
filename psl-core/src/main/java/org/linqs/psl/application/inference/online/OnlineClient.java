@@ -20,7 +20,7 @@ package org.linqs.psl.application.inference.online;
 import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
-import org.linqs.psl.application.inference.online.messages.responses.ModelInformation;
+import org.linqs.psl.application.inference.online.messages.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
 
@@ -112,7 +112,7 @@ public class OnlineClient implements Runnable {
         }
 
         // Register model predicates.
-        for (Predicate predicate : modelInformation.predicates.values()) {
+        for (Predicate predicate: modelInformation.getPredicates()) {
             Predicate.addPredicate(predicate);
             log.trace("Registered predicate: " + Predicate.get(predicate.getName()).toString() +
                     " Client Hash: " + Predicate.get(predicate.getName()).hashCode() +

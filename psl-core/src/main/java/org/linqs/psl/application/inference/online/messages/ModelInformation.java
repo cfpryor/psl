@@ -15,26 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.application.inference.online.messages.responses;
+package org.linqs.psl.application.inference.online.messages;
 
-import org.linqs.psl.application.inference.online.messages.OnlineMessage;
+import org.linqs.psl.model.predicate.Predicate;
+import org.linqs.psl.model.rule.Rule;
+import org.linqs.psl.util.StringUtils;
 
-public class ActionStatus extends OnlineResponse {
-    private boolean success;
-    private String statusMessage;
+public class ModelInformation extends OnlineMessage {
+    private Predicate[] predicates;
+    private Rule[] rules;
 
-    public ActionStatus(OnlineMessage onlineAction, boolean success, String statusMessage) {
-        super(onlineAction.getIdentifier());
-        this.success = success;
-        this.statusMessage = statusMessage;
+    public ModelInformation(Predicate[] predicates, Rule[] rules) {
+        super();
+        this.predicates = predicates;
+        this.rules = rules;
+    }
+
+    public Predicate[] getPredicates() {
+        return predicates;
+    }
+
+    public Rule[] getRules() {
+        return rules;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "ActionStatus\t%s\t%s\t%s",
-                onlineActionID,
-                success,
-                statusMessage);
+                "ModelInfo:\nPredicates:%s\nRules:%s",
+                StringUtils.join("\t", predicates),
+                StringUtils.join("\n", rules));
     }
 }

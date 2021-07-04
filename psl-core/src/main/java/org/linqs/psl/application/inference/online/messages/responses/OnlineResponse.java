@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2020 The Regents of the University of California
+ * Copyright 2013-2021 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,12 @@ import java.util.UUID;
 public abstract class OnlineResponse extends OnlineMessage {
     protected UUID onlineActionID;
 
-    public OnlineResponse(UUID identifier) {
-        super(identifier);
+    public OnlineResponse(UUID onlineActionID) {
+        super();
+        this.onlineActionID = onlineActionID;
+    }
+
+    public UUID getActionIdentifier() {
+        return onlineActionID;
     }
 }
