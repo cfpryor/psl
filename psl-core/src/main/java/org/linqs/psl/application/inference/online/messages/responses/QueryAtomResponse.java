@@ -27,11 +27,11 @@ public class QueryAtomResponse extends OnlineResponse {
     private StandardPredicate predicate;
     private Constant[] arguments;
 
-    public QueryAtomResponse(QueryAtom onlineAction, double atomValue) {
-        super(onlineAction.getIdentifier());
+    public QueryAtomResponse(QueryAtom queryAtomAction, double atomValue) {
+        super(queryAtomAction.getIdentifier());
         this.atomValue = atomValue;
-        this.predicate = onlineAction.getPredicate();
-        this.arguments = onlineAction.getArguments();
+        this.predicate = queryAtomAction.getPredicate();
+        this.arguments = queryAtomAction.getArguments();
     }
 
     public double getAtomValue() {
