@@ -56,8 +56,7 @@ public class OnlineClient {
 
             // Initialize onlineClient with shared data structures.
             org.linqs.psl.application.inference.online.OnlineClient onlineClient =
-                    new org.linqs.psl.application.inference.online.OnlineClient(out, onlineActions,
-                            serverResponses, modelRegistrationLatch);
+                    new org.linqs.psl.application.inference.online.OnlineClient(onlineActions, serverResponses, modelRegistrationLatch);
 
             // Run onlineClient thread for client session.
             Thread onlineClientThread = new Thread(onlineClient);

@@ -44,16 +44,14 @@ import java.util.concurrent.CountDownLatch;
 public class OnlineClient implements Runnable {
     private Logger log = LoggerFactory.getLogger(OnlineClient.class);
 
-    private PrintStream out;
     private List<OnlineResponse> serverResponses;
     private BlockingQueue<OnlineMessage> actionQueue;
     private CountDownLatch modelRegistrationLatch;
     private String hostname;
     private int port;
 
-    public OnlineClient(PrintStream out, BlockingQueue<OnlineMessage> actionQueue, List<OnlineResponse> serverResponses,
+    public OnlineClient(BlockingQueue<OnlineMessage> actionQueue, List<OnlineResponse> serverResponses,
                         CountDownLatch modelRegistrationLatch) {
-        this.out = out;
         this.serverResponses = serverResponses;
         this.actionQueue = actionQueue;
         this.hostname = Options.ONLINE_HOST.getString();
@@ -73,43 +71,35 @@ public class OnlineClient implements Runnable {
             modelRegistrationLatch.countDown();
 
             // Startup serverConnectionThread for reading server responses.
-            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, out, serverResponses);
+            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, serverResponses);
             serverConnectionThread.start();
 
             // Deque actions and send to server.
             while (!(onlineAction instanceof Exit || onlineAction instanceof Stop)) {
+                // Dequeue next action.
                 try {
-                    // Dequeue next action.
-                    try {
-                        onlineAction = actionQueue.take();
-                    } catch (InterruptedException ex) {
-                        log.warn("Interrupted while taking an online action from the queue.", ex);
-                        continue;
-                    }
-                    log.trace("Sending Action {}", onlineAction.toString());
-                    socketOutputStream.writeObject(onlineAction);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                    onlineAction = actionQueue.take();
+                } catch (InterruptedException ex) {
+                    log.warn("Interrupted while taking an online action from the queue.", ex);
+                    break;
                 }
+                log.trace("Sending Action {}", onlineAction);
+                socketOutputStream.writeObject(onlineAction);
             }
 
             // Wait for serverConnectionThread.
             serverConnectionThread.join();
-        } catch(IOException ex) {
+        } catch(IOException | ClassNotFoundException ex) {
             throw new RuntimeException(ex);
         } catch (InterruptedException ex) {
             log.error("Client session interrupted");
         }
     }
 
-    private void registerServerModel(ObjectInputStream socketInputStream) {
+    private void registerServerModel(ObjectInputStream socketInputStream) throws IOException, ClassNotFoundException {
         // Get model information from server.
         ModelInformation modelInformation = null;
-        try {
-            modelInformation = (ModelInformation)socketInputStream.readObject();
-        } catch (IOException | ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
+        modelInformation = (ModelInformation)socketInputStream.readObject();
 
         // Register model predicates.
         for (Predicate predicate: modelInformation.getPredicates()) {
@@ -119,20 +109,17 @@ public class OnlineClient implements Runnable {
                     " Server Hash: " + predicate.hashCode());
         }
     }
-
     /**
      * Private class for reading OnlineResponse objects from server.
      */
     private static class ServerConnectionThread extends Thread {
         private ObjectInputStream inputStream;
-        private PrintStream out;
         private Socket socket;
         private List<OnlineResponse> serverResponses;
 
-        public ServerConnectionThread(Socket socket, ObjectInputStream inputStream, PrintStream out, List<OnlineResponse> serverResponses) {
+        public ServerConnectionThread(Socket socket, ObjectInputStream inputStream, List<OnlineResponse> serverResponses) {
             this.socket = socket;
             this.inputStream = inputStream;
-            this.out = out;
             this.serverResponses = serverResponses;
         }
 
@@ -149,7 +136,6 @@ public class OnlineClient implements Runnable {
                 } catch (IOException | ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
-
                 serverResponses.add(response);
             }
         }
