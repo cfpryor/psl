@@ -31,6 +31,7 @@ import org.linqs.psl.model.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -234,7 +235,7 @@ public class OnlineServer {
             this.socket = socket;
             this.server = server;
 
-//            setUncaughtExceptionHandler(new ClientConnectionExceptionHandler());
+            setUncaughtExceptionHandler(new ClientConnectionExceptionHandler());
         }
 
         private void initializeConnection() {
@@ -276,16 +277,22 @@ public class OnlineServer {
             sendModelInformation();
 
             // Read and queue new actions from client until exit or stop.
-            while (!socket.isClosed()) {
+            while (true) {
                 try {
                     newAction = (OnlineMessage)inputStream.readObject();
+                } catch (EOFException ex) {
+                    // Client unexpectedly closed socket.
+                    throw new RuntimeException("Client closed socket without Exit or Stop action.", ex);
                 } catch (IOException ex) {
                     if (socket.isClosed()) {
-                        continue;
+                        // Socket closed before client issued Stop or Exit.
+                        // This can occur when a Stop is issued while other clients are still connected.
+                        break;
                     }
+                    // Unexpected IOException thrown.
                     throw new RuntimeException(ex);
                 } catch(ClassNotFoundException ex) {
-                    throw new RuntimeException(ex);
+                    throw new RuntimeException("Failed to deserialize OnlineMessage from client.", ex);
                 }
 
                 try {
@@ -317,7 +324,6 @@ public class OnlineServer {
             log.warn(String.format("Uncaught exception in ClientConnectionThread. "
                     + " Exception message: %s", ex.getMessage()));
             closeClient(clientConnectionThread);
-            throw new RuntimeException(ex);
         }
     }
 }

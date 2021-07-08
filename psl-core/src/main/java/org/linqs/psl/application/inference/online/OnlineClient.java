@@ -71,7 +71,7 @@ public class OnlineClient implements Runnable {
             modelRegistrationLatch.countDown();
 
             // Startup serverConnectionThread for reading server responses.
-            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(server, socketInputStream, serverResponses);
+            ServerConnectionThread serverConnectionThread = new ServerConnectionThread(socketInputStream, serverResponses);
             serverConnectionThread.start();
 
             // Deque actions and send to server.
@@ -112,13 +112,11 @@ public class OnlineClient implements Runnable {
     /**
      * Private class for reading OnlineResponse objects from server.
      */
-    private static class ServerConnectionThread extends Thread {
+    private class ServerConnectionThread extends Thread {
         private ObjectInputStream inputStream;
-        private Socket socket;
         private List<OnlineResponse> serverResponses;
 
-        public ServerConnectionThread(Socket socket, ObjectInputStream inputStream, List<OnlineResponse> serverResponses) {
-            this.socket = socket;
+        public ServerConnectionThread(ObjectInputStream inputStream, List<OnlineResponse> serverResponses) {
             this.inputStream = inputStream;
             this.serverResponses = serverResponses;
         }
@@ -127,18 +125,20 @@ public class OnlineClient implements Runnable {
         public void run() {
             OnlineResponse response = null;
 
-            while (socket.isConnected() && !isInterrupted()) {
+            while (true) {
                 try {
                     response = (OnlineResponse)inputStream.readObject();
                 } catch (EOFException ex) {
-                    // Done.
+                    // Server closed socket.
                     break;
-                } catch (IOException | ClassNotFoundException ex) {
+                } catch (IOException ex) {
+                    // Unexpected IOException.
                     throw new RuntimeException(ex);
+                } catch (ClassNotFoundException ex) {
+                    log.warn("Unable to deserialized last server response.");
                 }
                 serverResponses.add(response);
             }
         }
     }
 }
-
