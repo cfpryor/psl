@@ -85,28 +85,25 @@ public class SGDOnlineInferenceTest {
     @After
     public void cleanup() {
         if (onlineInferenceThread != null) {
-            OnlineTest.clientSession(new Stop());
-
-            try {
-                // Will wait 10 seconds for thread to finish otherwise will interrupt.
-                onlineInferenceThread.join(10000);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-
             onlineInferenceThread.close();
             onlineInferenceThread = null;
         }
+    }
 
-        if (inferDB != null) {
-            inferDB.close();
-            inferDB = null;
-        }
+    /**
+     * A test that to see if the inference method is running, accepting client connections, and stopping.
+     */
+    @Test
+    public void baseTest() {
+        BlockingQueue<OnlineMessage> commands = new LinkedBlockingQueue<OnlineMessage>();
 
-        if (modelInfo != null) {
-            modelInfo.dataStore.close();
-            modelInfo = null;
-        }
+        Stop stop = new Stop();
+        commands.add(stop);
+
+        OnlineResponse[] expectedResponses = new OnlineResponse[1];
+        expectedResponses[0] = new ActionStatus(stop, true, "OnlinePSL inference stopped.");
+
+        OnlineTest.assertServerResponse(commands, expectedResponses);
     }
 
     /**

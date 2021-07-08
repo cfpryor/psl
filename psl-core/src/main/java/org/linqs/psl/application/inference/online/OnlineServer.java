@@ -17,63 +17,73 @@
  */
 package org.linqs.psl.application.inference.online;
 
+import org.linqs.psl.application.inference.online.messages.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.OnlineMessage;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Exit;
 import org.linqs.psl.application.inference.online.messages.actions.controls.Stop;
 import org.linqs.psl.application.inference.online.messages.responses.ActionStatus;
-import org.linqs.psl.application.inference.online.messages.ModelInformation;
 import org.linqs.psl.application.inference.online.messages.responses.OnlineResponse;
 import org.linqs.psl.config.Options;
-
 import org.linqs.psl.model.predicate.FunctionalPredicate;
 import org.linqs.psl.model.predicate.Predicate;
 import org.linqs.psl.model.rule.Rule;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * A class that handles establishing a server socket and waiting for client connections.
- * Actions given by any client connections will be held in a shared queue and
- * accessible via the getAction() method.
+ * A class for listening for new client connections and establishing socket connections for client server communication.
+ * Actions provided via client connections will be stored in a shared queue that is accessible via the getAction() method.
  */
-public class OnlineServer implements Closeable {
+public class OnlineServer {
     private static final Logger log = LoggerFactory.getLogger(OnlineServer.class);
 
+    private boolean listening;
     private ServerConnectionThread serverThread;
+    private Set<Thread> clientConnectionThreads;
     private BlockingQueue<OnlineMessage> queue;
+    private ConcurrentMap<UUID, ClientConnectionThread> messageIDConnectionMap;
     private List<Rule> rules;
-
-    private ConcurrentHashMap<UUID, ClientConnectionThread> messageIDConnectionMap;
+    private File tmpFile;
 
     public OnlineServer(List<Rule> rules) {
+        listening = false;
         serverThread = new ServerConnectionThread(this);
+        tmpFile = null;
         queue = new LinkedBlockingQueue<OnlineMessage>();
         messageIDConnectionMap = new ConcurrentHashMap<UUID, ClientConnectionThread>();
+        clientConnectionThreads = new HashSet<Thread>();
         this.rules = rules;
     }
 
     /**
-     * Start up the server on the configured port and wait for connections.
-     * This does not block, as another thread will be waiting for connections.
+     * Start up the server and listen for new connections on the configured port.
+     * This method does not block. A new thread is started to wait for connections.
      */
     public void start() {
+        listening = true;
         serverThread.start();
     }
 
     /**
      * Get the next action from the client.
-     * If no action is already enqueued, this method will block indefinitely until an action is available.
+     * This method will block until an action is available to take from the queue.
      */
     public OnlineMessage getAction() {
         OnlineMessage nextAction = null;
@@ -102,12 +112,11 @@ public class OnlineServer implements Closeable {
         try {
             outputStream.writeObject(onlineResponse);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            log.warn(String.format("Failed to send client onlineResponse %s", onlineResponse));
         }
 
         if (action instanceof Exit || action instanceof Stop) {
-            // Interrupt waiting thread to finish closing.
-            serverThread.closeClient(clientConnectionThread);
+            closeClient(clientConnectionThread);
         }
 
         if (onlineResponse instanceof ActionStatus) {
@@ -115,17 +124,43 @@ public class OnlineServer implements Closeable {
         }
     }
 
-    @Override
+    public void closeClient(Thread clientConnectionThread) {
+        ((ClientConnectionThread)clientConnectionThread).close();
+        clientConnectionThreads.remove(clientConnectionThread);
+    }
+
+    public void addClient(Thread clientConnectionThread) {
+        clientConnectionThreads.add(clientConnectionThread);
+    }
+
+    private void createServerTempFile() {
+        try {
+            tmpFile = File.createTempFile("OnlinePSLServer", ".tmp");
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        tmpFile.deleteOnExit();
+        log.info("Temporary server config file at: " + tmpFile.getAbsolutePath());
+    }
+
     public void close() {
+        listening = false;
+
+        if (serverThread != null) {
+            serverThread.close();
+            serverThread = null;
+        }
+
+        if (clientConnectionThreads != null) {
+            for (Thread clientConnection : clientConnectionThreads) {
+                closeClient(clientConnection);
+            }
+            clientConnectionThreads = null;
+        }
+
         if (queue != null) {
             queue.clear();
             queue = null;
-        }
-
-        if (serverThread != null) {
-            serverThread.interrupt();
-            serverThread.close();
-            serverThread = null;
         }
     }
 
@@ -133,84 +168,58 @@ public class OnlineServer implements Closeable {
      * The thread that waits for client connections.
      */
     private class ServerConnectionThread extends Thread {
-        private File tmpFile;
+        private int port;
         private ServerSocket socket;
         private OnlineServer server;
-        private HashSet<ClientConnectionThread> clientConnections;
 
         public ServerConnectionThread(OnlineServer server) {
-            tmpFile = null;
             this.server = server;
-            clientConnections = new HashSet<ClientConnectionThread>();
 
-            int port = Options.ONLINE_PORT_NUMBER.getInt();
+            port = Options.ONLINE_PORT_NUMBER.getInt();
+            socket = null;
+        }
 
+        private void openListenSocket() {
             try {
                 socket = new ServerSocket(port);
             } catch (IOException ex) {
-                throw new RuntimeException("Could not establish socket on port " + port + ".", ex);
+                throw new RuntimeException(String.format("Could not establish socket on port %s.", port));
             }
-
-            createServerTempFile();
-            log.info("Online server started on port " + port + ".");
         }
 
+        @Override
         public void run() {
             Socket client = null;
+            ClientConnectionThread connectionThread = null;
 
-            while (!isInterrupted()) {
+            openListenSocket();
+
+            createServerTempFile();
+            log.info(String.format("Online server started on port %s.", port));
+
+            while (listening) {
                 try {
                     client = socket.accept();
                 } catch (IOException ex) {
-                    if (isInterrupted()) {
-                        break;
+                    if (socket.isClosed()) {
+                        continue;
                     }
-
-                    close();
                     throw new RuntimeException(ex);
                 }
 
-                ClientConnectionThread connectionThread = new ClientConnectionThread(client, this.server);
-                clientConnections.add(connectionThread);
+                connectionThread = new ClientConnectionThread(client, server);
+                addClient(connectionThread);
                 connectionThread.start();
             }
-
-            close();
-        }
-
-        public void closeClient(ClientConnectionThread clientConnectionThread) {
-            // Wake up waiting thread.
-            clientConnectionThread.close();
-            clientConnections.remove(clientConnectionThread);
         }
 
         public void close() {
-            if (clientConnections != null) {
-                for (ClientConnectionThread clientConnection : clientConnections) {
-                    closeClient(clientConnection);
-                }
-
-                clientConnections = null;
-            }
-
             if (socket != null) {
                 try {
                     socket.close();
                 } catch (IOException ex) {
                     // Ignore.
                 }
-
-                socket = null;
-            }
-        }
-
-        private void createServerTempFile() {
-            try {
-                tmpFile = File.createTempFile("OnlinePSLServer", ".tmp");
-                tmpFile.deleteOnExit();
-                log.info("Temporary server config file at: " + tmpFile.getAbsolutePath());
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
             }
         }
     }
@@ -225,31 +234,35 @@ public class OnlineServer implements Closeable {
             this.socket = socket;
             this.server = server;
 
+//            setUncaughtExceptionHandler(new ClientConnectionExceptionHandler());
+        }
+
+        private void initializeConnection() {
             try {
                 inputStream = new ObjectInputStream(socket.getInputStream());
                 outputStream = new ObjectOutputStream(socket.getOutputStream());
             } catch (IOException ex) {
-                close();
                 throw new RuntimeException(ex);
             }
+        }
 
+        private void sendModelInformation() {
             // Send Client model information for action validation.
-            ArrayList<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
-            ArrayList<Predicate> modelInformationPredicates = new ArrayList<Predicate>();
+            List<Predicate> predicates = new ArrayList<Predicate>(Predicate.getAll());
+            List<Predicate> modelInformationPredicates = new ArrayList<Predicate>();
 
-            // Remove External Function and Grounding Only Predicates.
+            // Remove Functional Predicates.
             for (Predicate predicate : predicates) {
                 if (!(predicate instanceof FunctionalPredicate)) {
                     modelInformationPredicates.add(predicate);
                 }
             }
 
+            ModelInformation modelInformation = new ModelInformation(modelInformationPredicates.toArray(new Predicate[]{}),
+                    server.rules.toArray(new Rule[]{}));
             try {
-                ModelInformation modelInformation = new ModelInformation(modelInformationPredicates.toArray(new Predicate[]{}),
-                        this.server.rules.toArray(new Rule[]{}));
                 outputStream.writeObject(modelInformation);
             } catch (IOException ex) {
-                close();
                 throw new RuntimeException(ex);
             }
         }
@@ -257,19 +270,29 @@ public class OnlineServer implements Closeable {
         @Override
         public void run() {
             OnlineMessage newAction = null;
-            while (socket.isConnected() && !isInterrupted()) {
+
+            initializeConnection();
+
+            sendModelInformation();
+
+            // Read and queue new actions from client until exit or stop.
+            while (!socket.isClosed()) {
                 try {
                     newAction = (OnlineMessage)inputStream.readObject();
-                } catch (IOException | ClassNotFoundException ex) {
+                } catch (IOException ex) {
+                    if (socket.isClosed()) {
+                        continue;
+                    }
+                    throw new RuntimeException(ex);
+                } catch(ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
 
                 try {
-                    // Queue new action.
                     messageIDConnectionMap.put(newAction.getIdentifier(), this);
                     queue.put(newAction);
                 } catch (InterruptedException ex) {
-                    break;
+                    continue;
                 }
 
                 if (newAction instanceof Exit || newAction instanceof Stop) {
@@ -279,16 +302,22 @@ public class OnlineServer implements Closeable {
             }
         }
 
-        public synchronized void close() {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    // Ignore.
-                }
-
-                socket = null;
+        public void close() {
+            try {
+                socket.close();
+            } catch (IOException ex) {
+                // Ignore.
             }
+        }
+    }
+
+    private class ClientConnectionExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Override
+        public void uncaughtException(Thread clientConnectionThread, Throwable ex) {
+            log.warn(String.format("Uncaught exception in ClientConnectionThread. "
+                    + " Exception message: %s", ex.getMessage()));
+            closeClient(clientConnectionThread);
+            throw new RuntimeException(ex);
         }
     }
 }

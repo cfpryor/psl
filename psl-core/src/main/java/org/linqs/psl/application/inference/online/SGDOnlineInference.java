@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class SGDOnlineInference extends OnlineInference {
     public SGDOnlineInference(List<Rule> rules, Database database) {
-        super(rules, database);
+        super(rules, database, true);
     }
 
     @Override

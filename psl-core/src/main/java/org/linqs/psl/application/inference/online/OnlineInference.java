@@ -93,12 +93,16 @@ public abstract class OnlineInference extends InferenceApplication {
 
     @Override
     public void close() {
+        stopped = true;
+        closeServer();
+        super.close();
+    }
+
+    private void closeServer() {
         if (server != null) {
             server.close();
             server = null;
         }
-
-        super.close();
     }
 
     private void startServer() {
@@ -366,6 +370,7 @@ public abstract class OnlineInference extends InferenceApplication {
                 throw new RuntimeException("Critically failed to run command. Last seen command: " + action, ex);
             }
         }
+        closeServer();
 
         return objective;
     }
