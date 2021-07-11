@@ -292,7 +292,8 @@ public class OnlineServer {
                     // Unexpected IOException thrown.
                     throw new RuntimeException(ex);
                 } catch(ClassNotFoundException ex) {
-                    throw new RuntimeException("Failed to deserialize OnlineMessage from client.", ex);
+                    log.warn("Failed to deserialized last OnlineMessage from client.");
+                    continue;
                 }
 
                 try {
