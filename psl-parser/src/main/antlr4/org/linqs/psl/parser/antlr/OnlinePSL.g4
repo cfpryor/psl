@@ -109,6 +109,7 @@ writeInferredPredicates
 PARTITION
     :   READ_PARTITION
     |   WRITE_PARTITION
+    |   TRUTH_PARTITION
     ;
 
 ADD_ATOM
@@ -157,6 +158,10 @@ STOP
 
 SYNC
     :   S Y N C
+    ;
+    
+TRUTH_PARTITION
+    :   T R U T H
     ;
 
 UPDATE_OBSERVATION
